@@ -6,4 +6,22 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./authResponse";
+export * from "./category";
+export * from "./categoryStat";
+export * from "./createCategoryBody";
+export * from "./createCredentialBody";
+export * from "./credential";
+export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./listCredentialsParams";
+export * from "./loginBody";
+export * from "./messageResponse";
+export * from "./registerBody";
+export * from "./registrationStatus";
+export * from "./settings";
+export * from "./stats";
+export * from "./updateCategoryBody";
+export * from "./updateCredentialBody";
+export * from "./updateSettingsBody";
+export * from "./user";

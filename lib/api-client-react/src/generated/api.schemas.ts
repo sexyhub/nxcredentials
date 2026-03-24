@@ -8,3 +8,116 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export interface MessageResponse {
+  message: string;
+}
+
+export interface RegisterBody {
+  username: string;
+  password: string;
+}
+
+export interface LoginBody {
+  username: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
+export interface User {
+  id: number;
+  username: string;
+  isAdmin: boolean;
+}
+
+export interface AuthResponse {
+  user: User;
+}
+
+export interface Credential {
+  id: number;
+  title: string;
+  email: string;
+  password: string;
+  /** @nullable */
+  categoryId: number | null;
+  /** @nullable */
+  categoryName: string | null;
+  /** @nullable */
+  categoryColor: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCredentialBody {
+  title: string;
+  email: string;
+  password: string;
+  /** @nullable */
+  categoryId?: number | null;
+}
+
+export interface UpdateCredentialBody {
+  title?: string;
+  email?: string;
+  password?: string;
+  /** @nullable */
+  categoryId?: number | null;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  color: string;
+  credentialCount: number;
+}
+
+export interface CreateCategoryBody {
+  name: string;
+  color: string;
+}
+
+export interface UpdateCategoryBody {
+  name?: string;
+  color?: string;
+}
+
+export interface CategoryStat {
+  name: string;
+  count: number;
+  color: string;
+}
+
+export interface Stats {
+  totalCredentials: number;
+  totalCategories: number;
+  recentlyAdded: number;
+  categoryBreakdown: CategoryStat[];
+}
+
+export interface Settings {
+  registrationEnabled: boolean;
+  siteTitle: string;
+  siteLogo: string;
+  siteFavicon: string;
+}
+
+export interface UpdateSettingsBody {
+  registrationEnabled?: boolean;
+  siteTitle?: string;
+  siteLogo?: string;
+  siteFavicon?: string;
+}
+
+export interface RegistrationStatus {
+  enabled: boolean;
+}
+
+export type ListCredentialsParams = {
+  category?: string;
+  search?: string;
+};

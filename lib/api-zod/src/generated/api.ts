@@ -14,3 +14,203 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Register a new user
+ */
+export const RegisterBody = zod.object({
+  username: zod.string(),
+  password: zod.string(),
+});
+
+/**
+ * @summary Log in
+ */
+export const LoginBody = zod.object({
+  username: zod.string(),
+  password: zod.string(),
+  rememberMe: zod.boolean().optional(),
+});
+
+export const LoginResponse = zod.object({
+  user: zod.object({
+    id: zod.number(),
+    username: zod.string(),
+    isAdmin: zod.boolean(),
+  }),
+});
+
+/**
+ * @summary Get current user
+ */
+export const GetMeResponse = zod.object({
+  id: zod.number(),
+  username: zod.string(),
+  isAdmin: zod.boolean(),
+});
+
+/**
+ * @summary Log out
+ */
+export const LogoutResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
+ * @summary List all credentials
+ */
+export const ListCredentialsQueryParams = zod.object({
+  category: zod.coerce.string().optional(),
+  search: zod.coerce.string().optional(),
+});
+
+export const ListCredentialsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  email: zod.string(),
+  password: zod.string(),
+  categoryId: zod.number().nullable(),
+  categoryName: zod.string().nullable(),
+  categoryColor: zod.string().nullable(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+export const ListCredentialsResponse = zod.array(ListCredentialsResponseItem);
+
+/**
+ * @summary Create a credential
+ */
+export const CreateCredentialBody = zod.object({
+  title: zod.string(),
+  email: zod.string(),
+  password: zod.string(),
+  categoryId: zod.number().nullish(),
+});
+
+/**
+ * @summary Update a credential
+ */
+export const UpdateCredentialParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateCredentialBody = zod.object({
+  title: zod.string().optional(),
+  email: zod.string().optional(),
+  password: zod.string().optional(),
+  categoryId: zod.number().nullish(),
+});
+
+export const UpdateCredentialResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  email: zod.string(),
+  password: zod.string(),
+  categoryId: zod.number().nullable(),
+  categoryName: zod.string().nullable(),
+  categoryColor: zod.string().nullable(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Delete a credential
+ */
+export const DeleteCredentialParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all categories
+ */
+export const ListCategoriesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  color: zod.string(),
+  credentialCount: zod.number(),
+});
+export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem);
+
+/**
+ * @summary Create a category
+ */
+export const CreateCategoryBody = zod.object({
+  name: zod.string(),
+  color: zod.string(),
+});
+
+/**
+ * @summary Update a category
+ */
+export const UpdateCategoryParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateCategoryBody = zod.object({
+  name: zod.string().optional(),
+  color: zod.string().optional(),
+});
+
+export const UpdateCategoryResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  color: zod.string(),
+  credentialCount: zod.number(),
+});
+
+/**
+ * @summary Delete a category
+ */
+export const DeleteCategoryParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Get dashboard statistics
+ */
+export const GetStatsResponse = zod.object({
+  totalCredentials: zod.number(),
+  totalCategories: zod.number(),
+  recentlyAdded: zod.number(),
+  categoryBreakdown: zod.array(
+    zod.object({
+      name: zod.string(),
+      count: zod.number(),
+      color: zod.string(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get app settings
+ */
+export const GetSettingsResponse = zod.object({
+  registrationEnabled: zod.boolean(),
+  siteTitle: zod.string(),
+  siteLogo: zod.string(),
+  siteFavicon: zod.string(),
+});
+
+/**
+ * @summary Update app settings (admin only)
+ */
+export const UpdateSettingsBody = zod.object({
+  registrationEnabled: zod.boolean().optional(),
+  siteTitle: zod.string().optional(),
+  siteLogo: zod.string().optional(),
+  siteFavicon: zod.string().optional(),
+});
+
+export const UpdateSettingsResponse = zod.object({
+  registrationEnabled: zod.boolean(),
+  siteTitle: zod.string(),
+  siteLogo: zod.string(),
+  siteFavicon: zod.string(),
+});
+
+/**
+ * @summary Check if registration is enabled (public)
+ */
+export const GetRegistrationStatusResponse = zod.object({
+  enabled: zod.boolean(),
+});
