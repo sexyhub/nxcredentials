@@ -73,12 +73,15 @@ export function Layout({ children }: LayoutProps) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center gap-1.5 pl-2.5 pr-3.5 py-1.5 text-[13px] transition-colors border-l-[1.5px] ${
+                      className={`relative flex items-center gap-1.5 px-3 py-1.5 text-[13px] transition-colors ${
                         isActive
-                          ? "text-foreground font-semibold border-foreground"
-                          : "text-muted-foreground font-medium hover:text-foreground border-transparent"
+                          ? "text-foreground font-semibold"
+                          : "text-muted-foreground font-medium hover:text-foreground"
                       }`}
                     >
+                      {isActive && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[1.5px] h-3 bg-foreground rounded-full" />
+                      )}
                       <item.icon className="w-4 h-4" strokeWidth={isActive ? 2.5 : 2} />
                       {item.label}
                     </Link>
