@@ -12,7 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CopyButton } from "@/components/copy-button";
 import { CredentialModal } from "@/components/credential-modal";
 import { format } from "date-fns";
-import { Plus, Search, Eye, EyeOff, Pencil, Trash2, Key } from "lucide-react";
+import { Plus, Search, Eye, EyeOff, Pencil, Trash2, Key, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
