@@ -68,7 +68,7 @@ export default function Settings() {
 
   return (
     <Layout>
-      <div className="max-w-6xl space-y-8">
+      <div className="w-full max-w-xl space-y-8">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight">Settings</h1>
           <p className="text-muted-foreground text-[15px] mt-1">Vault configuration and access control.</p>

@@ -82,7 +82,7 @@ export function Layout({ children }: LayoutProps) {
                       <item.icon className="w-4 h-4" />
                       {item.label}
                       {isActive && (
-                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-foreground rounded-full" />
+                        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-5/6 h-[2px] bg-foreground rounded-full" />
                       )}
                     </Link>
                   );
@@ -155,7 +155,7 @@ export function Layout({ children }: LayoutProps) {
       </header>
 
       <main className="flex-1">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {children}
         </div>
       </main>
