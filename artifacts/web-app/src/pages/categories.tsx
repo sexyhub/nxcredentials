@@ -10,7 +10,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { CategoryModal } from "@/components/category-modal";
-import { Plus, Pencil, Trash2, Folder } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Categories() {
@@ -26,18 +26,18 @@ export default function Categories() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListCategoriesQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
-        toast({ title: "Category deleted" });
+        toast({ title: "Tag deleted" });
       },
     },
   });
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex justify-end">
           <Button onClick={() => { setSelectedCategory(null); setIsModalOpen(true); }} size="sm" className="h-9 text-[13px] font-semibold">
             <Plus className="w-3.5 h-3.5 mr-1.5" />
-            Add category
+            Add tag
           </Button>
         </div>
 
@@ -45,9 +45,9 @@ export default function Categories() {
           <div className="text-[13px] text-muted-foreground py-14 text-center">Loading...</div>
         ) : categories?.length === 0 ? (
           <div className="border rounded-xl p-16 text-center bg-card">
-            <Folder className="w-8 h-8 text-border mx-auto mb-3" />
-            <p className="text-[15px] font-semibold mb-1">No categories yet</p>
-            <p className="text-[13px] text-muted-foreground">Create your first category to organize credentials.</p>
+            <Tag className="w-8 h-8 text-border mx-auto mb-3" />
+            <p className="text-[15px] font-semibold mb-1">No tags yet</p>
+            <p className="text-[13px] text-muted-foreground">Create your first tag to organize credentials.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -73,10 +73,10 @@ export default function Categories() {
                     <button
                       onClick={() => {
                         if (cat.credentialCount > 0) {
-                          alert(`Can't delete — ${cat.credentialCount} credential(s) use this category.`);
+                          alert(`Can't delete — ${cat.credentialCount} credential(s) use this tag.`);
                           return;
                         }
-                        if (confirm("Delete this category?")) deleteMutation.mutate({ id: cat.id });
+                        if (confirm("Delete this tag?")) deleteMutation.mutate({ id: cat.id });
                       }}
                       className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-accent"
                     >

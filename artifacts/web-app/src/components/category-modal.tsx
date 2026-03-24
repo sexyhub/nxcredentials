@@ -11,8 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -58,7 +56,7 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListCategoriesQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
-        toast({ title: "Category created" });
+        toast({ title: "Tag created" });
         onOpenChange(false);
       },
     },
@@ -69,7 +67,7 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListCategoriesQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
-        toast({ title: "Category updated" });
+        toast({ title: "Tag updated" });
         onOpenChange(false);
       },
     },
@@ -89,10 +87,6 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle className="text-[16px] font-semibold">{isEditing ? "Edit category" : "New category"}</DialogTitle>
-        </DialogHeader>
-
         <form onSubmit={handleSubmit} className="space-y-5 pt-1">
           <div className="space-y-1.5">
             <Label htmlFor="cat-name" className="text-[13px]">Name</Label>
@@ -118,7 +112,7 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
             </div>
             <div className="flex items-center gap-2 p-3 border rounded-lg">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-              <span className="text-[13px] font-medium">{name || "Category"}</span>
+              <span className="text-[13px] font-medium">{name || "Tag"}</span>
             </div>
           </div>
 

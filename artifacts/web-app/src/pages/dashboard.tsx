@@ -1,7 +1,7 @@
 import { useGetStats } from "@workspace/api-client-react";
 import { Layout } from "@/components/layout";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, Plus, ArrowRight, KeyRound, Layers, Clock } from "lucide-react";
+import { Loader2, Plus, ArrowRight, KeyRound, Tag, Clock } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 
@@ -59,10 +59,10 @@ export default function Dashboard() {
           </div>
           <div className="w-px h-8 bg-border hidden sm:block" />
           <div className="flex items-center gap-3">
-            <Layers className="w-5 h-5 text-muted-foreground/60" />
+            <Tag className="w-5 h-5 text-muted-foreground/60" />
             <div>
               <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.totalCategories}</span>
-              <span className="text-muted-foreground text-[13px] ml-1.5">categories</span>
+              <span className="text-muted-foreground text-[13px] ml-1.5">tags</span>
             </div>
           </div>
           <div className="w-px h-8 bg-border hidden sm:block" />
@@ -78,7 +78,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="border rounded-xl bg-card p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[16px] font-bold">Categories</h2>
+              <h2 className="text-[16px] font-bold">Tags</h2>
               <Link href="/categories" className="text-[12px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors">
                 View all <ArrowRight className="w-3 h-3" />
               </Link>
@@ -105,7 +105,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="py-10 text-center">
-                <p className="text-[13px] text-muted-foreground">No categories yet.</p>
+                <p className="text-[13px] text-muted-foreground">No tags yet.</p>
                 <Button asChild variant="outline" size="sm" className="mt-3 h-8 text-[12px]">
                   <Link href="/categories">Create one</Link>
                 </Button>
@@ -118,7 +118,7 @@ export default function Dashboard() {
             <div className="space-y-2">
               {[
                 { label: "Add a new credential", desc: "Store a login or API key", href: "/credentials" },
-                { label: "Create a category", desc: "Organize your credentials", href: "/categories" },
+                { label: "Create a tag", desc: "Organize your credentials", href: "/categories" },
                 ...(user?.isAdmin
                   ? [{ label: "Admin settings", desc: "Registration, branding", href: "/settings" }]
                   : []),

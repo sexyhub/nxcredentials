@@ -12,14 +12,13 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
+import { SERVICE_TYPES, getServiceType } from "@/lib/service-types";
 
 interface CredentialModalProps {
   open: boolean;
@@ -30,7 +29,7 @@ interface CredentialModalProps {
 export function CredentialModal({ open, onOpenChange, credential }: CredentialModalProps) {
   const isEditing = !!credential;
 
-  const [title, setTitle] = useState("");
+  const [typeKey, setTypeKey] = useState("other");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
@@ -42,12 +41,12 @@ export function CredentialModal({ open, onOpenChange, credential }: CredentialMo
   useEffect(() => {
     if (open) {
       if (credential) {
-        setTitle(credential.title);
+        setTypeKey(credential.title || "other");
         setEmail(credential.email);
         setPassword(credential.password);
         setCategoryId(credential.categoryId);
       } else {
-        setTitle("");
+        setTypeKey("other");
         setEmail("");
         setPassword("");
         setCategoryId(null);
@@ -79,17 +78,27 @@ export function CredentialModal({ open, onOpenChange, credential }: CredentialMo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const data = { title: typeKey, email, password, categoryId };
     if (isEditing && credential) {
-      updateMutation.mutate({ id: credential.id, data: { title, email, password, categoryId } });
+      updateMutation.mutate({ id: credential.id, data });
     } else {
-      createMutation.mutate({ data: { title, email, password, categoryId } });
+      createMutation.mutate({ data });
     }
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const categoryOptions = [
-    { value: "none", label: "None" },
+  const typeOptions = SERVICE_TYPES.map((t) => {
+    const Icon = t.icon;
+    return {
+      value: t.key,
+      label: t.label,
+      icon: <Icon className="w-3.5 h-3.5" style={{ color: t.color }} />,
+    };
+  });
+
+  const tagOptions = [
+    { value: "none", label: "No tag" },
     ...(categories?.map((cat) => ({
       value: String(cat.id),
       label: cat.name,
@@ -97,17 +106,22 @@ export function CredentialModal({ open, onOpenChange, credential }: CredentialMo
     })) || []),
   ];
 
+  const selectedType = getServiceType(typeKey);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-[16px] font-semibold">{isEditing ? "Edit credential" : "New credential"}</DialogTitle>
-        </DialogHeader>
-
         <form onSubmit={handleSubmit} className="space-y-4 pt-1">
           <div className="space-y-1.5">
-            <Label htmlFor="cred-title" className="text-[13px]">Title</Label>
-            <Input id="cred-title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Gmail, GitHub" className="h-10 bg-transparent" />
+            <Label className="text-[13px]">Type</Label>
+            <Combobox
+              options={typeOptions}
+              value={typeKey}
+              onValueChange={(val) => setTypeKey(val || "other")}
+              placeholder="Select service type"
+              searchPlaceholder="Search services..."
+              emptyText="No match."
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -122,14 +136,14 @@ export function CredentialModal({ open, onOpenChange, credential }: CredentialMo
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[13px]">Category</Label>
+            <Label className="text-[13px]">Tag</Label>
             <Combobox
-              options={categoryOptions}
+              options={tagOptions}
               value={categoryId ? String(categoryId) : "none"}
               onValueChange={(val) => setCategoryId(val && val !== "none" ? Number(val) : null)}
-              placeholder="Select category"
-              searchPlaceholder="Search..."
-              emptyText="No categories."
+              placeholder="Select tag"
+              searchPlaceholder="Search tags..."
+              emptyText="No tags."
             />
           </div>
 

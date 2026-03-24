@@ -11,11 +11,11 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { CopyButton } from "@/components/copy-button";
 import { CredentialModal } from "@/components/credential-modal";
-import { format } from "date-fns";
 import { Plus, Search, Eye, EyeOff, Pencil, Trash2, Key, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
+import { getServiceType } from "@/lib/service-types";
 
 export default function Credentials() {
   const [search, setSearch] = useState("");
@@ -50,8 +50,8 @@ export default function Credentials() {
     });
   };
 
-  const categoryOptions = [
-    { value: "", label: "All categories" },
+  const tagOptions = [
+    { value: "", label: "All tags" },
     ...(categories?.map((cat) => ({
       value: cat.name,
       label: cat.name,
@@ -61,35 +61,34 @@ export default function Credentials() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex justify-end">
-          <Button onClick={() => { setSelectedCredential(null); setIsModalOpen(true); }} size="sm" className="h-9 text-[13px] font-semibold">
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row gap-2.5 flex-1 w-full">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
+              <Input
+                type="text"
+                placeholder="Search credentials..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 h-10"
+              />
+            </div>
+            <div className="sm:w-[180px]">
+              <Combobox
+                options={tagOptions}
+                value={categoryFilter}
+                onValueChange={setCategoryFilter}
+                placeholder="All tags"
+                searchPlaceholder="Filter..."
+                emptyText="None found."
+              />
+            </div>
+          </div>
+          <Button onClick={() => { setSelectedCredential(null); setIsModalOpen(true); }} size="sm" className="h-9 text-[13px] font-semibold shrink-0">
             <Plus className="w-3.5 h-3.5 mr-1.5" />
-            Add credential
+            Add
           </Button>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-2.5">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
-            <Input
-              type="text"
-              placeholder="Search credentials..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-10"
-            />
-          </div>
-          <div className="sm:w-[200px]">
-            <Combobox
-              options={categoryOptions}
-              value={categoryFilter}
-              onValueChange={setCategoryFilter}
-              placeholder="All categories"
-              searchPlaceholder="Filter..."
-              emptyText="None found."
-            />
-          </div>
         </div>
 
         {isLoading ? (
@@ -104,50 +103,62 @@ export default function Credentials() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
-            {credentials?.map((cred) => (
-              <div key={cred.id} className="border rounded-xl bg-card px-3.5 py-3 group hover:border-foreground/20 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    {cred.categoryName && (
-                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cred.categoryColor || '#999' }} />
-                    )}
-                    <span className="text-[13px] font-bold truncate">{cred.title}</span>
+            {credentials?.map((cred) => {
+              const stype = getServiceType(cred.title);
+              const Icon = stype.icon;
+              return (
+                <div key={cred.id} className="border rounded-xl bg-card px-3.5 py-3 group hover:border-foreground/20 transition-colors">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: stype.color + '18' }}>
+                        <Icon className="w-3.5 h-3.5" style={{ color: stype.color }} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[13px] font-bold block truncate">{stype.label}</span>
+                        {cred.categoryName && (
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cred.categoryColor || '#999' }} />
+                            <span className="text-[10px] text-muted-foreground truncate">{cred.categoryName}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
+                      <button
+                        onClick={() => { setSelectedCredential(cred); setIsModalOpen(true); }}
+                        className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => { if (confirm("Delete this credential?")) deleteMutation.mutate({ id: cred.id }); }}
+                        className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
-                    <button
-                      onClick={() => { setSelectedCredential(cred); setIsModalOpen(true); }}
-                      className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent"
-                    >
-                      <Pencil className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={() => { if (confirm("Delete this credential?")) deleteMutation.mutate({ id: cred.id }); }}
-                      className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[11px] font-mono text-muted-foreground truncate flex-1">{cred.email}</span>
+                      <CopyButton value={cred.email} label="Copy" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <code className="text-[11px] font-mono text-muted-foreground truncate flex-1">
+                        {revealedIds.has(cred.id) ? cred.password : "••••••••"}
+                      </code>
+                      <button
+                        onClick={() => toggleReveal(cred.id)}
+                        className="p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors"
+                      >
+                        {revealedIds.has(cred.id) ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                      </button>
+                      <CopyButton value={cred.password} label="Copy" />
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[11px] font-mono text-muted-foreground truncate flex-1">{cred.email}</span>
-                    <CopyButton value={cred.email} label="Copy" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <code className="text-[11px] font-mono text-muted-foreground truncate flex-1">
-                      {revealedIds.has(cred.id) ? cred.password : "••••••••"}
-                    </code>
-                    <button
-                      onClick={() => toggleReveal(cred.id)}
-                      className="p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors"
-                    >
-                      {revealedIds.has(cred.id) ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                    </button>
-                    <CopyButton value={cred.password} label="Copy" />
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useGetSettings } from "@workspace/api-client-react";
-import { Key, Folder, Settings, LogOut, Loader2, LayoutDashboard, Menu, X, ChevronDown } from "lucide-react";
+import { Key, Tag, Settings, LogOut, Loader2, LayoutDashboard, Menu, X, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 interface LayoutProps {
@@ -40,7 +40,7 @@ export function Layout({ children }: LayoutProps) {
   const navItems = [
     { label: "Dashboard", href: "/", icon: LayoutDashboard },
     { label: "Credentials", href: "/credentials", icon: Key },
-    { label: "Categories", href: "/categories", icon: Folder },
+    { label: "Tags", href: "/categories", icon: Tag },
   ];
 
   if (user?.isAdmin) {
@@ -73,7 +73,7 @@ export function Layout({ children }: LayoutProps) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-lg transition-colors ${
+                      className={`relative flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium transition-colors ${
                         isActive
                           ? "text-foreground"
                           : "text-muted-foreground hover:text-foreground"
@@ -81,6 +81,9 @@ export function Layout({ children }: LayoutProps) {
                     >
                       <item.icon className="w-4 h-4" />
                       {item.label}
+                      {isActive && (
+                        <span className="absolute bottom-[-13px] left-2 right-2 h-[2px] bg-foreground rounded-full" />
+                      )}
                     </Link>
                   );
                 })}
