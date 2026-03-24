@@ -22,12 +22,18 @@ import {
   DialogContent,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, Search, Eye, EyeOff, Pencil, Trash2, Key, Loader2, FolderOpen, X } from "lucide-react";
+import { Plus, Search, Eye, EyeOff, Pencil, Trash2, Key, Loader2, FolderOpen, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
 import { getServiceType, SERVICE_TYPES } from "@/lib/service-types";
+import { SPACE_ICONS, getSpaceIcon } from "@/lib/space-icons";
+
+const SPACE_COLORS = [
+  "#6366f1", "#8B5CF6", "#EC4899", "#EF4444", "#F59E0B",
+  "#10B981", "#06B6D4", "#3B82F6", "#6B7280", "#1F2937"
+];
 
 export default function Credentials() {
   const [search, setSearch] = useState("");
@@ -38,7 +44,7 @@ export default function Credentials() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCredential, setSelectedCredential] = useState<Credential | null>(null);
   const [showSpaceModal, setShowSpaceModal] = useState(false);
-  const [spaceForm, setSpaceForm] = useState({ name: "", defaultType: "" });
+  const [spaceForm, setSpaceForm] = useState({ name: "", defaultType: "", color: "#6366f1", icon: "folder" });
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -74,7 +80,7 @@ export default function Credentials() {
         queryClient.invalidateQueries({ queryKey: getListSpacesQueryKey() });
         toast({ title: "Space created" });
         setShowSpaceModal(false);
-        setSpaceForm({ name: "", defaultType: "" });
+        setSpaceForm({ name: "", defaultType: "", color: "#6366f1", icon: "folder" });
         setActiveSpaceId((data as Space).id);
       },
     },
@@ -130,6 +136,21 @@ export default function Credentials() {
     }),
   ];
 
+  const handleTypeChange = (val: string) => {
+    const newType = val || "";
+    const updates: any = { defaultType: newType };
+    if (newType) {
+      const st = getServiceType(newType);
+      updates.color = st.color;
+      const iconMatch = SPACE_ICONS.find((i) => {
+        const stIcon = st.icon;
+        return i.icon === stIcon;
+      });
+      updates.icon = iconMatch?.key || "folder";
+    }
+    setSpaceForm((prev) => ({ ...prev, ...updates }));
+  };
+
   const renderCredCard = (cred: Credential) => {
     const stype = getServiceType(cred.title);
     const Icon = stype.icon;
@@ -178,42 +199,72 @@ export default function Credentials() {
     );
   };
 
+  const SpaceFormIcon = getSpaceIcon(spaceForm.icon);
+
   return (
     <Layout>
       <div className="space-y-4">
-        {spaces && spaces.length > 0 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {(spaces && spaces.length > 0) && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             <button
               onClick={() => setActiveSpaceId(null)}
-              className={`shrink-0 px-3 py-1.5 text-[12px] font-semibold rounded-lg transition-colors ${
-                !activeSpaceId ? "bg-foreground text-background" : "bg-accent text-muted-foreground hover:text-foreground"
+              className={`border rounded-xl bg-card px-3 py-2.5 text-left transition-all ${
+                !activeSpaceId ? "border-foreground/30 ring-1 ring-foreground/10" : "hover:border-foreground/20"
               }`}
             >
-              All
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-accent">
+                  <LayoutGrid className="w-3.5 h-3.5 text-muted-foreground" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[12px] font-bold truncate">All</div>
+                  <div className="text-[10px] text-muted-foreground">{allCredentials?.filter(c => !c.vaultId).length || 0}</div>
+                </div>
+              </div>
             </button>
+
             {spaces.map((space) => {
               const isActive = activeSpaceId === space.id;
-              const stype = space.defaultType ? getServiceType(space.defaultType) : null;
-              const SpaceIcon = stype?.icon;
+              const SpaceIcon = getSpaceIcon(space.icon);
+              const spaceColor = space.color || "#6366f1";
               return (
                 <button
                   key={space.id}
-                  onClick={() => setActiveSpaceId(space.id)}
-                  className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-lg transition-colors ${
-                    isActive ? "bg-foreground text-background" : "bg-accent text-muted-foreground hover:text-foreground"
+                  onClick={() => setActiveSpaceId(isActive ? null : space.id)}
+                  className={`border rounded-xl bg-card px-3 py-2.5 text-left transition-all group relative ${
+                    isActive ? "ring-1" : "hover:border-foreground/20"
                   }`}
+                  style={isActive ? { borderColor: spaceColor + '60', ringColor: spaceColor + '30' } : undefined}
                 >
-                  {SpaceIcon && <SpaceIcon className="w-3 h-3" style={{ color: isActive ? undefined : stype?.color }} />}
-                  {space.name}
-                  <span className="text-[10px] opacity-60">{space.credentialCount}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: spaceColor + '18' }}>
+                      <SpaceIcon className="w-3.5 h-3.5" style={{ color: spaceColor }} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[12px] font-bold truncate">{space.name}</div>
+                      <div className="text-[10px] text-muted-foreground">{space.credentialCount}</div>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); if (confirm(`Delete space "${space.name}"? Credentials will remain but become unassigned.`)) deleteSpaceMutation.mutate({ id: space.id }); }}
+                      className="p-0.5 text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-destructive transition-colors rounded shrink-0"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
                 </button>
               );
             })}
+
             <button
               onClick={() => setShowSpaceModal(true)}
-              className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
+              className="border border-dashed rounded-xl px-3 py-2.5 text-left hover:border-foreground/20 hover:bg-accent/30 transition-all"
             >
-              <Plus className="w-3 h-3" /> Space
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-accent/50">
+                  <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                </div>
+                <div className="text-[12px] font-medium text-muted-foreground">New space</div>
+              </div>
             </button>
           </div>
         )}
@@ -242,27 +293,6 @@ export default function Credentials() {
             </Button>
           </div>
         </div>
-
-        {activeSpace && (
-          <div className="flex items-center gap-2 text-[13px]">
-            <FolderOpen className="w-4 h-4 text-muted-foreground" />
-            <span className="font-semibold">{activeSpace.name}</span>
-            {activeSpace.defaultType && (
-              <span className="text-[11px] bg-accent px-1.5 py-0.5 rounded text-muted-foreground">
-                Default: {getServiceType(activeSpace.defaultType).label}
-              </span>
-            )}
-            <button onClick={() => setActiveSpaceId(null)} className="p-0.5 text-muted-foreground hover:text-foreground">
-              <X className="w-3 h-3" />
-            </button>
-            <button
-              onClick={() => { if (confirm(`Delete space "${activeSpace.name}"? Credentials will remain but become unassigned.`)) deleteSpaceMutation.mutate({ id: activeSpace.id }); }}
-              className="p-0.5 text-muted-foreground hover:text-destructive ml-auto"
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
-          </div>
-        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
@@ -295,17 +325,19 @@ export default function Credentials() {
         <DialogContent className="sm:max-w-sm">
           <form onSubmit={(e) => {
             e.preventDefault();
-            const data: any = { name: spaceForm.name };
-            if (spaceForm.defaultType) {
-              data.defaultType = spaceForm.defaultType;
-              const st = getServiceType(spaceForm.defaultType);
-              data.color = st.color;
-              data.icon = spaceForm.defaultType;
-            }
-            createSpaceMutation.mutate({ data });
+            createSpaceMutation.mutate({
+              data: {
+                name: spaceForm.name,
+                defaultType: spaceForm.defaultType || undefined,
+                color: spaceForm.color,
+                icon: spaceForm.icon,
+              }
+            });
           }} className="space-y-4 pt-1">
             <div className="flex flex-col items-center gap-2 pb-2">
-              <FolderOpen className="w-8 h-8 text-muted-foreground" />
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: spaceForm.color + '18' }}>
+                <SpaceFormIcon className="w-6 h-6" style={{ color: spaceForm.color }} />
+              </div>
               <h3 className="text-[16px] font-bold">New space</h3>
             </div>
 
@@ -319,7 +351,7 @@ export default function Credentials() {
               <Combobox
                 options={spaceTypeOptions}
                 value={spaceForm.defaultType}
-                onValueChange={(val) => setSpaceForm({ ...spaceForm, defaultType: val || "" })}
+                onValueChange={handleTypeChange}
                 placeholder="None — choose per credential"
                 searchPlaceholder="Search types..."
                 emptyText="No match."
@@ -327,6 +359,36 @@ export default function Credentials() {
               <p className="text-[11px] text-muted-foreground">
                 If set, new credentials in this space will use this type by default.
               </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-[13px]">Color</Label>
+              <div className="flex gap-2 flex-wrap">
+                {SPACE_COLORS.map((c) => (
+                  <button key={c} type="button" onClick={() => setSpaceForm({ ...spaceForm, color: c })}
+                    className={`w-6 h-6 rounded-lg transition-all ${spaceForm.color === c ? "ring-2 ring-offset-2 ring-foreground scale-110" : "hover:scale-105"}`}
+                    style={{ backgroundColor: c }} />
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-[13px]">Icon</Label>
+              <div className="flex gap-1.5 flex-wrap">
+                {SPACE_ICONS.map((si) => {
+                  const SIcon = si.icon;
+                  const isSelected = spaceForm.icon === si.key;
+                  return (
+                    <button key={si.key} type="button" onClick={() => setSpaceForm({ ...spaceForm, icon: si.key })}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                        isSelected ? "ring-2 ring-offset-1 ring-foreground bg-accent" : "hover:bg-accent/50"
+                      }`}
+                    >
+                      <SIcon className="w-4 h-4" style={{ color: isSelected ? spaceForm.color : undefined }} />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <DialogFooter className="pt-2 gap-2">
