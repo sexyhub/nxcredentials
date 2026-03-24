@@ -6,6 +6,7 @@ import {
   useListSpaces,
   useDeleteCredential,
   useCreateSpace,
+  useUpdateSpace,
   useDeleteSpace,
   getListCredentialsQueryKey,
   getGetStatsQueryKey,
@@ -44,6 +45,7 @@ export default function Credentials() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCredential, setSelectedCredential] = useState<Credential | null>(null);
   const [showSpaceModal, setShowSpaceModal] = useState(false);
+  const [editingSpace, setEditingSpace] = useState<Space | null>(null);
   const [spaceForm, setSpaceForm] = useState({ name: "", defaultType: "", color: "#6366f1", icon: "folder" });
 
   const queryClient = useQueryClient();
@@ -80,8 +82,21 @@ export default function Credentials() {
         queryClient.invalidateQueries({ queryKey: getListSpacesQueryKey() });
         toast({ title: "Space created" });
         setShowSpaceModal(false);
+        setEditingSpace(null);
         setSpaceForm({ name: "", defaultType: "", color: "#6366f1", icon: "folder" });
         setActiveSpaceId((data as Space).id);
+      },
+    },
+  });
+
+  const updateSpaceMutation = useUpdateSpace({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListSpacesQueryKey() });
+        toast({ title: "Space updated" });
+        setShowSpaceModal(false);
+        setEditingSpace(null);
+        setSpaceForm({ name: "", defaultType: "", color: "#6366f1", icon: "folder" });
       },
     },
   });
@@ -138,17 +153,30 @@ export default function Credentials() {
 
   const handleTypeChange = (val: string) => {
     const newType = val || "";
-    const updates: any = { defaultType: newType };
     if (newType) {
       const st = getServiceType(newType);
-      updates.color = st.color;
-      const iconMatch = SPACE_ICONS.find((i) => {
-        const stIcon = st.icon;
-        return i.icon === stIcon;
-      });
-      updates.icon = iconMatch?.key || "folder";
+      const iconMatch = SPACE_ICONS.find((i) => i.icon === st.icon);
+      setSpaceForm((prev) => ({ ...prev, defaultType: newType, color: st.color, icon: iconMatch?.key || "folder" }));
+    } else {
+      setSpaceForm((prev) => ({ ...prev, defaultType: newType }));
     }
-    setSpaceForm((prev) => ({ ...prev, ...updates }));
+  };
+
+  const openEditSpace = (space: Space) => {
+    setEditingSpace(space);
+    setSpaceForm({
+      name: space.name,
+      defaultType: space.defaultType || "",
+      color: space.color || "#6366f1",
+      icon: space.icon || "folder",
+    });
+    setShowSpaceModal(true);
+  };
+
+  const openCreateSpace = () => {
+    setEditingSpace(null);
+    setSpaceForm({ name: "", defaultType: "", color: "#6366f1", icon: "folder" });
+    setShowSpaceModal(true);
   };
 
   const renderCredCard = (cred: Credential) => {
@@ -244,19 +272,27 @@ export default function Credentials() {
                       <div className="text-[12px] font-bold truncate">{space.name}</div>
                       <div className="text-[10px] text-muted-foreground">{space.credentialCount}</div>
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); if (confirm(`Delete space "${space.name}"? Credentials will remain but become unassigned.`)) deleteSpaceMutation.mutate({ id: space.id }); }}
-                      className="p-0.5 text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-destructive transition-colors rounded shrink-0"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
+                    <div className="flex gap-0 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openEditSpace(space); }}
+                        className="p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors rounded"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); if (confirm(`Delete space "${space.name}"? Credentials will remain but become unassigned.`)) deleteSpaceMutation.mutate({ id: space.id }); }}
+                        className="p-0.5 text-muted-foreground/40 hover:text-destructive transition-colors rounded"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
                 </button>
               );
             })}
 
             <button
-              onClick={() => setShowSpaceModal(true)}
+              onClick={openCreateSpace}
               className="border border-dashed rounded-xl px-3 py-2.5 text-left hover:border-foreground/20 hover:bg-accent/30 transition-all"
             >
               <div className="flex items-center gap-2">
@@ -284,7 +320,7 @@ export default function Credentials() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {!spaces?.length && (
-              <Button variant="outline" onClick={() => setShowSpaceModal(true)} size="sm" className="h-9 text-[13px] font-semibold">
+              <Button variant="outline" onClick={openCreateSpace} size="sm" className="h-9 text-[13px] font-semibold">
                 <FolderOpen className="w-3.5 h-3.5 mr-1.5" /> New space
               </Button>
             )}
@@ -325,20 +361,23 @@ export default function Credentials() {
         <DialogContent className="sm:max-w-sm">
           <form onSubmit={(e) => {
             e.preventDefault();
-            createSpaceMutation.mutate({
-              data: {
-                name: spaceForm.name,
-                defaultType: spaceForm.defaultType || undefined,
-                color: spaceForm.color,
-                icon: spaceForm.icon,
-              }
-            });
+            const payload = {
+              name: spaceForm.name,
+              defaultType: spaceForm.defaultType || undefined,
+              color: spaceForm.color,
+              icon: spaceForm.icon,
+            };
+            if (editingSpace) {
+              updateSpaceMutation.mutate({ id: editingSpace.id, data: payload });
+            } else {
+              createSpaceMutation.mutate({ data: payload });
+            }
           }} className="space-y-4 pt-1">
             <div className="flex flex-col items-center gap-2 pb-2">
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: spaceForm.color + '18' }}>
                 <SpaceFormIcon className="w-6 h-6" style={{ color: spaceForm.color }} />
               </div>
-              <h3 className="text-[16px] font-bold">New space</h3>
+              <h3 className="text-[16px] font-bold">{editingSpace ? "Edit space" : "New space"}</h3>
             </div>
 
             <div className="space-y-1.5">
@@ -392,9 +431,11 @@ export default function Credentials() {
             </div>
 
             <DialogFooter className="pt-2 gap-2">
-              <Button type="button" variant="outline" onClick={() => setShowSpaceModal(false)} className="h-9 text-[13px]">Cancel</Button>
-              <Button type="submit" disabled={createSpaceMutation.isPending} className="h-9 text-[13px]">
-                {createSpaceMutation.isPending ? "Creating..." : "Create space"}
+              <Button type="button" variant="outline" onClick={() => { setShowSpaceModal(false); setEditingSpace(null); }} className="h-9 text-[13px]">Cancel</Button>
+              <Button type="submit" disabled={editingSpace ? updateSpaceMutation.isPending : createSpaceMutation.isPending} className="h-9 text-[13px]">
+                {editingSpace
+                  ? (updateSpaceMutation.isPending ? "Saving..." : "Save changes")
+                  : (createSpaceMutation.isPending ? "Creating..." : "Create space")}
               </Button>
             </DialogFooter>
           </form>
