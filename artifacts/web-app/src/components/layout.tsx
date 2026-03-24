@@ -80,7 +80,7 @@ export function Layout({ children }: LayoutProps) {
                       }`}
                     >
                       {isActive && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[1.5px] h-3 bg-foreground rounded-full" />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-3 bg-foreground rounded-full" />
                       )}
                       <item.icon className="w-4 h-4" strokeWidth={isActive ? 2.5 : 2} />
                       {item.label}
