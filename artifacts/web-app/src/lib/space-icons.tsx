@@ -42,6 +42,17 @@ export const SPACE_ICONS: SpaceIcon[] = [
   { key: "wifi", icon: Wifi },
 ];
 
+const LEGACY_KEY_MAP: Record<string, string> = {
+  "Mail": "mail", "Shield": "shield", "Cloud": "cloud", "Code2": "code",
+  "Tv": "tv", "Music": "music", "MessageCircle": "message", "Camera": "camera",
+  "Briefcase": "briefcase", "Hash": "hash", "ShoppingCart": "cart",
+  "CreditCard": "card", "Gamepad2": "game", "Globe": "globe", "Lock": "lock",
+  "Server": "server", "Database": "database", "Phone": "phone", "Video": "video",
+  "BookOpen": "book", "Plane": "plane", "Heart": "heart", "Cpu": "cpu", "Wifi": "wifi",
+  "FolderOpen": "folder", "Star": "star", "Bookmark": "bookmark", "Archive": "archive",
+};
+
 export function getSpaceIcon(key: string): LucideIcon {
-  return SPACE_ICONS.find((i) => i.key === key)?.icon || FolderOpen;
+  const resolved = LEGACY_KEY_MAP[key] || key;
+  return SPACE_ICONS.find((i) => i.key === resolved)?.icon || FolderOpen;
 }

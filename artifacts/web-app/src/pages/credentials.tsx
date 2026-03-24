@@ -232,7 +232,7 @@ export default function Credentials() {
   return (
     <Layout>
       <div className="space-y-4">
-        {(spaces && spaces.length > 0) && (
+        {spaces && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             <button
               onClick={() => setActiveSpaceId(null)}
