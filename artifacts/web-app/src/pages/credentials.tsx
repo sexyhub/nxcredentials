@@ -15,19 +15,24 @@ import { Plus, Search, Eye, EyeOff, Pencil, Trash2, Key, Loader2 } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
-import { getServiceType } from "@/lib/service-types";
+import { getServiceType, SERVICE_TYPES } from "@/lib/service-types";
 
 export default function Credentials() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCredential, setSelectedCredential] = useState<Credential | null>(null);
 
-  const { data: credentials, isLoading } = useListCredentials({
+  const { data: allCredentials, isLoading } = useListCredentials({
     search: search || undefined,
     category: categoryFilter || undefined,
   });
+
+  const credentials = typeFilter
+    ? allCredentials?.filter((cred) => getServiceType(cred.title).key === typeFilter)
+    : allCredentials;
 
   const { data: categories } = useListCategories();
   const queryClient = useQueryClient();
@@ -59,6 +64,21 @@ export default function Credentials() {
     })) || []),
   ];
 
+  const usedTypeKeys = new Set(allCredentials?.map((c) => getServiceType(c.title).key) || []);
+  const typeOptions = [
+    { value: "", label: "All types" },
+    ...SERVICE_TYPES
+      .filter((t) => usedTypeKeys.has(t.key))
+      .map((t) => {
+        const Icon = t.icon;
+        return {
+          value: t.key,
+          label: t.label,
+          icon: <Icon className="w-3.5 h-3.5" style={{ color: t.color }} />,
+        };
+      }),
+  ];
+
   return (
     <Layout>
       <div className="space-y-4">
@@ -76,11 +96,21 @@ export default function Credentials() {
             </div>
             <div className="sm:w-[180px]">
               <Combobox
+                options={typeOptions}
+                value={typeFilter}
+                onValueChange={setTypeFilter}
+                placeholder="All types"
+                searchPlaceholder="Filter type..."
+                emptyText="None found."
+              />
+            </div>
+            <div className="sm:w-[180px]">
+              <Combobox
                 options={tagOptions}
                 value={categoryFilter}
                 onValueChange={setCategoryFilter}
                 placeholder="All tags"
-                searchPlaceholder="Filter..."
+                searchPlaceholder="Filter tag..."
                 emptyText="None found."
               />
             </div>

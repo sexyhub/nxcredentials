@@ -82,7 +82,7 @@ export function Layout({ children }: LayoutProps) {
                       <item.icon className="w-4 h-4" />
                       {item.label}
                       {isActive && (
-                        <span className="absolute bottom-[-13px] left-2 right-2 h-[2px] bg-foreground rounded-full" />
+                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-foreground rounded-full" />
                       )}
                     </Link>
                   );
