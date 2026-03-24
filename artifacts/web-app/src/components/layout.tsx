@@ -66,24 +66,21 @@ export function Layout({ children }: LayoutProps) {
                 <span className="text-[15px] font-bold hidden sm:inline">{siteTitle}</span>
               </Link>
 
-              <nav className="hidden md:flex items-center gap-1">
+              <nav className="hidden md:flex items-center gap-0.5">
                 {navItems.map((item) => {
                   const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`relative flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all ${
                         isActive
-                          ? "text-foreground"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "bg-foreground text-background"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
                       }`}
                     >
-                      <item.icon className="w-4 h-4" />
+                      <item.icon className="w-3.5 h-3.5" />
                       {item.label}
-                      {isActive && (
-                        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-5/6 h-[2px] bg-foreground rounded-full" />
-                      )}
                     </Link>
                   );
                 })}
