@@ -91,25 +91,17 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Edit category" : "New category"}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? "Edit category" : "New category"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1.5">
-            <Label htmlFor="cat-name">Name</Label>
-            <Input
-              id="cat-name"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Work, Social, Finance"
-            />
+            <Label htmlFor="cat-name" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</Label>
+            <Input id="cat-name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Work, Social" className="h-10" />
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Color</Label>
+          <div className="space-y-2">
+            <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Color</Label>
             <div className="grid grid-cols-6 gap-2">
               {COLORS.map((c) => (
                 <button
@@ -117,10 +109,8 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
                   type="button"
                   onClick={() => setColor(c)}
                   className={cn(
-                    "w-full aspect-square rounded-lg flex items-center justify-center transition-all border-2",
-                    color === c
-                      ? "border-foreground scale-105"
-                      : "border-transparent hover:scale-105"
+                    "w-full aspect-square flex items-center justify-center transition-all border-2",
+                    color === c ? "border-foreground" : "border-transparent hover:border-border"
                   )}
                   style={{ backgroundColor: c }}
                 >
@@ -128,25 +118,17 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2 mt-3 p-2.5 rounded-lg bg-accent/50 border border-border">
-              <div className="w-3 h-3 rounded" style={{ backgroundColor: color }} />
+            <div className="flex items-center gap-2.5 mt-3 p-3 border bg-muted/30">
+              <div className="w-3 h-3" style={{ backgroundColor: color }} />
               <span className="text-xs text-muted-foreground">
-                Preview: <span className="font-medium text-foreground">{name || "Category name"}</span>
+                <span className="font-medium text-foreground">{name || "Category"}</span>
               </span>
             </div>
           </div>
 
           <DialogFooter className="pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : "Save"}
-            </Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" disabled={isPending}>{isPending ? "Saving..." : "Save"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

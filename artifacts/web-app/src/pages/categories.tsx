@@ -12,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { CategoryModal } from "@/components/category-modal";
 import { Plus, Edit, Trash2, Folder } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 
 export default function Categories() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,102 +31,80 @@ export default function Categories() {
     },
   });
 
-  const handleEdit = (cat: Category) => {
-    setSelectedCategory(cat);
-    setIsModalOpen(true);
-  };
-
-  const handleAdd = () => {
-    setSelectedCategory(null);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (id: number, count: number) => {
-    if (count > 0) {
-      alert(`Cannot delete: this category has ${count} credential(s). Reassign them first.`);
-      return;
-    }
-    if (confirm("Delete this category?")) {
-      deleteMutation.mutate({ id });
-    }
-  };
-
   return (
     <Layout>
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">Categories</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Organize your credentials into groups</p>
+            <h1 className="text-2xl font-bold tracking-tight">Categories</h1>
+            <p className="text-sm text-muted-foreground mt-1">Organize credentials into groups</p>
           </div>
-          <Button onClick={handleAdd} size="sm">
+          <Button onClick={() => { setSelectedCategory(null); setIsModalOpen(true); }} size="sm">
             <Plus className="w-4 h-4 mr-1.5" />
             Add category
           </Button>
         </div>
 
         {isLoading ? (
-          <div className="text-sm text-muted-foreground py-8 text-center">Loading categories...</div>
+          <div className="text-sm text-muted-foreground py-12 text-center">Loading...</div>
         ) : categories?.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Folder className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-sm font-medium mb-1">No categories yet</p>
-            <p className="text-sm text-muted-foreground mb-4">Create a category to start organizing your credentials.</p>
-            <Button onClick={handleAdd} size="sm" variant="outline">
-              <Plus className="w-4 h-4 mr-1.5" />
-              Create first category
-            </Button>
-          </Card>
+          <div className="border border-dashed p-16 text-center">
+            <Folder className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">No categories yet</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {categories?.map((cat) => (
-              <Card
-                key={cat.id}
-                className="p-4 group hover:shadow-sm transition-shadow cursor-default"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className="w-3.5 h-3.5 rounded flex-shrink-0"
-                      style={{ backgroundColor: cat.color }}
-                    />
-                    <div className="min-w-0">
-                      <h3 className="text-[13px] font-medium truncate">{cat.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {cat.credentialCount} credential{cat.credentialCount !== 1 ? "s" : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => handleEdit(cat)}
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 hover:text-destructive"
-                      onClick={() => handleDelete(cat.id, cat.credentialCount)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
+          <div className="border bg-card overflow-hidden">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b bg-muted/40">
+                  <th className="px-4 py-2.5 text-[10px] font-mono font-medium uppercase tracking-widest text-muted-foreground">Color</th>
+                  <th className="px-4 py-2.5 text-[10px] font-mono font-medium uppercase tracking-widest text-muted-foreground">Name</th>
+                  <th className="px-4 py-2.5 text-[10px] font-mono font-medium uppercase tracking-widest text-muted-foreground text-right">Credentials</th>
+                  <th className="px-4 py-2.5 w-[80px]"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {categories?.map((cat) => (
+                  <tr key={cat.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors group">
+                    <td className="px-4 py-3">
+                      <div className="w-4 h-4" style={{ backgroundColor: cat.color }} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-[13px] font-medium">{cat.name}</span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="text-[13px] font-mono text-muted-foreground">{cat.credentialCount}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSelectedCategory(cat); setIsModalOpen(true); }}>
+                          <Edit className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 hover:text-destructive"
+                          onClick={() => {
+                            if (cat.credentialCount > 0) {
+                              alert(`Cannot delete: ${cat.credentialCount} credential(s) assigned.`);
+                              return;
+                            }
+                            if (confirm("Delete this category?")) deleteMutation.mutate({ id: cat.id });
+                          }}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
 
-      <CategoryModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        category={selectedCategory}
-      />
+      <CategoryModal open={isModalOpen} onOpenChange={setIsModalOpen} category={selectedCategory} />
     </Layout>
   );
 }

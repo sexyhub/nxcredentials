@@ -21,7 +21,7 @@ export default function Register() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-        toast({ title: "Account created successfully" });
+        toast({ title: "Account created" });
         setLocation("/");
       },
       onError: (error: any) => {
@@ -43,14 +43,12 @@ export default function Register() {
 
   if (regStatus && !regStatus.enabled) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-        <div className="w-full max-w-[380px] bg-card border border-border rounded-xl p-8 text-center shadow-sm">
-          <div className="w-11 h-11 rounded-xl bg-destructive/10 flex items-center justify-center mx-auto mb-3">
-            <ShieldAlert className="w-5 h-5 text-destructive" />
-          </div>
-          <h1 className="text-lg font-semibold mb-1.5">Registration Closed</h1>
-          <p className="text-sm text-muted-foreground mb-5">New account registration has been disabled by the administrator.</p>
-          <Button asChild className="w-full">
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-[360px] border p-8 text-center">
+          <ShieldAlert className="w-8 h-8 mx-auto mb-4 text-destructive" />
+          <h1 className="text-lg font-bold mb-2">Registration Closed</h1>
+          <p className="text-sm text-muted-foreground mb-6">The administrator has disabled new registrations.</p>
+          <Button asChild className="w-full h-11">
             <Link href="/login">Back to Sign In</Link>
           </Button>
         </div>
@@ -59,59 +57,59 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <div className="w-full max-w-[380px]">
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center mb-3">
-            <UserPlus className="w-5 h-5 text-primary-foreground" />
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-[360px]">
+        <div className="mb-8">
+          <div className="w-10 h-10 bg-foreground flex items-center justify-center mb-6">
+            <UserPlus className="w-5 h-5 text-background" />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight">Create your account</h1>
-          <p className="text-sm text-muted-foreground mt-1">Get started with Credential Vault</p>
+          <h1 className="text-2xl font-bold tracking-tight">Create account</h1>
+          <p className="text-sm text-muted-foreground mt-1">Set up your credential vault</p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Choose a username"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a password"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={registerMutation.isPending}
-            >
-              {registerMutation.isPending ? "Creating account..." : "Create account"}
-            </Button>
-          </form>
-
-          <div className="mt-5 pt-4 border-t border-border text-center">
-            <p className="text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/login" className="text-foreground font-medium hover:underline underline-offset-4">
-                Sign in
-              </Link>
-            </p>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="username" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Username</Label>
+            <Input
+              id="username"
+              type="text"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Choose a username"
+              className="h-11"
+            />
           </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Create a password"
+              className="h-11"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full h-11"
+            disabled={registerMutation.isPending}
+          >
+            {registerMutation.isPending ? "Creating..." : "Create account"}
+          </Button>
+        </form>
+
+        <div className="mt-8 pt-6 border-t text-center">
+          <span className="text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link href="/login" className="text-foreground font-medium underline underline-offset-4">
+              Sign in
+            </Link>
+          </span>
         </div>
       </div>
     </div>

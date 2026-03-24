@@ -23,7 +23,6 @@ export default function Login() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-        toast({ title: "Welcome back" });
         setLocation("/");
       },
       onError: (error: any) => {
@@ -42,70 +41,97 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <div className="w-full max-w-[380px]">
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center mb-3">
-            <Lock className="w-5 h-5 text-primary-foreground" />
+    <div className="min-h-screen flex">
+      <div className="hidden lg:flex lg:w-1/2 bg-foreground items-center justify-center p-12">
+        <div className="max-w-md">
+          <div className="w-12 h-12 border border-white/20 flex items-center justify-center mb-8">
+            <Lock className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight">Sign in to Credential Vault</h1>
-          <p className="text-sm text-muted-foreground mt-1">Securely access your saved credentials</p>
+          <h2 className="text-4xl font-bold text-white tracking-tight leading-tight mb-4">
+            Your credentials,<br />locked down.
+          </h2>
+          <p className="text-white/50 text-sm leading-relaxed">
+            A secure vault for all your passwords, keys, and sensitive data. Zero-knowledge, session-based authentication.
+          </p>
+          <div className="mt-12 flex gap-4">
+            <div className="border border-white/10 px-3 py-2">
+              <div className="text-xs text-white/40 font-mono">ENCRYPTED</div>
+            </div>
+            <div className="border border-white/10 px-3 py-2">
+              <div className="text-xs text-white/40 font-mono">SESSION-BASED</div>
+            </div>
+            <div className="border border-white/10 px-3 py-2">
+              <div className="text-xs text-white/40 font-mono">SELF-HOSTED</div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-[360px]">
+          <div className="mb-8">
+            <div className="lg:hidden w-10 h-10 bg-foreground flex items-center justify-center mb-6">
+              <Lock className="w-5 h-5 text-background" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
+            <p className="text-sm text-muted-foreground mt-1">Enter your credentials to access the vault</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Username</Label>
               <Input
                 id="username"
                 type="text"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
+                placeholder="Enter username"
+                className="h-11"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Password</Label>
               <Input
                 id="password"
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="Enter password"
+                className="h-11"
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <Checkbox
                 id="remember"
                 checked={rememberMe}
                 onCheckedChange={(checked) => setRememberMe(checked === true)}
               />
               <Label htmlFor="remember" className="text-sm font-normal cursor-pointer text-muted-foreground">
-                Remember me for 30 days
+                Keep me signed in for 30 days
               </Label>
             </div>
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-11"
               disabled={loginMutation.isPending}
             >
-              {loginMutation.isPending ? "Signing in..." : "Sign in"}
+              {loginMutation.isPending ? "Authenticating..." : "Sign in"}
             </Button>
           </form>
 
           {regStatus?.enabled && (
-            <div className="mt-5 pt-4 border-t border-border text-center">
-              <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link href="/register" className="text-foreground font-medium hover:underline underline-offset-4">
-                  Create one
+            <div className="mt-8 pt-6 border-t text-center">
+              <span className="text-sm text-muted-foreground">
+                No account?{" "}
+                <Link href="/register" className="text-foreground font-medium underline underline-offset-4">
+                  Register
                 </Link>
-              </p>
+              </span>
             </div>
           )}
         </div>
