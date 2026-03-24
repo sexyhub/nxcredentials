@@ -265,7 +265,7 @@ export default function Credentials() {
                   className={`border rounded-xl bg-card px-3 py-2.5 text-left transition-all group relative cursor-pointer ${
                     isActive ? "ring-1" : "hover:border-foreground/20"
                   }`}
-                  style={isActive ? { borderColor: spaceColor + '60', ringColor: spaceColor + '30' } : undefined}
+                  style={isActive ? { borderColor: spaceColor + '60', '--tw-ring-color': spaceColor + '30' } as React.CSSProperties : undefined}
                 >
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: spaceColor + '18' }}>

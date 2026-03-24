@@ -1,7 +1,8 @@
 import {
   FolderOpen, Briefcase, Globe, Code2, Mail, Shield,
   CreditCard, Gamepad2, Heart, Star, Bookmark, Archive,
-  Music, Camera, Phone, Plane, BookOpen, Cpu, Server, Hash
+  Music, Camera, Phone, Plane, BookOpen, Cpu, Server, Hash,
+  Cloud, Tv, MessageCircle, ShoppingCart, Database, Video, Lock, Wifi
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -31,6 +32,14 @@ export const SPACE_ICONS: SpaceIcon[] = [
   { key: "cpu", icon: Cpu },
   { key: "server", icon: Server },
   { key: "hash", icon: Hash },
+  { key: "cloud", icon: Cloud },
+  { key: "tv", icon: Tv },
+  { key: "message", icon: MessageCircle },
+  { key: "cart", icon: ShoppingCart },
+  { key: "database", icon: Database },
+  { key: "video", icon: Video },
+  { key: "lock", icon: Lock },
+  { key: "wifi", icon: Wifi },
 ];
 
 export function getSpaceIcon(key: string): LucideIcon {
