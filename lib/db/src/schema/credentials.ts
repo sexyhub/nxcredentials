@@ -1,8 +1,10 @@
-import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { usersTable } from "./users";
 import { categoriesTable } from "./categories";
+import { vaultsTable } from "./vaults";
+import { spacesTable } from "./spaces";
 
 export const credentialsTable = pgTable("credentials", {
   id: serial("id").primaryKey(),
@@ -11,7 +13,8 @@ export const credentialsTable = pgTable("credentials", {
   password: text("password").notNull(),
   userId: integer("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
   categoryId: integer("category_id").references(() => categoriesTable.id, { onDelete: "set null" }),
-  isVault: boolean("is_vault").notNull().default(false),
+  vaultId: integer("vault_id").references(() => vaultsTable.id, { onDelete: "cascade" }),
+  spaceId: integer("space_id").references(() => spacesTable.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

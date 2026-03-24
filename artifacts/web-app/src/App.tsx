@@ -10,6 +10,7 @@ import Dashboard from "@/pages/dashboard";
 import Credentials from "@/pages/credentials";
 import Categories from "@/pages/categories";
 import Settings from "@/pages/settings";
+import Vault from "@/pages/vault";
 
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
@@ -45,6 +46,7 @@ function Router() {
       {/* Protected Routes */}
       <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/credentials" component={() => <ProtectedRoute component={Credentials} />} />
+      <Route path="/vault" component={() => <ProtectedRoute component={Vault} />} />
       <Route path="/categories" component={() => <ProtectedRoute component={Categories} />} />
       <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
       

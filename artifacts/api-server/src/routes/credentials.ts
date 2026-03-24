@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, and, ilike, or, sql } from "drizzle-orm";
-import { db, credentialsTable, categoriesTable } from "@workspace/db";
+import { eq, and, ilike, or, sql, isNull } from "drizzle-orm";
+import { db, credentialsTable, categoriesTable, spacesTable } from "@workspace/db";
 import {
   ListCredentialsQueryParams,
   ListCredentialsResponse,
@@ -10,7 +10,8 @@ import {
   UpdateCredentialResponse,
   DeleteCredentialParams,
 } from "@workspace/api-zod";
-import { requireAuth, isVaultSessionActive } from "../middlewares/auth";
+import { requireAuth } from "../middlewares/auth";
+import { isVaultUnlocked } from "./vault";
 
 const router: IRouter = Router();
 
@@ -27,12 +28,15 @@ router.get("/credentials", requireAuth, async (req, res): Promise<void> => {
       categoryId: credentialsTable.categoryId,
       categoryName: categoriesTable.name,
       categoryColor: categoriesTable.color,
-      isVault: credentialsTable.isVault,
+      vaultId: credentialsTable.vaultId,
+      spaceId: credentialsTable.spaceId,
+      spaceName: spacesTable.name,
       createdAt: credentialsTable.createdAt,
       updatedAt: credentialsTable.updatedAt,
     })
     .from(credentialsTable)
     .leftJoin(categoriesTable, eq(credentialsTable.categoryId, categoriesTable.id))
+    .leftJoin(spacesTable, eq(credentialsTable.spaceId, spacesTable.id))
     .where(eq(credentialsTable.userId, userId))
     .$dynamic();
 
@@ -58,11 +62,30 @@ router.get("/credentials", requireAuth, async (req, res): Promise<void> => {
     );
   }
 
+  if (params.success && params.data.spaceId !== undefined) {
+    const sid = Number(params.data.spaceId);
+    query = query.where(
+      and(
+        eq(credentialsTable.userId, userId),
+        eq(credentialsTable.spaceId, sid)
+      )
+    );
+  }
+
+  if (params.success && params.data.vaultId !== undefined) {
+    const vid = Number(params.data.vaultId);
+    query = query.where(
+      and(
+        eq(credentialsTable.userId, userId),
+        eq(credentialsTable.vaultId, vid)
+      )
+    );
+  }
+
   const results = await query.orderBy(credentialsTable.createdAt);
 
-  const vaultActive = isVaultSessionActive(req);
   const masked = results.map((cred) => {
-    if (cred.isVault && !vaultActive) {
+    if (cred.vaultId && !isVaultUnlocked(req, cred.vaultId)) {
       return { ...cred, email: "••••••••", password: "••••••••" };
     }
     return cred;
@@ -87,7 +110,8 @@ router.post("/credentials", requireAuth, async (req, res): Promise<void> => {
       email: parsed.data.email,
       password: parsed.data.password,
       categoryId: parsed.data.categoryId ?? null,
-      isVault: parsed.data.isVault ?? false,
+      vaultId: parsed.data.vaultId ?? null,
+      spaceId: parsed.data.spaceId ?? null,
       userId,
     })
     .returning();
@@ -105,11 +129,18 @@ router.post("/credentials", requireAuth, async (req, res): Promise<void> => {
     }
   }
 
+  let spaceName: string | null = null;
+  if (credential.spaceId) {
+    const [sp] = await db.select().from(spacesTable).where(eq(spacesTable.id, credential.spaceId));
+    if (sp) spaceName = sp.name;
+  }
+
   res.status(201).json(
     UpdateCredentialResponse.parse({
       ...credential,
       categoryName,
       categoryColor,
+      spaceName,
     })
   );
 });
@@ -145,7 +176,8 @@ router.patch("/credentials/:id", requireAuth, async (req, res): Promise<void> =>
   if (parsed.data.email !== undefined) updateData.email = parsed.data.email;
   if (parsed.data.password !== undefined) updateData.password = parsed.data.password;
   if (parsed.data.categoryId !== undefined) updateData.categoryId = parsed.data.categoryId;
-  if (parsed.data.isVault !== undefined) updateData.isVault = parsed.data.isVault;
+  if (parsed.data.vaultId !== undefined) updateData.vaultId = parsed.data.vaultId;
+  if (parsed.data.spaceId !== undefined) updateData.spaceId = parsed.data.spaceId;
 
   const [credential] = await db
     .update(credentialsTable)
@@ -166,11 +198,18 @@ router.patch("/credentials/:id", requireAuth, async (req, res): Promise<void> =>
     }
   }
 
+  let spaceName: string | null = null;
+  if (credential.spaceId) {
+    const [sp] = await db.select().from(spacesTable).where(eq(spacesTable.id, credential.spaceId));
+    if (sp) spaceName = sp.name;
+  }
+
   res.json(
     UpdateCredentialResponse.parse({
       ...credential,
       categoryName,
       categoryColor,
+      spaceName,
     })
   );
 });

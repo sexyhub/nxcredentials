@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, sql, gte, and, min, avg } from "drizzle-orm";
-import { db, credentialsTable, categoriesTable } from "@workspace/db";
+import { eq, sql, gte, and, isNotNull } from "drizzle-orm";
+import { db, credentialsTable, categoriesTable, spacesTable, vaultsTable } from "@workspace/db";
 import { GetStatsResponse } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/auth";
 
@@ -18,6 +18,16 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
     .select({ count: sql<number>`cast(count(*) as integer)` })
     .from(categoriesTable)
     .where(eq(categoriesTable.userId, userId));
+
+  const totalSpacesResult = await db
+    .select({ count: sql<number>`cast(count(*) as integer)` })
+    .from(spacesTable)
+    .where(eq(spacesTable.userId, userId));
+
+  const totalVaultsResult = await db
+    .select({ count: sql<number>`cast(count(*) as integer)` })
+    .from(vaultsTable)
+    .where(eq(vaultsTable.userId, userId));
 
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -38,7 +48,7 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
     .where(
       and(
         eq(credentialsTable.userId, userId),
-        eq(credentialsTable.isVault, true)
+        isNotNull(credentialsTable.vaultId)
       )
     );
 
@@ -90,6 +100,8 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
     GetStatsResponse.parse({
       totalCredentials: totalCount,
       totalCategories: totalCats[0]?.count ?? 0,
+      totalSpaces: totalSpacesResult[0]?.count ?? 0,
+      totalVaults: totalVaultsResult[0]?.count ?? 0,
       recentlyAdded: recentCreds[0]?.count ?? 0,
       vaultCredentials: vaultCreds[0]?.count ?? 0,
       uniqueTypes: uniqueTypesResult[0]?.count ?? 0,

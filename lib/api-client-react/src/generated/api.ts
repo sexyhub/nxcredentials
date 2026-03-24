@@ -23,6 +23,8 @@ import type {
   ChangeVaultPinBody,
   CreateCategoryBody,
   CreateCredentialBody,
+  CreateSpaceBody,
+  CreateVaultBody,
   Credential,
   ErrorResponse,
   HealthStatus,
@@ -32,13 +34,15 @@ import type {
   RegisterBody,
   RegistrationStatus,
   Settings,
-  SetupVaultBody,
+  Space,
   Stats,
   UpdateCategoryBody,
   UpdateCredentialBody,
   UpdateSettingsBody,
+  UpdateSpaceBody,
+  UpdateVaultBody,
   User,
-  VaultStatus,
+  VaultItem,
   VerifyVaultBody,
 } from "./api.schemas";
 
@@ -1127,6 +1131,336 @@ export const useDeleteCategory = <
 };
 
 /**
+ * @summary List all spaces
+ */
+export const getListSpacesUrl = () => {
+  return `/api/spaces`;
+};
+
+export const listSpaces = async (options?: RequestInit): Promise<Space[]> => {
+  return customFetch<Space[]>(getListSpacesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListSpacesQueryKey = () => {
+  return [`/api/spaces`] as const;
+};
+
+export const getListSpacesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSpaces>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listSpaces>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListSpacesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listSpaces>>> = ({
+    signal,
+  }) => listSpaces({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSpaces>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSpacesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listSpaces>>
+>;
+export type ListSpacesQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary List all spaces
+ */
+
+export function useListSpaces<
+  TData = Awaited<ReturnType<typeof listSpaces>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listSpaces>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSpacesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a space
+ */
+export const getCreateSpaceUrl = () => {
+  return `/api/spaces`;
+};
+
+export const createSpace = async (
+  createSpaceBody: CreateSpaceBody,
+  options?: RequestInit,
+): Promise<Space> => {
+  return customFetch<Space>(getCreateSpaceUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createSpaceBody),
+  });
+};
+
+export const getCreateSpaceMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSpace>>,
+    TError,
+    { data: BodyType<CreateSpaceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createSpace>>,
+  TError,
+  { data: BodyType<CreateSpaceBody> },
+  TContext
+> => {
+  const mutationKey = ["createSpace"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createSpace>>,
+    { data: BodyType<CreateSpaceBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createSpace(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateSpaceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createSpace>>
+>;
+export type CreateSpaceMutationBody = BodyType<CreateSpaceBody>;
+export type CreateSpaceMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Create a space
+ */
+export const useCreateSpace = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSpace>>,
+    TError,
+    { data: BodyType<CreateSpaceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createSpace>>,
+  TError,
+  { data: BodyType<CreateSpaceBody> },
+  TContext
+> => {
+  return useMutation(getCreateSpaceMutationOptions(options));
+};
+
+/**
+ * @summary Update a space
+ */
+export const getUpdateSpaceUrl = (id: number) => {
+  return `/api/spaces/${id}`;
+};
+
+export const updateSpace = async (
+  id: number,
+  updateSpaceBody: UpdateSpaceBody,
+  options?: RequestInit,
+): Promise<Space> => {
+  return customFetch<Space>(getUpdateSpaceUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateSpaceBody),
+  });
+};
+
+export const getUpdateSpaceMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSpace>>,
+    TError,
+    { id: number; data: BodyType<UpdateSpaceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateSpace>>,
+  TError,
+  { id: number; data: BodyType<UpdateSpaceBody> },
+  TContext
+> => {
+  const mutationKey = ["updateSpace"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateSpace>>,
+    { id: number; data: BodyType<UpdateSpaceBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateSpace(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateSpaceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateSpace>>
+>;
+export type UpdateSpaceMutationBody = BodyType<UpdateSpaceBody>;
+export type UpdateSpaceMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update a space
+ */
+export const useUpdateSpace = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSpace>>,
+    TError,
+    { id: number; data: BodyType<UpdateSpaceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateSpace>>,
+  TError,
+  { id: number; data: BodyType<UpdateSpaceBody> },
+  TContext
+> => {
+  return useMutation(getUpdateSpaceMutationOptions(options));
+};
+
+/**
+ * @summary Delete a space
+ */
+export const getDeleteSpaceUrl = (id: number) => {
+  return `/api/spaces/${id}`;
+};
+
+export const deleteSpace = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteSpaceUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteSpaceMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteSpace>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteSpace>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteSpace"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteSpace>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteSpace(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteSpaceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteSpace>>
+>;
+
+export type DeleteSpaceMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete a space
+ */
+export const useDeleteSpace = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteSpace>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteSpace>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteSpaceMutationOptions(options));
+};
+
+/**
  * @summary Get dashboard statistics
  */
 export const getGetStatsUrl = () => {
@@ -1426,31 +1760,31 @@ export function useGetRegistrationStatus<
 }
 
 /**
- * @summary Check if vault is set up
+ * @summary List all user vaults
  */
-export const getGetVaultStatusUrl = () => {
-  return `/api/vault/status`;
+export const getListVaultsUrl = () => {
+  return `/api/vaults`;
 };
 
-export const getVaultStatus = async (
+export const listVaults = async (
   options?: RequestInit,
-): Promise<VaultStatus> => {
-  return customFetch<VaultStatus>(getGetVaultStatusUrl(), {
+): Promise<VaultItem[]> => {
+  return customFetch<VaultItem[]>(getListVaultsUrl(), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetVaultStatusQueryKey = () => {
-  return [`/api/vault/status`] as const;
+export const getListVaultsQueryKey = () => {
+  return [`/api/vaults`] as const;
 };
 
-export const getGetVaultStatusQueryOptions = <
-  TData = Awaited<ReturnType<typeof getVaultStatus>>,
+export const getListVaultsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listVaults>>,
   TError = ErrorType<ErrorResponse>,
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getVaultStatus>>,
+    Awaited<ReturnType<typeof listVaults>>,
     TError,
     TData
   >;
@@ -1458,40 +1792,40 @@ export const getGetVaultStatusQueryOptions = <
 }) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetVaultStatusQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getListVaultsQueryKey();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getVaultStatus>>> = ({
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listVaults>>> = ({
     signal,
-  }) => getVaultStatus({ signal, ...requestOptions });
+  }) => listVaults({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getVaultStatus>>,
+    Awaited<ReturnType<typeof listVaults>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetVaultStatusQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getVaultStatus>>
+export type ListVaultsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listVaults>>
 >;
-export type GetVaultStatusQueryError = ErrorType<ErrorResponse>;
+export type ListVaultsQueryError = ErrorType<ErrorResponse>;
 
 /**
- * @summary Check if vault is set up
+ * @summary List all user vaults
  */
 
-export function useGetVaultStatus<
-  TData = Awaited<ReturnType<typeof getVaultStatus>>,
+export function useListVaults<
+  TData = Awaited<ReturnType<typeof listVaults>>,
   TError = ErrorType<ErrorResponse>,
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getVaultStatus>>,
+    Awaited<ReturnType<typeof listVaults>>,
     TError,
     TData
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetVaultStatusQueryOptions(options);
+  const queryOptions = getListVaultsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1501,123 +1835,42 @@ export function useGetVaultStatus<
 }
 
 /**
- * @summary Lock the vault
+ * @summary Create a new vault
  */
-export const getLockVaultUrl = () => {
-  return `/api/vault/lock`;
+export const getCreateVaultUrl = () => {
+  return `/api/vaults`;
 };
 
-export const lockVault = async (
+export const createVault = async (
+  createVaultBody: CreateVaultBody,
   options?: RequestInit,
-): Promise<MessageResponse> => {
-  return customFetch<MessageResponse>(getLockVaultUrl(), {
-    ...options,
-    method: "POST",
-  });
-};
-
-export const getLockVaultMutationOptions = <
-  TError = ErrorType<ErrorResponse>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof lockVault>>,
-    TError,
-    void,
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof lockVault>>,
-  TError,
-  void,
-  TContext
-> => {
-  const mutationKey = ["lockVault"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof lockVault>>,
-    void
-  > = () => {
-    return lockVault(requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type LockVaultMutationResult = NonNullable<
-  Awaited<ReturnType<typeof lockVault>>
->;
-
-export type LockVaultMutationError = ErrorType<ErrorResponse>;
-
-/**
- * @summary Lock the vault
- */
-export const useLockVault = <
-  TError = ErrorType<ErrorResponse>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof lockVault>>,
-    TError,
-    void,
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof lockVault>>,
-  TError,
-  void,
-  TContext
-> => {
-  return useMutation(getLockVaultMutationOptions(options));
-};
-
-/**
- * @summary Set up vault password and PIN
- */
-export const getSetupVaultUrl = () => {
-  return `/api/vault/setup`;
-};
-
-export const setupVault = async (
-  setupVaultBody: SetupVaultBody,
-  options?: RequestInit,
-): Promise<MessageResponse> => {
-  return customFetch<MessageResponse>(getSetupVaultUrl(), {
+): Promise<VaultItem> => {
+  return customFetch<VaultItem>(getCreateVaultUrl(), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(setupVaultBody),
+    body: JSON.stringify(createVaultBody),
   });
 };
 
-export const getSetupVaultMutationOptions = <
+export const getCreateVaultMutationOptions = <
   TError = ErrorType<ErrorResponse>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof setupVault>>,
+    Awaited<ReturnType<typeof createVault>>,
     TError,
-    { data: BodyType<SetupVaultBody> },
+    { data: BodyType<CreateVaultBody> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof setupVault>>,
+  Awaited<ReturnType<typeof createVault>>,
   TError,
-  { data: BodyType<SetupVaultBody> },
+  { data: BodyType<CreateVaultBody> },
   TContext
 > => {
-  const mutationKey = ["setupVault"];
+  const mutationKey = ["createVault"];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation &&
       "mutationKey" in options.mutation &&
@@ -1627,58 +1880,230 @@ export const getSetupVaultMutationOptions = <
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof setupVault>>,
-    { data: BodyType<SetupVaultBody> }
+    Awaited<ReturnType<typeof createVault>>,
+    { data: BodyType<CreateVaultBody> }
   > = (props) => {
     const { data } = props ?? {};
 
-    return setupVault(data, requestOptions);
+    return createVault(data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type SetupVaultMutationResult = NonNullable<
-  Awaited<ReturnType<typeof setupVault>>
+export type CreateVaultMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createVault>>
 >;
-export type SetupVaultMutationBody = BodyType<SetupVaultBody>;
-export type SetupVaultMutationError = ErrorType<ErrorResponse>;
+export type CreateVaultMutationBody = BodyType<CreateVaultBody>;
+export type CreateVaultMutationError = ErrorType<ErrorResponse>;
 
 /**
- * @summary Set up vault password and PIN
+ * @summary Create a new vault
  */
-export const useSetupVault = <
+export const useCreateVault = <
   TError = ErrorType<ErrorResponse>,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof setupVault>>,
+    Awaited<ReturnType<typeof createVault>>,
     TError,
-    { data: BodyType<SetupVaultBody> },
+    { data: BodyType<CreateVaultBody> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
-  Awaited<ReturnType<typeof setupVault>>,
+  Awaited<ReturnType<typeof createVault>>,
   TError,
-  { data: BodyType<SetupVaultBody> },
+  { data: BodyType<CreateVaultBody> },
   TContext
 > => {
-  return useMutation(getSetupVaultMutationOptions(options));
+  return useMutation(getCreateVaultMutationOptions(options));
 };
 
 /**
- * @summary Verify vault password or PIN
+ * @summary Update a vault (name, color, icon)
  */
-export const getVerifyVaultUrl = () => {
-  return `/api/vault/verify`;
+export const getUpdateVaultUrl = (id: number) => {
+  return `/api/vaults/${id}`;
+};
+
+export const updateVault = async (
+  id: number,
+  updateVaultBody: UpdateVaultBody,
+  options?: RequestInit,
+): Promise<VaultItem> => {
+  return customFetch<VaultItem>(getUpdateVaultUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateVaultBody),
+  });
+};
+
+export const getUpdateVaultMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateVault>>,
+    TError,
+    { id: number; data: BodyType<UpdateVaultBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateVault>>,
+  TError,
+  { id: number; data: BodyType<UpdateVaultBody> },
+  TContext
+> => {
+  const mutationKey = ["updateVault"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateVault>>,
+    { id: number; data: BodyType<UpdateVaultBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateVault(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateVaultMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateVault>>
+>;
+export type UpdateVaultMutationBody = BodyType<UpdateVaultBody>;
+export type UpdateVaultMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update a vault (name, color, icon)
+ */
+export const useUpdateVault = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateVault>>,
+    TError,
+    { id: number; data: BodyType<UpdateVaultBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateVault>>,
+  TError,
+  { id: number; data: BodyType<UpdateVaultBody> },
+  TContext
+> => {
+  return useMutation(getUpdateVaultMutationOptions(options));
+};
+
+/**
+ * @summary Delete a vault and all its credentials
+ */
+export const getDeleteVaultUrl = (id: number) => {
+  return `/api/vaults/${id}`;
+};
+
+export const deleteVault = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteVaultUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteVaultMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteVault>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteVault>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteVault"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteVault>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteVault(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteVaultMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteVault>>
+>;
+
+export type DeleteVaultMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete a vault and all its credentials
+ */
+export const useDeleteVault = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteVault>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteVault>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteVaultMutationOptions(options));
+};
+
+/**
+ * @summary Verify vault password or PIN to unlock
+ */
+export const getVerifyVaultUrl = (id: number) => {
+  return `/api/vaults/${id}/verify`;
 };
 
 export const verifyVault = async (
+  id: number,
   verifyVaultBody: VerifyVaultBody,
   options?: RequestInit,
 ): Promise<MessageResponse> => {
-  return customFetch<MessageResponse>(getVerifyVaultUrl(), {
+  return customFetch<MessageResponse>(getVerifyVaultUrl(id), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1693,14 +2118,14 @@ export const getVerifyVaultMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof verifyVault>>,
     TError,
-    { data: BodyType<VerifyVaultBody> },
+    { id: number; data: BodyType<VerifyVaultBody> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof verifyVault>>,
   TError,
-  { data: BodyType<VerifyVaultBody> },
+  { id: number; data: BodyType<VerifyVaultBody> },
   TContext
 > => {
   const mutationKey = ["verifyVault"];
@@ -1714,11 +2139,11 @@ export const getVerifyVaultMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof verifyVault>>,
-    { data: BodyType<VerifyVaultBody> }
+    { id: number; data: BodyType<VerifyVaultBody> }
   > = (props) => {
-    const { data } = props ?? {};
+    const { id, data } = props ?? {};
 
-    return verifyVault(data, requestOptions);
+    return verifyVault(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1731,7 +2156,7 @@ export type VerifyVaultMutationBody = BodyType<VerifyVaultBody>;
 export type VerifyVaultMutationError = ErrorType<ErrorResponse>;
 
 /**
- * @summary Verify vault password or PIN
+ * @summary Verify vault password or PIN to unlock
  */
 export const useVerifyVault = <
   TError = ErrorType<ErrorResponse>,
@@ -1740,31 +2165,116 @@ export const useVerifyVault = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof verifyVault>>,
     TError,
-    { data: BodyType<VerifyVaultBody> },
+    { id: number; data: BodyType<VerifyVaultBody> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof verifyVault>>,
   TError,
-  { data: BodyType<VerifyVaultBody> },
+  { id: number; data: BodyType<VerifyVaultBody> },
   TContext
 > => {
   return useMutation(getVerifyVaultMutationOptions(options));
 };
 
 /**
+ * @summary Lock a vault
+ */
+export const getLockVaultUrl = (id: number) => {
+  return `/api/vaults/${id}/lock`;
+};
+
+export const lockVault = async (
+  id: number,
+  options?: RequestInit,
+): Promise<MessageResponse> => {
+  return customFetch<MessageResponse>(getLockVaultUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getLockVaultMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof lockVault>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof lockVault>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["lockVault"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof lockVault>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return lockVault(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type LockVaultMutationResult = NonNullable<
+  Awaited<ReturnType<typeof lockVault>>
+>;
+
+export type LockVaultMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Lock a vault
+ */
+export const useLockVault = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof lockVault>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof lockVault>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getLockVaultMutationOptions(options));
+};
+
+/**
  * @summary Change vault password
  */
-export const getChangeVaultPasswordUrl = () => {
-  return `/api/vault/change-password`;
+export const getChangeVaultPasswordUrl = (id: number) => {
+  return `/api/vaults/${id}/change-password`;
 };
 
 export const changeVaultPassword = async (
+  id: number,
   changeVaultPasswordBody: ChangeVaultPasswordBody,
   options?: RequestInit,
 ): Promise<MessageResponse> => {
-  return customFetch<MessageResponse>(getChangeVaultPasswordUrl(), {
+  return customFetch<MessageResponse>(getChangeVaultPasswordUrl(id), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1779,14 +2289,14 @@ export const getChangeVaultPasswordMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof changeVaultPassword>>,
     TError,
-    { data: BodyType<ChangeVaultPasswordBody> },
+    { id: number; data: BodyType<ChangeVaultPasswordBody> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof changeVaultPassword>>,
   TError,
-  { data: BodyType<ChangeVaultPasswordBody> },
+  { id: number; data: BodyType<ChangeVaultPasswordBody> },
   TContext
 > => {
   const mutationKey = ["changeVaultPassword"];
@@ -1800,11 +2310,11 @@ export const getChangeVaultPasswordMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof changeVaultPassword>>,
-    { data: BodyType<ChangeVaultPasswordBody> }
+    { id: number; data: BodyType<ChangeVaultPasswordBody> }
   > = (props) => {
-    const { data } = props ?? {};
+    const { id, data } = props ?? {};
 
-    return changeVaultPassword(data, requestOptions);
+    return changeVaultPassword(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1826,14 +2336,14 @@ export const useChangeVaultPassword = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof changeVaultPassword>>,
     TError,
-    { data: BodyType<ChangeVaultPasswordBody> },
+    { id: number; data: BodyType<ChangeVaultPasswordBody> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof changeVaultPassword>>,
   TError,
-  { data: BodyType<ChangeVaultPasswordBody> },
+  { id: number; data: BodyType<ChangeVaultPasswordBody> },
   TContext
 > => {
   return useMutation(getChangeVaultPasswordMutationOptions(options));
@@ -1842,15 +2352,16 @@ export const useChangeVaultPassword = <
 /**
  * @summary Change vault PIN
  */
-export const getChangeVaultPinUrl = () => {
-  return `/api/vault/change-pin`;
+export const getChangeVaultPinUrl = (id: number) => {
+  return `/api/vaults/${id}/change-pin`;
 };
 
 export const changeVaultPin = async (
+  id: number,
   changeVaultPinBody: ChangeVaultPinBody,
   options?: RequestInit,
 ): Promise<MessageResponse> => {
-  return customFetch<MessageResponse>(getChangeVaultPinUrl(), {
+  return customFetch<MessageResponse>(getChangeVaultPinUrl(id), {
     ...options,
     method: "POST",
     headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1865,14 +2376,14 @@ export const getChangeVaultPinMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof changeVaultPin>>,
     TError,
-    { data: BodyType<ChangeVaultPinBody> },
+    { id: number; data: BodyType<ChangeVaultPinBody> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof changeVaultPin>>,
   TError,
-  { data: BodyType<ChangeVaultPinBody> },
+  { id: number; data: BodyType<ChangeVaultPinBody> },
   TContext
 > => {
   const mutationKey = ["changeVaultPin"];
@@ -1886,11 +2397,11 @@ export const getChangeVaultPinMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof changeVaultPin>>,
-    { data: BodyType<ChangeVaultPinBody> }
+    { id: number; data: BodyType<ChangeVaultPinBody> }
   > = (props) => {
-    const { data } = props ?? {};
+    const { id, data } = props ?? {};
 
-    return changeVaultPin(data, requestOptions);
+    return changeVaultPin(id, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1912,14 +2423,14 @@ export const useChangeVaultPin = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof changeVaultPin>>,
     TError,
-    { data: BodyType<ChangeVaultPinBody> },
+    { id: number; data: BodyType<ChangeVaultPinBody> },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof changeVaultPin>>,
   TError,
-  { data: BodyType<ChangeVaultPinBody> },
+  { id: number; data: BodyType<ChangeVaultPinBody> },
   TContext
 > => {
   return useMutation(getChangeVaultPinMutationOptions(options));

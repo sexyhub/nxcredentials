@@ -49,7 +49,12 @@ export interface Credential {
   categoryName: string | null;
   /** @nullable */
   categoryColor: string | null;
-  isVault: boolean;
+  /** @nullable */
+  vaultId: number | null;
+  /** @nullable */
+  spaceId: number | null;
+  /** @nullable */
+  spaceName: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -60,7 +65,10 @@ export interface CreateCredentialBody {
   password: string;
   /** @nullable */
   categoryId?: number | null;
-  isVault?: boolean;
+  /** @nullable */
+  vaultId?: number | null;
+  /** @nullable */
+  spaceId?: number | null;
 }
 
 export interface UpdateCredentialBody {
@@ -69,7 +77,10 @@ export interface UpdateCredentialBody {
   password?: string;
   /** @nullable */
   categoryId?: number | null;
-  isVault?: boolean;
+  /** @nullable */
+  vaultId?: number | null;
+  /** @nullable */
+  spaceId?: number | null;
 }
 
 export interface Category {
@@ -89,6 +100,71 @@ export interface UpdateCategoryBody {
   color?: string;
 }
 
+export interface Space {
+  id: number;
+  name: string;
+  /** @nullable */
+  defaultType: string | null;
+  color: string;
+  icon: string;
+  credentialCount: number;
+}
+
+export interface CreateSpaceBody {
+  name: string;
+  /** @nullable */
+  defaultType?: string | null;
+  color?: string;
+  icon?: string;
+}
+
+export interface UpdateSpaceBody {
+  name?: string;
+  /** @nullable */
+  defaultType?: string | null;
+  color?: string;
+  icon?: string;
+}
+
+export interface VaultItem {
+  id: number;
+  name: string;
+  color: string;
+  icon: string;
+  credentialCount: number;
+  isUnlocked: boolean;
+  createdAt: string;
+}
+
+export interface CreateVaultBody {
+  name: string;
+  password: string;
+  pin: string;
+  color?: string;
+  icon?: string;
+}
+
+export interface UpdateVaultBody {
+  name?: string;
+  color?: string;
+  icon?: string;
+}
+
+export interface VerifyVaultBody {
+  password?: string;
+  pin?: string;
+}
+
+export interface ChangeVaultPasswordBody {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface ChangeVaultPinBody {
+  oldPin: string;
+  newPin: string;
+}
+
 export interface CategoryStat {
   name: string;
   count: number;
@@ -103,6 +179,8 @@ export interface TypeStat {
 export interface Stats {
   totalCredentials: number;
   totalCategories: number;
+  totalSpaces: number;
+  totalVaults: number;
   recentlyAdded: number;
   vaultCredentials: number;
   uniqueTypes: number;
@@ -131,33 +209,9 @@ export interface RegistrationStatus {
   enabled: boolean;
 }
 
-export interface VaultStatus {
-  hasPassword: boolean;
-  hasPin: boolean;
-  isUnlocked: boolean;
-}
-
-export interface SetupVaultBody {
-  password: string;
-  pin: string;
-}
-
-export interface VerifyVaultBody {
-  password?: string;
-  pin?: string;
-}
-
-export interface ChangeVaultPasswordBody {
-  oldPassword: string;
-  newPassword: string;
-}
-
-export interface ChangeVaultPinBody {
-  oldPin: string;
-  newPin: string;
-}
-
 export type ListCredentialsParams = {
   category?: string;
   search?: string;
+  spaceId?: number;
+  vaultId?: number;
 };

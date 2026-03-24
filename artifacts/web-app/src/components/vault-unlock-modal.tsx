@@ -14,9 +14,11 @@ interface VaultUnlockModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUnlocked: () => void;
+  vaultId: number;
+  vaultName?: string;
 }
 
-export function VaultUnlockModal({ open, onOpenChange, onUnlocked }: VaultUnlockModalProps) {
+export function VaultUnlockModal({ open, onOpenChange, onUnlocked, vaultId, vaultName }: VaultUnlockModalProps) {
   const [mode, setMode] = useState<"password" | "pin">("password");
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
@@ -39,9 +41,9 @@ export function VaultUnlockModal({ open, onOpenChange, onUnlocked }: VaultUnlock
     e.preventDefault();
     setError("");
     if (mode === "password") {
-      verifyMutation.mutate({ data: { password: value } });
+      verifyMutation.mutate({ id: vaultId, data: { password: value } });
     } else {
-      verifyMutation.mutate({ data: { pin: value } });
+      verifyMutation.mutate({ id: vaultId, data: { pin: value } });
     }
   };
 
@@ -53,7 +55,7 @@ export function VaultUnlockModal({ open, onOpenChange, onUnlocked }: VaultUnlock
             <Shield className="w-6 h-6 text-amber-500" />
           </div>
           <div className="text-center">
-            <h3 className="text-[16px] font-bold">Unlock vault</h3>
+            <h3 className="text-[16px] font-bold">Unlock {vaultName || "vault"}</h3>
             <p className="text-[13px] text-muted-foreground mt-0.5">Enter your vault password or PIN</p>
           </div>
         </div>
@@ -88,7 +90,7 @@ export function VaultUnlockModal({ open, onOpenChange, onUnlocked }: VaultUnlock
             </Label>
             <Input
               id="vault-input"
-              type={mode === "password" ? "password" : "password"}
+              type="password"
               inputMode={mode === "pin" ? "numeric" : undefined}
               required
               value={value}

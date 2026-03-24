@@ -6,8 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface VaultStatus {
-  hasPassword: boolean;
-  hasPin: boolean;
+export interface VaultItem {
+  id: number;
+  name: string;
+  color: string;
+  icon: string;
+  credentialCount: number;
   isUnlocked: boolean;
+  createdAt: Date;
 }

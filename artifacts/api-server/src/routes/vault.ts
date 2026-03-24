@@ -1,45 +1,71 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
-import { db, usersTable } from "@workspace/db";
+import { db, vaultsTable, credentialsTable } from "@workspace/db";
 import {
-  SetupVaultBody,
+  CreateVaultBody,
   VerifyVaultBody,
+  UpdateVaultBody,
   ChangeVaultPasswordBody,
   ChangeVaultPinBody,
+  ListVaultsResponse,
+  DeleteVaultParams,
+  UpdateVaultParams,
+  VerifyVaultParams,
+  LockVaultParams,
+  ChangeVaultPasswordParams,
+  ChangeVaultPinParams,
 } from "@workspace/api-zod";
-import { requireAuth, isVaultSessionActive } from "../middlewares/auth";
+import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
-router.get("/vault/status", requireAuth, async (req, res): Promise<void> => {
+function getUnlockedVaultIds(req: any): Set<number> {
+  const map: Record<number, number> = req.session.unlockedVaults || {};
+  const now = Date.now();
+  const DURATION = 15 * 60 * 1000;
+  const active = new Set<number>();
+  for (const [id, ts] of Object.entries(map)) {
+    if (now - ts < DURATION) active.add(Number(id));
+  }
+  return active;
+}
+
+export function isVaultUnlocked(req: any, vaultId: number): boolean {
+  return getUnlockedVaultIds(req).has(vaultId);
+}
+
+router.get("/vaults", requireAuth, async (req, res): Promise<void> => {
   const userId = req.session.userId!;
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
+  const unlockedIds = getUnlockedVaultIds(req);
 
-  res.json({
-    hasPassword: !!user.vaultPasswordHash,
-    hasPin: !!user.vaultPinHash,
-    isUnlocked: isVaultSessionActive(req),
-  });
+  const vaults = await db
+    .select({
+      id: vaultsTable.id,
+      name: vaultsTable.name,
+      color: vaultsTable.color,
+      icon: vaultsTable.icon,
+      createdAt: vaultsTable.createdAt,
+      credentialCount: sql<number>`cast(count(${credentialsTable.id}) as integer)`,
+    })
+    .from(vaultsTable)
+    .leftJoin(credentialsTable, eq(vaultsTable.id, credentialsTable.vaultId))
+    .where(eq(vaultsTable.userId, userId))
+    .groupBy(vaultsTable.id)
+    .orderBy(vaultsTable.createdAt);
+
+  const result = vaults.map((v) => ({
+    ...v,
+    isUnlocked: unlockedIds.has(v.id),
+  }));
+
+  res.json(ListVaultsResponse.parse(result));
 });
 
-router.post("/vault/lock", requireAuth, async (req, res): Promise<void> => {
-  req.session.vaultUnlockedAt = undefined;
-  res.json({ message: "Vault locked." });
-});
-
-router.post("/vault/setup", requireAuth, async (req, res): Promise<void> => {
-  const parsed = SetupVaultBody.safeParse(req.body);
+router.post("/vaults", requireAuth, async (req, res): Promise<void> => {
+  const parsed = CreateVaultBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-
-  const userId = req.session.userId!;
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
-
-  if (user.vaultPasswordHash || user.vaultPinHash) {
-    res.status(400).json({ error: "Vault is already set up. Use change endpoints to update." });
     return;
   }
 
@@ -53,18 +79,113 @@ router.post("/vault/setup", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
+  const userId = req.session.userId!;
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
   const pinHash = await bcrypt.hash(parsed.data.pin, 10);
 
-  await db.update(usersTable).set({
-    vaultPasswordHash: passwordHash,
-    vaultPinHash: pinHash,
-  }).where(eq(usersTable.id, userId));
+  const [vault] = await db
+    .insert(vaultsTable)
+    .values({
+      name: parsed.data.name,
+      passwordHash,
+      pinHash,
+      color: parsed.data.color || "#6366f1",
+      icon: parsed.data.icon || "shield",
+      userId,
+    })
+    .returning();
 
-  res.json({ message: "Vault set up successfully." });
+  res.status(201).json({
+    id: vault.id,
+    name: vault.name,
+    color: vault.color,
+    icon: vault.icon,
+    credentialCount: 0,
+    isUnlocked: false,
+    createdAt: vault.createdAt.toISOString(),
+  });
 });
 
-router.post("/vault/verify", requireAuth, async (req, res): Promise<void> => {
+router.patch("/vaults/:id", requireAuth, async (req, res): Promise<void> => {
+  const params = UpdateVaultParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const parsed = UpdateVaultBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const userId = req.session.userId!;
+  const [existing] = await db
+    .select()
+    .from(vaultsTable)
+    .where(and(eq(vaultsTable.id, params.data.id), eq(vaultsTable.userId, userId)));
+
+  if (!existing) {
+    res.status(404).json({ error: "Vault not found" });
+    return;
+  }
+
+  const updateData: Record<string, any> = {};
+  if (parsed.data.name !== undefined) updateData.name = parsed.data.name;
+  if (parsed.data.color !== undefined) updateData.color = parsed.data.color;
+  if (parsed.data.icon !== undefined) updateData.icon = parsed.data.icon;
+
+  const [vault] = await db
+    .update(vaultsTable)
+    .set(updateData)
+    .where(eq(vaultsTable.id, params.data.id))
+    .returning();
+
+  const [countResult] = await db
+    .select({ count: sql<number>`cast(count(*) as integer)` })
+    .from(credentialsTable)
+    .where(eq(credentialsTable.vaultId, vault.id));
+
+  res.json({
+    id: vault.id,
+    name: vault.name,
+    color: vault.color,
+    icon: vault.icon,
+    credentialCount: countResult?.count ?? 0,
+    isUnlocked: isVaultUnlocked(req, vault.id),
+    createdAt: vault.createdAt.toISOString(),
+  });
+});
+
+router.delete("/vaults/:id", requireAuth, async (req, res): Promise<void> => {
+  const params = DeleteVaultParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  const userId = req.session.userId!;
+  const [existing] = await db
+    .select()
+    .from(vaultsTable)
+    .where(and(eq(vaultsTable.id, params.data.id), eq(vaultsTable.userId, userId)));
+
+  if (!existing) {
+    res.status(404).json({ error: "Vault not found" });
+    return;
+  }
+
+  await db.delete(vaultsTable).where(eq(vaultsTable.id, params.data.id));
+  res.sendStatus(204);
+});
+
+router.post("/vaults/:id/verify", requireAuth, async (req, res): Promise<void> => {
+  const params = VerifyVaultParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
   const parsed = VerifyVaultBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -72,31 +193,36 @@ router.post("/vault/verify", requireAuth, async (req, res): Promise<void> => {
   }
 
   const userId = req.session.userId!;
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
+  const [vault] = await db
+    .select()
+    .from(vaultsTable)
+    .where(and(eq(vaultsTable.id, params.data.id), eq(vaultsTable.userId, userId)));
 
-  if (!user.vaultPasswordHash || !user.vaultPinHash) {
-    res.status(400).json({ error: "Vault is not set up." });
+  if (!vault) {
+    res.status(404).json({ error: "Vault not found" });
     return;
   }
 
   if (parsed.data.password) {
-    const valid = await bcrypt.compare(parsed.data.password, user.vaultPasswordHash);
+    const valid = await bcrypt.compare(parsed.data.password, vault.passwordHash);
     if (!valid) {
       res.status(401).json({ error: "Invalid vault password." });
       return;
     }
-    req.session.vaultUnlockedAt = Date.now();
+    if (!req.session.unlockedVaults) req.session.unlockedVaults = {};
+    req.session.unlockedVaults[vault.id] = Date.now();
     res.json({ message: "Vault unlocked." });
     return;
   }
 
   if (parsed.data.pin) {
-    const valid = await bcrypt.compare(parsed.data.pin, user.vaultPinHash);
+    const valid = await bcrypt.compare(parsed.data.pin, vault.pinHash);
     if (!valid) {
       res.status(401).json({ error: "Invalid vault PIN." });
       return;
     }
-    req.session.vaultUnlockedAt = Date.now();
+    if (!req.session.unlockedVaults) req.session.unlockedVaults = {};
+    req.session.unlockedVaults[vault.id] = Date.now();
     res.json({ message: "Vault unlocked." });
     return;
   }
@@ -104,7 +230,26 @@ router.post("/vault/verify", requireAuth, async (req, res): Promise<void> => {
   res.status(400).json({ error: "Provide either password or PIN." });
 });
 
-router.post("/vault/change-password", requireAuth, async (req, res): Promise<void> => {
+router.post("/vaults/:id/lock", requireAuth, async (req, res): Promise<void> => {
+  const params = LockVaultParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
+  if (req.session.unlockedVaults) {
+    delete req.session.unlockedVaults[params.data.id];
+  }
+  res.json({ message: "Vault locked." });
+});
+
+router.post("/vaults/:id/change-password", requireAuth, async (req, res): Promise<void> => {
+  const params = ChangeVaultPasswordParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
   const parsed = ChangeVaultPasswordBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -112,14 +257,17 @@ router.post("/vault/change-password", requireAuth, async (req, res): Promise<voi
   }
 
   const userId = req.session.userId!;
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
+  const [vault] = await db
+    .select()
+    .from(vaultsTable)
+    .where(and(eq(vaultsTable.id, params.data.id), eq(vaultsTable.userId, userId)));
 
-  if (!user.vaultPasswordHash) {
-    res.status(400).json({ error: "Vault is not set up." });
+  if (!vault) {
+    res.status(404).json({ error: "Vault not found" });
     return;
   }
 
-  const valid = await bcrypt.compare(parsed.data.oldPassword, user.vaultPasswordHash);
+  const valid = await bcrypt.compare(parsed.data.oldPassword, vault.passwordHash);
   if (!valid) {
     res.status(401).json({ error: "Old password is incorrect." });
     return;
@@ -131,12 +279,18 @@ router.post("/vault/change-password", requireAuth, async (req, res): Promise<voi
   }
 
   const newHash = await bcrypt.hash(parsed.data.newPassword, 10);
-  await db.update(usersTable).set({ vaultPasswordHash: newHash }).where(eq(usersTable.id, userId));
+  await db.update(vaultsTable).set({ passwordHash: newHash }).where(eq(vaultsTable.id, params.data.id));
 
   res.json({ message: "Vault password changed." });
 });
 
-router.post("/vault/change-pin", requireAuth, async (req, res): Promise<void> => {
+router.post("/vaults/:id/change-pin", requireAuth, async (req, res): Promise<void> => {
+  const params = ChangeVaultPinParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+
   const parsed = ChangeVaultPinBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -144,14 +298,17 @@ router.post("/vault/change-pin", requireAuth, async (req, res): Promise<void> =>
   }
 
   const userId = req.session.userId!;
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
+  const [vault] = await db
+    .select()
+    .from(vaultsTable)
+    .where(and(eq(vaultsTable.id, params.data.id), eq(vaultsTable.userId, userId)));
 
-  if (!user.vaultPinHash) {
-    res.status(400).json({ error: "Vault is not set up." });
+  if (!vault) {
+    res.status(404).json({ error: "Vault not found" });
     return;
   }
 
-  const valid = await bcrypt.compare(parsed.data.oldPin, user.vaultPinHash);
+  const valid = await bcrypt.compare(parsed.data.oldPin, vault.pinHash);
   if (!valid) {
     res.status(401).json({ error: "Old PIN is incorrect." });
     return;
@@ -163,7 +320,7 @@ router.post("/vault/change-pin", requireAuth, async (req, res): Promise<void> =>
   }
 
   const newHash = await bcrypt.hash(parsed.data.newPin, 10);
-  await db.update(usersTable).set({ vaultPinHash: newHash }).where(eq(usersTable.id, userId));
+  await db.update(vaultsTable).set({ pinHash: newHash }).where(eq(vaultsTable.id, params.data.id));
 
   res.json({ message: "Vault PIN changed." });
 });

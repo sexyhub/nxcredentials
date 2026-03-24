@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface SetupVaultBody {
+export interface CreateVaultBody {
+  name: string;
   password: string;
   pin: string;
+  color?: string;
+  icon?: string;
 }

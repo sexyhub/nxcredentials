@@ -12,5 +12,8 @@ export interface UpdateCredentialBody {
   password?: string;
   /** @nullable */
   categoryId?: number | null;
-  isVault?: boolean;
+  /** @nullable */
+  vaultId?: number | null;
+  /** @nullable */
+  spaceId?: number | null;
 }

@@ -6,9 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListCredentialsParams = {
-  category?: string;
-  search?: string;
-  spaceId?: number;
-  vaultId?: number;
-};
+export interface UpdateVaultBody {
+  name?: string;
+  color?: string;
+  icon?: string;
+}

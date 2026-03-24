@@ -18,8 +18,10 @@ tags:
     description: Admin settings
   - name: stats
     description: Dashboard statistics
-  - name: vault
+  - name: vaults
     description: Vault management
+  - name: spaces
+    description: Spaces management
 paths:
   /healthz:
     get:
@@ -137,6 +139,14 @@ paths:
           in: query
           schema:
             type: string
+        - name: spaceId
+          in: query
+          schema:
+            type: integer
+        - name: vaultId
+          in: query
+          schema:
+            type: integer
       responses:
         "200":
           description: Credential list
@@ -362,6 +372,118 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /spaces:
+    get:
+      operationId: listSpaces
+      tags: [spaces]
+      summary: List all spaces
+      responses:
+        "200":
+          description: Space list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Space"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createSpace
+      tags: [spaces]
+      summary: Create a space
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSpaceBody"
+      responses:
+        "201":
+          description: Space created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Space"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /spaces/{id}:
+    patch:
+      operationId: updateSpace
+      tags: [spaces]
+      summary: Update a space
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSpaceBody"
+      responses:
+        "200":
+          description: Space updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Space"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Space not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteSpace
+      tags: [spaces]
+      summary: Delete a space
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Space deleted
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Space not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /stats:
     get:
       operationId: getStats
@@ -442,62 +564,43 @@ paths:
               schema:
                 $ref: "#/components/schemas/RegistrationStatus"
 
-  /vault/status:
+  /vaults:
     get:
-      operationId: getVaultStatus
-      tags: [vault]
-      summary: Check if vault is set up
+      operationId: listVaults
+      tags: [vaults]
+      summary: List all user vaults
       responses:
         "200":
-          description: Vault status
+          description: Vault list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/VaultStatus"
+                type: array
+                items:
+                  $ref: "#/components/schemas/VaultItem"
         "401":
           description: Not authenticated
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-
-  /vault/lock:
     post:
-      operationId: lockVault
-      tags: [vault]
-      summary: Lock the vault
-      responses:
-        "200":
-          description: Vault locked
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MessageResponse"
-        "401":
-          description: Not authenticated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /vault/setup:
-    post:
-      operationId: setupVault
-      tags: [vault]
-      summary: Set up vault password and PIN
+      operationId: createVault
+      tags: [vaults]
+      summary: Create a new vault
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SetupVaultBody"
+              $ref: "#/components/schemas/CreateVaultBody"
       responses:
-        "200":
-          description: Vault set up
+        "201":
+          description: Vault created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MessageResponse"
+                $ref: "#/components/schemas/VaultItem"
         "400":
           description: Validation error
           content:
@@ -511,11 +614,79 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /vault/verify:
+  /vaults/{id}:
+    patch:
+      operationId: updateVault
+      tags: [vaults]
+      summary: Update a vault (name, color, icon)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVaultBody"
+      responses:
+        "200":
+          description: Vault updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultItem"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Vault not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteVault
+      tags: [vaults]
+      summary: Delete a vault and all its credentials
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Vault deleted
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Vault not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vaults/{id}/verify:
     post:
       operationId: verifyVault
-      tags: [vault]
-      summary: Verify vault password or PIN
+      tags: [vaults]
+      summary: Verify vault password or PIN to unlock
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -530,17 +701,54 @@ paths:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
         "401":
-          description: Not authenticated or invalid
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Vault not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /vault/change-password:
+  /vaults/{id}/lock:
+    post:
+      operationId: lockVault
+      tags: [vaults]
+      summary: Lock a vault
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Vault locked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vaults/{id}/change-password:
     post:
       operationId: changeVaultPassword
-      tags: [vault]
+      tags: [vaults]
       summary: Change vault password
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -554,24 +762,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
-        "400":
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
         "401":
-          description: Not authenticated or wrong old password
+          description: Wrong old password
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /vault/change-pin:
+  /vaults/{id}/change-pin:
     post:
       operationId: changeVaultPin
-      tags: [vault]
+      tags: [vaults]
       summary: Change vault PIN
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -585,14 +793,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
-        "400":
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
         "401":
-          description: Not authenticated or wrong old PIN
+          description: Wrong old PIN
           content:
             application/json:
               schema:
@@ -687,8 +889,12 @@ components:
           type: ["string", "null"]
         categoryColor:
           type: ["string", "null"]
-        isVault:
-          type: boolean
+        vaultId:
+          type: ["integer", "null"]
+        spaceId:
+          type: ["integer", "null"]
+        spaceName:
+          type: ["string", "null"]
         createdAt:
           type: string
           format: date-time
@@ -703,7 +909,9 @@ components:
         - categoryId
         - categoryName
         - categoryColor
-        - isVault
+        - vaultId
+        - spaceId
+        - spaceName
         - createdAt
         - updatedAt
 
@@ -718,8 +926,10 @@ components:
           type: string
         categoryId:
           type: ["integer", "null"]
-        isVault:
-          type: boolean
+        vaultId:
+          type: ["integer", "null"]
+        spaceId:
+          type: ["integer", "null"]
       required:
         - title
         - email
@@ -736,8 +946,10 @@ components:
           type: string
         categoryId:
           type: ["integer", "null"]
-        isVault:
-          type: boolean
+        vaultId:
+          type: ["integer", "null"]
+        spaceId:
+          type: ["integer", "null"]
 
     Category:
       type: object
@@ -775,12 +987,150 @@ components:
         color:
           type: string
 
+    Space:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        defaultType:
+          type: ["string", "null"]
+        color:
+          type: string
+        icon:
+          type: string
+        credentialCount:
+          type: integer
+      required:
+        - id
+        - name
+        - defaultType
+        - color
+        - icon
+        - credentialCount
+
+    CreateSpaceBody:
+      type: object
+      properties:
+        name:
+          type: string
+        defaultType:
+          type: ["string", "null"]
+        color:
+          type: string
+        icon:
+          type: string
+      required:
+        - name
+
+    UpdateSpaceBody:
+      type: object
+      properties:
+        name:
+          type: string
+        defaultType:
+          type: ["string", "null"]
+        color:
+          type: string
+        icon:
+          type: string
+
+    VaultItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+        credentialCount:
+          type: integer
+        isUnlocked:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - color
+        - icon
+        - credentialCount
+        - isUnlocked
+        - createdAt
+
+    CreateVaultBody:
+      type: object
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        pin:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+      required:
+        - name
+        - password
+        - pin
+
+    UpdateVaultBody:
+      type: object
+      properties:
+        name:
+          type: string
+        color:
+          type: string
+        icon:
+          type: string
+
+    VerifyVaultBody:
+      type: object
+      properties:
+        password:
+          type: string
+        pin:
+          type: string
+
+    ChangeVaultPasswordBody:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+        newPassword:
+          type: string
+      required:
+        - oldPassword
+        - newPassword
+
+    ChangeVaultPinBody:
+      type: object
+      properties:
+        oldPin:
+          type: string
+        newPin:
+          type: string
+      required:
+        - oldPin
+        - newPin
+
     Stats:
       type: object
       properties:
         totalCredentials:
           type: integer
         totalCategories:
+          type: integer
+        totalSpaces:
+          type: integer
+        totalVaults:
           type: integer
         recentlyAdded:
           type: integer
@@ -803,6 +1153,8 @@ components:
       required:
         - totalCredentials
         - totalCategories
+        - totalSpaces
+        - totalVaults
         - recentlyAdded
         - vaultCredentials
         - uniqueTypes
@@ -872,58 +1224,3 @@ components:
           type: boolean
       required:
         - enabled
-
-    VaultStatus:
-      type: object
-      properties:
-        hasPassword:
-          type: boolean
-        hasPin:
-          type: boolean
-        isUnlocked:
-          type: boolean
-      required:
-        - hasPassword
-        - hasPin
-        - isUnlocked
-
-    SetupVaultBody:
-      type: object
-      properties:
-        password:
-          type: string
-        pin:
-          type: string
-      required:
-        - password
-        - pin
-
-    VerifyVaultBody:
-      type: object
-      properties:
-        password:
-          type: string
-        pin:
-          type: string
-
-    ChangeVaultPasswordBody:
-      type: object
-      properties:
-        oldPassword:
-          type: string
-        newPassword:
-          type: string
-      required:
-        - oldPassword
-        - newPassword
-
-    ChangeVaultPinBody:
-      type: object
-      properties:
-        oldPin:
-          type: string
-        newPin:
-          type: string
-      required:
-        - oldPin
-        - newPin

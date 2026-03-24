@@ -11,6 +11,8 @@ import type { TypeStat } from "./typeStat";
 export interface Stats {
   totalCredentials: number;
   totalCategories: number;
+  totalSpaces: number;
+  totalVaults: number;
   recentlyAdded: number;
   vaultCredentials: number;
   uniqueTypes: number;

@@ -1,7 +1,7 @@
 import { useGetStats } from "@workspace/api-client-react";
 import { Layout } from "@/components/layout";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, Plus, ArrowRight, KeyRound, Tag, Clock, Shield, Grid3X3, Calendar } from "lucide-react";
+import { Loader2, Plus, ArrowRight, KeyRound, Tag, Clock, Shield, Grid3X3, Calendar, FolderOpen } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { getServiceType } from "@/lib/service-types";
@@ -81,8 +81,16 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <Shield className="w-5 h-5 text-amber-500/60" />
             <div>
-              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.vaultCredentials}</span>
-              <span className="text-muted-foreground text-[13px] ml-1.5">in vault</span>
+              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.totalVaults}</span>
+              <span className="text-muted-foreground text-[13px] ml-1.5">vault{stats.totalVaults !== 1 ? "s" : ""}</span>
+            </div>
+          </div>
+          <div className="w-px h-8 bg-border hidden sm:block" />
+          <div className="flex items-center gap-3">
+            <FolderOpen className="w-5 h-5 text-muted-foreground/60" />
+            <div>
+              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.totalSpaces}</span>
+              <span className="text-muted-foreground text-[13px] ml-1.5">space{stats.totalSpaces !== 1 ? "s" : ""}</span>
             </div>
           </div>
         </div>
@@ -116,10 +124,10 @@ export default function Dashboard() {
           <div className="border rounded-xl bg-card p-4">
             <div className="flex items-center gap-1.5 mb-2">
               <Shield className="w-3.5 h-3.5 text-amber-500/60" />
-              <span className="text-[12px] text-muted-foreground font-medium">Vault ratio</span>
+              <span className="text-[12px] text-muted-foreground font-medium">In vaults</span>
             </div>
             <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">
-              {stats.totalCredentials > 0 ? Math.round((stats.vaultCredentials / stats.totalCredentials) * 100) : 0}%
+              {stats.vaultCredentials}
             </span>
           </div>
         </div>
@@ -212,9 +220,10 @@ export default function Dashboard() {
           <div className="space-y-2">
             {[
               { label: "Add a new credential", desc: "Store a login or API key", href: "/credentials" },
+              { label: "Create a vault", desc: "Encrypted storage for sensitive credentials", href: "/vault" },
               { label: "Create a tag", desc: "Organize your credentials", href: "/categories" },
               ...(user?.isAdmin
-                ? [{ label: "Admin settings", desc: "Registration, branding, vault", href: "/settings" }]
+                ? [{ label: "Admin settings", desc: "Registration and branding", href: "/settings" }]
                 : []),
             ].map((action) => (
               <Link

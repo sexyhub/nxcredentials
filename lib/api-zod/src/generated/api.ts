@@ -62,6 +62,8 @@ export const LogoutResponse = zod.object({
 export const ListCredentialsQueryParams = zod.object({
   category: zod.coerce.string().optional(),
   search: zod.coerce.string().optional(),
+  spaceId: zod.coerce.number().optional(),
+  vaultId: zod.coerce.number().optional(),
 });
 
 export const ListCredentialsResponseItem = zod.object({
@@ -72,7 +74,9 @@ export const ListCredentialsResponseItem = zod.object({
   categoryId: zod.number().nullable(),
   categoryName: zod.string().nullable(),
   categoryColor: zod.string().nullable(),
-  isVault: zod.boolean(),
+  vaultId: zod.number().nullable(),
+  spaceId: zod.number().nullable(),
+  spaceName: zod.string().nullable(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
 });
@@ -86,7 +90,8 @@ export const CreateCredentialBody = zod.object({
   email: zod.string(),
   password: zod.string(),
   categoryId: zod.number().nullish(),
-  isVault: zod.boolean().optional(),
+  vaultId: zod.number().nullish(),
+  spaceId: zod.number().nullish(),
 });
 
 /**
@@ -101,7 +106,8 @@ export const UpdateCredentialBody = zod.object({
   email: zod.string().optional(),
   password: zod.string().optional(),
   categoryId: zod.number().nullish(),
-  isVault: zod.boolean().optional(),
+  vaultId: zod.number().nullish(),
+  spaceId: zod.number().nullish(),
 });
 
 export const UpdateCredentialResponse = zod.object({
@@ -112,7 +118,9 @@ export const UpdateCredentialResponse = zod.object({
   categoryId: zod.number().nullable(),
   categoryName: zod.string().nullable(),
   categoryColor: zod.string().nullable(),
-  isVault: zod.boolean(),
+  vaultId: zod.number().nullable(),
+  spaceId: zod.number().nullable(),
+  spaceName: zod.string().nullable(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
 });
@@ -170,11 +178,66 @@ export const DeleteCategoryParams = zod.object({
 });
 
 /**
+ * @summary List all spaces
+ */
+export const ListSpacesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  defaultType: zod.string().nullable(),
+  color: zod.string(),
+  icon: zod.string(),
+  credentialCount: zod.number(),
+});
+export const ListSpacesResponse = zod.array(ListSpacesResponseItem);
+
+/**
+ * @summary Create a space
+ */
+export const CreateSpaceBody = zod.object({
+  name: zod.string(),
+  defaultType: zod.string().nullish(),
+  color: zod.string().optional(),
+  icon: zod.string().optional(),
+});
+
+/**
+ * @summary Update a space
+ */
+export const UpdateSpaceParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateSpaceBody = zod.object({
+  name: zod.string().optional(),
+  defaultType: zod.string().nullish(),
+  color: zod.string().optional(),
+  icon: zod.string().optional(),
+});
+
+export const UpdateSpaceResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  defaultType: zod.string().nullable(),
+  color: zod.string(),
+  icon: zod.string(),
+  credentialCount: zod.number(),
+});
+
+/**
+ * @summary Delete a space
+ */
+export const DeleteSpaceParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
  * @summary Get dashboard statistics
  */
 export const GetStatsResponse = zod.object({
   totalCredentials: zod.number(),
   totalCategories: zod.number(),
+  totalSpaces: zod.number(),
+  totalVaults: zod.number(),
   recentlyAdded: zod.number(),
   vaultCredentials: zod.number(),
   uniqueTypes: zod.number(),
@@ -230,36 +293,67 @@ export const GetRegistrationStatusResponse = zod.object({
 });
 
 /**
- * @summary Check if vault is set up
+ * @summary List all user vaults
  */
-export const GetVaultStatusResponse = zod.object({
-  hasPassword: zod.boolean(),
-  hasPin: zod.boolean(),
+export const ListVaultsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  color: zod.string(),
+  icon: zod.string(),
+  credentialCount: zod.number(),
   isUnlocked: zod.boolean(),
+  createdAt: zod.date(),
 });
+export const ListVaultsResponse = zod.array(ListVaultsResponseItem);
 
 /**
- * @summary Lock the vault
+ * @summary Create a new vault
  */
-export const LockVaultResponse = zod.object({
-  message: zod.string(),
-});
-
-/**
- * @summary Set up vault password and PIN
- */
-export const SetupVaultBody = zod.object({
+export const CreateVaultBody = zod.object({
+  name: zod.string(),
   password: zod.string(),
   pin: zod.string(),
-});
-
-export const SetupVaultResponse = zod.object({
-  message: zod.string(),
+  color: zod.string().optional(),
+  icon: zod.string().optional(),
 });
 
 /**
- * @summary Verify vault password or PIN
+ * @summary Update a vault (name, color, icon)
  */
+export const UpdateVaultParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateVaultBody = zod.object({
+  name: zod.string().optional(),
+  color: zod.string().optional(),
+  icon: zod.string().optional(),
+});
+
+export const UpdateVaultResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  color: zod.string(),
+  icon: zod.string(),
+  credentialCount: zod.number(),
+  isUnlocked: zod.boolean(),
+  createdAt: zod.date(),
+});
+
+/**
+ * @summary Delete a vault and all its credentials
+ */
+export const DeleteVaultParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Verify vault password or PIN to unlock
+ */
+export const VerifyVaultParams = zod.object({
+  id: zod.coerce.number(),
+});
+
 export const VerifyVaultBody = zod.object({
   password: zod.string().optional(),
   pin: zod.string().optional(),
@@ -270,8 +364,23 @@ export const VerifyVaultResponse = zod.object({
 });
 
 /**
+ * @summary Lock a vault
+ */
+export const LockVaultParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const LockVaultResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
  * @summary Change vault password
  */
+export const ChangeVaultPasswordParams = zod.object({
+  id: zod.coerce.number(),
+});
+
 export const ChangeVaultPasswordBody = zod.object({
   oldPassword: zod.string(),
   newPassword: zod.string(),
@@ -284,6 +393,10 @@ export const ChangeVaultPasswordResponse = zod.object({
 /**
  * @summary Change vault PIN
  */
+export const ChangeVaultPinParams = zod.object({
+  id: zod.coerce.number(),
+});
+
 export const ChangeVaultPinBody = zod.object({
   oldPin: zod.string(),
   newPin: zod.string(),
