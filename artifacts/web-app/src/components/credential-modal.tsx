@@ -93,7 +93,7 @@ export function CredentialModal({ open, onOpenChange, credential }: CredentialMo
     ...(categories?.map((cat) => ({
       value: String(cat.id),
       label: cat.name,
-      icon: <div className="w-2.5 h-2.5" style={{ backgroundColor: cat.color }} />,
+      icon: <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: cat.color }} />,
     })) || []),
   ];
 
@@ -101,41 +101,41 @@ export function CredentialModal({ open, onOpenChange, credential }: CredentialMo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit credential" : "Add credential"}</DialogTitle>
+          <DialogTitle className="text-[16px]">{isEditing ? "Edit credential" : "Add credential"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="cred-title" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Title</Label>
-            <Input id="cred-title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Gmail, Netflix" className="h-10" />
+        <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+          <div className="space-y-2">
+            <Label htmlFor="cred-title" className="text-[13px] font-medium">Title</Label>
+            <Input id="cred-title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Gmail, GitHub, Netflix" className="h-10" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="cred-email" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Email / Username</Label>
+            <div className="space-y-2">
+              <Label htmlFor="cred-email" className="text-[13px] font-medium">Email / Username</Label>
               <Input id="cred-email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="user@example.com" className="h-10" />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="cred-password" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Password</Label>
-              <Input id="cred-password" type="text" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" className="h-10" />
+            <div className="space-y-2">
+              <Label htmlFor="cred-password" className="text-[13px] font-medium">Password</Label>
+              <Input id="cred-password" type="text" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Your password" className="h-10" />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Category</Label>
+          <div className="space-y-2">
+            <Label className="text-[13px] font-medium">Category</Label>
             <Combobox
               options={categoryOptions}
               value={categoryId ? String(categoryId) : "none"}
               onValueChange={(val) => setCategoryId(val && val !== "none" ? Number(val) : null)}
               placeholder="Select category"
               searchPlaceholder="Search categories..."
-              emptyText="No categories."
+              emptyText="No categories found."
             />
           </div>
 
-          <DialogFooter className="pt-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving..." : "Save"}</Button>
+          <DialogFooter className="pt-2 gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9">Cancel</Button>
+            <Button type="submit" disabled={isPending} className="h-9">{isPending ? "Saving..." : "Save"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

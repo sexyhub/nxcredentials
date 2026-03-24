@@ -91,17 +91,17 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit category" : "New category"}</DialogTitle>
+          <DialogTitle className="text-[16px]">{isEditing ? "Edit category" : "New category"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-1.5">
-            <Label htmlFor="cat-name" className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Name</Label>
-            <Input id="cat-name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Work, Social" className="h-10" />
+        <form onSubmit={handleSubmit} className="space-y-5 pt-1">
+          <div className="space-y-2">
+            <Label htmlFor="cat-name" className="text-[13px] font-medium">Name</Label>
+            <Input id="cat-name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Work, Social, Finance" className="h-10" />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Color</Label>
+          <div className="space-y-2.5">
+            <Label className="text-[13px] font-medium">Color</Label>
             <div className="grid grid-cols-6 gap-2">
               {COLORS.map((c) => (
                 <button
@@ -109,26 +109,24 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
                   type="button"
                   onClick={() => setColor(c)}
                   className={cn(
-                    "w-full aspect-square flex items-center justify-center transition-all border-2",
-                    color === c ? "border-foreground" : "border-transparent hover:border-border"
+                    "w-full aspect-square rounded-lg flex items-center justify-center transition-all border-2",
+                    color === c ? "border-foreground scale-110" : "border-transparent hover:scale-105"
                   )}
                   style={{ backgroundColor: c }}
                 >
-                  {color === c && <Check className="w-4 h-4 text-white drop-shadow-sm" />}
+                  {color === c && <Check className="w-4 h-4 text-white" />}
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2.5 mt-3 p-3 border bg-muted/30">
-              <div className="w-3 h-3" style={{ backgroundColor: color }} />
-              <span className="text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">{name || "Category"}</span>
-              </span>
+            <div className="flex items-center gap-2.5 p-3 border rounded-lg bg-muted/30">
+              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }} />
+              <span className="text-[13px] font-medium">{name || "Category name"}</span>
             </div>
           </div>
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending}>{isPending ? "Saving..." : "Save"}</Button>
+          <DialogFooter className="pt-1 gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9">Cancel</Button>
+            <Button type="submit" disabled={isPending} className="h-9">{isPending ? "Saving..." : "Save"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
