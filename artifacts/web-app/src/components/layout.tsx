@@ -73,7 +73,7 @@ export function Layout({ children }: LayoutProps) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center gap-1.5 pl-3 pr-3.5 py-1.5 text-[13px] transition-colors border-l-2 ${
+                      className={`flex items-center gap-1.5 pl-2.5 pr-3.5 py-1.5 text-[13px] transition-colors border-l-[1.5px] ${
                         isActive
                           ? "text-foreground font-semibold border-foreground"
                           : "text-muted-foreground font-medium hover:text-foreground border-transparent"
