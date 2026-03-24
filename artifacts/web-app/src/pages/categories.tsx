@@ -11,6 +11,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { CategoryModal } from "@/components/category-modal";
 import { Plus, Edit, Trash2, Folder } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export default function Categories() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,59 +57,67 @@ export default function Categories() {
       <div className="space-y-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-2xl font-bold">Categories</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Organize your credentials</p>
+            <h1 className="text-xl font-semibold tracking-tight">Categories</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Organize your credentials into groups</p>
           </div>
-          <button
-            onClick={handleAdd}
-            className="flex items-center gap-2 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:brightness-110 transition-all"
-          >
-            <Plus className="w-4 h-4" />
+          <Button onClick={handleAdd} size="sm">
+            <Plus className="w-4 h-4 mr-1.5" />
             Add category
-          </button>
+          </Button>
         </div>
 
         {isLoading ? (
-          <div className="text-sm text-muted-foreground">Loading categories...</div>
+          <div className="text-sm text-muted-foreground py-8 text-center">Loading categories...</div>
         ) : categories?.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border p-12 text-center">
-            <Folder className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No categories yet. Create one to get started.</p>
-          </div>
+          <Card className="p-12 text-center">
+            <Folder className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+            <p className="text-sm font-medium mb-1">No categories yet</p>
+            <p className="text-sm text-muted-foreground mb-4">Create a category to start organizing your credentials.</p>
+            <Button onClick={handleAdd} size="sm" variant="outline">
+              <Plus className="w-4 h-4 mr-1.5" />
+              Create first category
+            </Button>
+          </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {categories?.map((cat) => (
-              <div
+              <Card
                 key={cat.id}
-                className="rounded-lg border border-border bg-card p-4 group hover:border-primary/30 transition-colors"
+                className="p-4 group hover:shadow-sm transition-shadow cursor-default"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     <div
-                      className="w-3 h-3 rounded-sm flex-shrink-0"
+                      className="w-3.5 h-3.5 rounded flex-shrink-0"
                       style={{ backgroundColor: cat.color }}
                     />
-                    <h3 className="font-semibold text-sm">{cat.name}</h3>
+                    <div className="min-w-0">
+                      <h3 className="text-[13px] font-medium truncate">{cat.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {cat.credentialCount} credential{cat.credentialCount !== 1 ? "s" : ""}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
+                  <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
                       onClick={() => handleEdit(cat)}
-                      className="p-1 rounded hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
                     >
                       <Edit className="w-3.5 h-3.5" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 hover:text-destructive"
                       onClick={() => handleDelete(cat.id, cat.credentialCount)}
-                      className="p-1 rounded hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {cat.credentialCount} credential{cat.credentialCount !== 1 ? "s" : ""}
-                </p>
-              </div>
+              </Card>
             ))}
           </div>
         )}

@@ -4,6 +4,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useGetSettings } from "@workspace/api-client-react";
 import { Shield, Key, Folder, Settings, LogOut, Loader2, Menu, X, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,7 +20,7 @@ export function Layout({ children }: LayoutProps) {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -40,37 +42,38 @@ export function Layout({ children }: LayoutProps) {
   const siteTitle = settings?.siteTitle || "Credential Vault";
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row w-full">
-      <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border bg-sidebar">
-        <div className="flex items-center gap-2.5">
+    <div className="min-h-screen flex flex-col md:flex-row w-full bg-muted/30">
+      <div className="md:hidden flex items-center justify-between px-4 h-14 border-b border-border bg-card">
+        <div className="flex items-center gap-2">
           {settings?.siteLogo ? (
             <img src={settings.siteLogo} alt="Logo" className="w-6 h-6 object-contain rounded" />
           ) : (
-            <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-primary" />
+            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+              <Shield className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
           )}
           <span className="font-semibold text-sm">{siteTitle}</span>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-1.5 rounded-md hover:bg-accent transition-colors"
         >
           {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        </Button>
       </div>
 
       <aside
         className={`${
           isMobileMenuOpen ? "flex" : "hidden"
-        } md:flex flex-col w-full md:w-60 md:min-h-screen border-r border-border bg-sidebar z-50`}
+        } md:flex flex-col w-full md:w-[240px] md:min-h-screen border-r border-border bg-card z-50`}
       >
-        <div className="hidden md:flex items-center gap-2.5 px-5 py-4 border-b border-border">
+        <div className="hidden md:flex items-center gap-2 px-4 h-14 border-b border-border">
           {settings?.siteLogo ? (
-            <img src={settings.siteLogo} alt="Logo" className="w-7 h-7 object-contain rounded" />
+            <img src={settings.siteLogo} alt="Logo" className="w-6 h-6 object-contain rounded" />
           ) : (
-            <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
-              <Shield className="w-4 h-4 text-primary" />
+            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+              <Shield className="w-3.5 h-3.5 text-primary-foreground" />
             </div>
           )}
           <span className="font-semibold text-sm">{siteTitle}</span>
@@ -84,10 +87,10 @@ export function Layout({ children }: LayoutProps) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
                   isActive
                     ? "bg-accent text-foreground"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                    : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
                 }`}
               >
                 <item.icon className="w-4 h-4" />
@@ -97,32 +100,36 @@ export function Layout({ children }: LayoutProps) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-border">
-          <div className="px-3 py-2.5 rounded-md bg-accent/50 mb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center text-xs font-bold text-primary">
-                {user?.username?.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate">{user?.username}</div>
-                {user?.isAdmin && (
-                  <span className="text-[10px] text-primary font-medium">Admin</span>
-                )}
-              </div>
+        <div className="p-3 border-t border-border space-y-2">
+          <div className="flex items-center gap-2.5 px-2 py-1.5">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-foreground">
+              {user?.username?.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">{user?.username}</div>
+              {user?.isAdmin && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 mt-0.5">
+                  Admin
+                </Badge>
+              )}
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => logout()}
-            className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+            className="w-full justify-start text-muted-foreground hover:text-destructive"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-4 h-4 mr-2" />
             Sign out
-          </button>
+          </Button>
         </div>
       </aside>
 
       <main className="flex-1 p-4 md:p-6 overflow-auto">
-        {children}
+        <div className="max-w-6xl mx-auto">
+          {children}
+        </div>
       </main>
     </div>
   );

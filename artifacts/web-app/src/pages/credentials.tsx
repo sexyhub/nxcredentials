@@ -12,7 +12,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CopyButton } from "@/components/copy-button";
 import { CredentialModal } from "@/components/credential-modal";
 import { format } from "date-fns";
-import { Plus, Search, Eye, EyeOff, Edit, Trash2, ChevronDown } from "lucide-react";
+import { Plus, Search, Eye, EyeOff, Edit, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Combobox } from "@/components/ui/combobox";
 
 export default function Credentials() {
   const [search, setSearch] = useState("");
@@ -58,137 +63,140 @@ export default function Credentials() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this credential?")) {
+    if (confirm("Are you sure you want to delete this credential? This action cannot be undone.")) {
       deleteMutation.mutate({ id });
     }
   };
+
+  const categoryOptions = [
+    { value: "", label: "All categories" },
+    ...(categories?.map((cat) => ({
+      value: cat.name,
+      label: cat.name,
+      icon: <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />,
+    })) || []),
+  ];
 
   return (
     <Layout>
       <div className="space-y-5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-2xl font-bold">Credentials</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Manage your saved logins</p>
+            <h1 className="text-xl font-semibold tracking-tight">Credentials</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">Manage your saved logins and passwords</p>
           </div>
-          <button
-            onClick={handleAdd}
-            className="flex items-center gap-2 h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:brightness-110 transition-all"
-          >
-            <Plus className="w-4 h-4" />
+          <Button onClick={handleAdd} size="sm">
+            <Plus className="w-4 h-4 mr-1.5" />
             Add credential
-          </button>
+          </Button>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
+            <Input
               type="text"
-              placeholder="Search credentials..."
+              placeholder="Search by title, email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 rounded-md bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-colors"
+              className="pl-9"
             />
           </div>
-          <div className="relative sm:w-48">
-            <select
+          <div className="sm:w-[200px]">
+            <Combobox
+              options={categoryOptions}
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full h-9 pl-3 pr-8 rounded-md bg-card border border-border text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-colors"
-            >
-              <option value="">All categories</option>
-              {categories?.map((cat) => (
-                <option key={cat.id} value={cat.name}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              onValueChange={setCategoryFilter}
+              placeholder="All categories"
+              searchPlaceholder="Search categories..."
+              emptyText="No categories found."
+            />
           </div>
         </div>
 
-        <div className="rounded-lg border border-border overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left min-w-[700px]">
+            <table className="w-full text-left min-w-[680px]">
               <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-xs font-medium text-muted-foreground">Title</th>
-                  <th className="px-4 py-3 text-xs font-medium text-muted-foreground">Email / Username</th>
-                  <th className="px-4 py-3 text-xs font-medium text-muted-foreground">Password</th>
-                  <th className="px-4 py-3 text-xs font-medium text-muted-foreground text-right">Actions</th>
+                <tr className="border-b border-border">
+                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">Title</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">Email / Username</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">Password</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground w-[100px]"></th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                      Loading...
+                    <td colSpan={4} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                      Loading credentials...
                     </td>
                   </tr>
                 ) : credentials?.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                      No credentials found
+                    <td colSpan={4} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                      No credentials found. Add your first credential to get started.
                     </td>
                   </tr>
                 ) : (
                   credentials?.map((cred) => (
-                    <tr key={cred.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                    <tr key={cred.id} className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors group">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-sm">{cred.title}</div>
+                        <div className="font-medium text-[13px]">{cred.title}</div>
                         {cred.categoryName && (
-                          <span
-                            className="inline-flex items-center mt-1 text-[11px] font-medium px-1.5 py-0.5 rounded"
-                            style={{
-                              backgroundColor: (cred.categoryColor || '#666') + '20',
-                              color: cred.categoryColor || '#999',
-                            }}
-                          >
+                          <Badge variant="outline" className="mt-1 text-[10px] font-medium h-5 gap-1">
+                            <div
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{ backgroundColor: cred.categoryColor || '#888' }}
+                            />
                             {cred.categoryName}
-                          </span>
+                          </Badge>
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground truncate max-w-[200px]">{cred.email}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[13px] text-muted-foreground truncate max-w-[180px]">{cred.email}</span>
                           <CopyButton value={cred.email} label="Copy email" />
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-mono text-muted-foreground min-w-[100px]">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[13px] font-mono text-muted-foreground min-w-[80px]">
                             {revealedIds.has(cred.id) ? cred.password : "••••••••"}
                           </span>
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
                             onClick={() => toggleReveal(cred.id)}
-                            className="p-1 rounded hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
                           >
                             {revealedIds.has(cred.id) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                          </button>
+                          </Button>
                           <CopyButton value={cred.password} label="Copy password" />
                         </div>
-                        <div className="text-[11px] text-muted-foreground mt-1">
+                        <div className="text-[11px] text-muted-foreground/60 mt-0.5">
                           Updated {format(new Date(cred.updatedAt), "MMM d, yyyy")}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end gap-1">
-                          <button
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
                             onClick={() => handleEdit(cred)}
-                            className="p-1.5 rounded hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
-                            title="Edit"
                           >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
+                            <Edit className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 hover:text-destructive"
                             onClick={() => handleDelete(cred.id)}
-                            className="p-1.5 rounded hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
-                            title="Delete"
                             disabled={deleteMutation.isPending}
                           >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -197,7 +205,7 @@ export default function Credentials() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </div>
 
       <CredentialModal

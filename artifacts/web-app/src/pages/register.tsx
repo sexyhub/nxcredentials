@@ -4,6 +4,9 @@ import { useRegister, useGetRegistrationStatus, getGetMeQueryKey } from "@worksp
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { ShieldAlert, UserPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -40,71 +43,71 @@ export default function Register() {
 
   if (regStatus && !regStatus.enabled) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-sm bg-card border border-border rounded-lg p-8 text-center">
-          <div className="w-12 h-12 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-center mx-auto mb-4">
-            <ShieldAlert className="w-6 h-6 text-destructive" />
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+        <div className="w-full max-w-[380px] bg-card border border-border rounded-xl p-8 text-center shadow-sm">
+          <div className="w-11 h-11 rounded-xl bg-destructive/10 flex items-center justify-center mx-auto mb-3">
+            <ShieldAlert className="w-5 h-5 text-destructive" />
           </div>
-          <h1 className="text-xl font-bold mb-2">Registration Closed</h1>
-          <p className="text-sm text-muted-foreground mb-6">New account registration has been disabled by the administrator.</p>
-          <Link href="/login" className="inline-block w-full h-10 leading-10 rounded-md bg-primary text-primary-foreground font-medium hover:brightness-110 transition-all text-center">
-            Back to Sign In
-          </Link>
+          <h1 className="text-lg font-semibold mb-1.5">Registration Closed</h1>
+          <p className="text-sm text-muted-foreground mb-5">New account registration has been disabled by the administrator.</p>
+          <Button asChild className="w-full">
+            <Link href="/login">Back to Sign In</Link>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
-            <UserPlus className="w-6 h-6 text-primary" />
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <div className="w-full max-w-[380px]">
+        <div className="flex flex-col items-center mb-6">
+          <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center mb-3">
+            <UserPlus className="w-5 h-5 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Create Account</h1>
-          <p className="text-sm text-muted-foreground mt-1">Set up your credential vault</p>
+          <h1 className="text-xl font-semibold tracking-tight">Create your account</h1>
+          <p className="text-sm text-muted-foreground mt-1">Get started with Credential Vault</p>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-muted-foreground">Username</label>
-              <input
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
                 type="text"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full h-10 px-3 rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-colors"
                 placeholder="Choose a username"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-muted-foreground">Password</label>
-              <input
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-10 px-3 rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-colors"
-                placeholder="Choose a password"
+                placeholder="Create a password"
               />
             </div>
 
-            <button
+            <Button
               type="submit"
+              className="w-full"
               disabled={registerMutation.isPending}
-              className="w-full h-10 rounded-md bg-primary text-primary-foreground font-medium hover:brightness-110 transition-all disabled:opacity-50"
             >
               {registerMutation.isPending ? "Creating account..." : "Create account"}
-            </button>
+            </Button>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-border text-center">
+          <div className="mt-5 pt-4 border-t border-border text-center">
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/login" className="text-primary hover:underline font-medium">
+              <Link href="/login" className="text-foreground font-medium hover:underline underline-offset-4">
                 Sign in
               </Link>
             </p>

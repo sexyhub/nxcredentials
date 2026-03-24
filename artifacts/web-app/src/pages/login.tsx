@@ -4,6 +4,10 @@ import { useLogin, useGetRegistrationStatus, getGetMeQueryKey } from "@workspace
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -38,66 +42,67 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
-            <Lock className="w-6 h-6 text-primary" />
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <div className="w-full max-w-[380px]">
+        <div className="flex flex-col items-center mb-6">
+          <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center mb-3">
+            <Lock className="w-5 h-5 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Credential Vault</h1>
-          <p className="text-sm text-muted-foreground mt-1">Sign in to your account</p>
+          <h1 className="text-xl font-semibold tracking-tight">Sign in to Credential Vault</h1>
+          <p className="text-sm text-muted-foreground mt-1">Securely access your saved credentials</p>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-6">
+        <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-muted-foreground">Username</label>
-              <input
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
                 type="text"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full h-10 px-3 rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-colors"
-                placeholder="Enter username"
+                placeholder="Enter your username"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-muted-foreground">Password</label>
-              <input
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-10 px-3 rounded-md bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-colors"
-                placeholder="Enter password"
+                placeholder="Enter your password"
               />
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="remember"
                 checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-border accent-primary"
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
               />
-              <span className="text-sm text-muted-foreground">Remember me</span>
-            </label>
+              <Label htmlFor="remember" className="text-sm font-normal cursor-pointer text-muted-foreground">
+                Remember me for 30 days
+              </Label>
+            </div>
 
-            <button
+            <Button
               type="submit"
+              className="w-full"
               disabled={loginMutation.isPending}
-              className="w-full h-10 rounded-md bg-primary text-primary-foreground font-medium hover:brightness-110 transition-all disabled:opacity-50"
             >
               {loginMutation.isPending ? "Signing in..." : "Sign in"}
-            </button>
+            </Button>
           </form>
 
           {regStatus?.enabled && (
-            <div className="mt-6 pt-4 border-t border-border text-center">
+            <div className="mt-5 pt-4 border-t border-border text-center">
               <p className="text-sm text-muted-foreground">
                 Don't have an account?{" "}
-                <Link href="/register" className="text-primary hover:underline font-medium">
+                <Link href="/register" className="text-foreground font-medium hover:underline underline-offset-4">
                   Create one
                 </Link>
               </p>

@@ -8,8 +8,18 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, Check } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CategoryModalProps {
   open: boolean;
@@ -18,8 +28,9 @@ interface CategoryModalProps {
 }
 
 const COLORS = [
-  "#22d3ee", "#34d399", "#fbbf24", "#f97316",
-  "#f43f5e", "#a78bfa", "#60a5fa", "#94a3b8",
+  "#3b82f6", "#8b5cf6", "#ec4899", "#ef4444",
+  "#f97316", "#eab308", "#22c55e", "#06b6d4",
+  "#6366f1", "#d946ef", "#f43f5e", "#64748b",
 ];
 
 export function CategoryModal({ open, onOpenChange, category }: CategoryModalProps) {
@@ -75,73 +86,70 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
-  const inputClass =
-    "w-full h-10 px-3 rounded-md bg-background border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-colors";
 
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60" />
-        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-6 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
-          <DialogPrimitive.Title className="text-lg font-semibold mb-4">
-            {isEditing ? "Edit Category" : "New Category"}
-          </DialogPrimitive.Title>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>
+            {isEditing ? "Edit category" : "New category"}
+          </DialogTitle>
+        </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-muted-foreground">Name</label>
-              <input
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={inputClass}
-                placeholder="e.g. Work, Social"
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="cat-name">Name</Label>
+            <Input
+              id="cat-name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Work, Social, Finance"
+            />
+          </div>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-muted-foreground">Color</label>
-              <div className="grid grid-cols-8 gap-2">
-                {COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setColor(c)}
-                    className={`w-full aspect-square rounded-md flex items-center justify-center transition-all ${
-                      color === c ? "ring-2 ring-primary ring-offset-2 ring-offset-card" : "hover:scale-110"
-                    }`}
-                    style={{ backgroundColor: c }}
-                  >
-                    {color === c && <Check className="w-3.5 h-3.5 text-white drop-shadow" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-3">
-              <DialogPrimitive.Close asChild>
+          <div className="space-y-1.5">
+            <Label>Color</Label>
+            <div className="grid grid-cols-6 gap-2">
+              {COLORS.map((c) => (
                 <button
+                  key={c}
                   type="button"
-                  className="h-9 px-4 rounded-md border border-border bg-transparent text-sm font-medium text-foreground hover:bg-accent transition-colors"
+                  onClick={() => setColor(c)}
+                  className={cn(
+                    "w-full aspect-square rounded-lg flex items-center justify-center transition-all border-2",
+                    color === c
+                      ? "border-foreground scale-105"
+                      : "border-transparent hover:scale-105"
+                  )}
+                  style={{ backgroundColor: c }}
                 >
-                  Cancel
+                  {color === c && <Check className="w-4 h-4 text-white drop-shadow-sm" />}
                 </button>
-              </DialogPrimitive.Close>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:brightness-110 transition-all disabled:opacity-50"
-              >
-                {isPending ? "Saving..." : "Save"}
-              </button>
+              ))}
             </div>
-          </form>
+            <div className="flex items-center gap-2 mt-3 p-2.5 rounded-lg bg-accent/50 border border-border">
+              <div className="w-3 h-3 rounded" style={{ backgroundColor: color }} />
+              <span className="text-xs text-muted-foreground">
+                Preview: <span className="font-medium text-foreground">{name || "Category name"}</span>
+              </span>
+            </div>
+          </div>
 
-          <DialogPrimitive.Close className="absolute right-3 top-3 p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
-            <X className="h-4 w-4" />
-          </DialogPrimitive.Close>
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+          <DialogFooter className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
