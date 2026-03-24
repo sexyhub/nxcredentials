@@ -246,7 +246,7 @@ export default function Credentials() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-[12px] font-bold truncate">All</div>
-                  <div className="text-[10px] text-muted-foreground">{allCredentials?.filter(c => !c.vaultId).length || 0}</div>
+                  <div className="text-[10px] text-muted-foreground">{spaces.reduce((sum, s) => sum + (s.credentialCount || 0), 0) + (allCredentials?.filter(c => !c.vaultId && !c.spaceId).length || 0)}</div>
                 </div>
               </div>
             </button>
@@ -256,10 +256,13 @@ export default function Credentials() {
               const SpaceIcon = getSpaceIcon(space.icon);
               const spaceColor = space.color || "#6366f1";
               return (
-                <button
+                <div
                   key={space.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setActiveSpaceId(isActive ? null : space.id)}
-                  className={`border rounded-xl bg-card px-3 py-2.5 text-left transition-all group relative ${
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveSpaceId(isActive ? null : space.id); } }}
+                  className={`border rounded-xl bg-card px-3 py-2.5 text-left transition-all group relative cursor-pointer ${
                     isActive ? "ring-1" : "hover:border-foreground/20"
                   }`}
                   style={isActive ? { borderColor: spaceColor + '60', ringColor: spaceColor + '30' } : undefined}
@@ -287,7 +290,7 @@ export default function Credentials() {
                       </button>
                     </div>
                   </div>
-                </button>
+                </div>
               );
             })}
 
