@@ -83,7 +83,7 @@ export function Layout({ children }: LayoutProps) {
                         <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-3 bg-foreground rounded-full" />
                       )}
                       <item.icon className="w-4 h-4 shrink-0" strokeWidth={isActive ? 2.5 : 2} />
-                      <span className="translate-y-[0.5px]">{item.label}</span>
+                      <span className="translate-y-[0.4px]">{item.label}</span>
                     </Link>
                   );
                 })}
