@@ -75,8 +75,8 @@ export function Layout({ children }: LayoutProps) {
                       href={item.href}
                       className={`flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium rounded-lg transition-colors ${
                         isActive
-                          ? "bg-accent text-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       <item.icon className="w-4 h-4" />

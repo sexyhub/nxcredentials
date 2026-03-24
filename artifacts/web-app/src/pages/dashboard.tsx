@@ -1,7 +1,7 @@
 import { useGetStats } from "@workspace/api-client-react";
 import { Layout } from "@/components/layout";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, Plus, ArrowRight } from "lucide-react";
+import { Loader2, Plus, ArrowRight, KeyRound, Layers, Clock } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 
@@ -49,20 +49,29 @@ export default function Dashboard() {
           </Button>
         </div>
 
-        <div className="flex flex-wrap items-baseline gap-x-12 gap-y-4">
-          <div>
-            <span className="text-5xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.totalCredentials}</span>
-            <span className="text-muted-foreground text-[14px] ml-2">credentials</span>
+        <div className="flex flex-wrap items-center gap-x-12 gap-y-4">
+          <div className="flex items-center gap-3">
+            <KeyRound className="w-5 h-5 text-muted-foreground/60" />
+            <div>
+              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.totalCredentials}</span>
+              <span className="text-muted-foreground text-[13px] ml-1.5">credentials</span>
+            </div>
           </div>
           <div className="w-px h-8 bg-border hidden sm:block" />
-          <div>
-            <span className="text-5xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.totalCategories}</span>
-            <span className="text-muted-foreground text-[14px] ml-2">categories</span>
+          <div className="flex items-center gap-3">
+            <Layers className="w-5 h-5 text-muted-foreground/60" />
+            <div>
+              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.totalCategories}</span>
+              <span className="text-muted-foreground text-[13px] ml-1.5">categories</span>
+            </div>
           </div>
           <div className="w-px h-8 bg-border hidden sm:block" />
-          <div>
-            <span className="text-5xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.recentlyAdded}</span>
-            <span className="text-muted-foreground text-[14px] ml-2">added this week</span>
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-muted-foreground/60" />
+            <div>
+              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.recentlyAdded}</span>
+              <span className="text-muted-foreground text-[13px] ml-1.5">this week</span>
+            </div>
           </div>
         </div>
 
