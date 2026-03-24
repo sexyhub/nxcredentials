@@ -2,7 +2,7 @@
 
 ## Overview
 
-A credential/password manager web application built with a pnpm workspace monorepo. Features user authentication with "remember me", admin settings, CRUD for credentials and categories, dashboard statistics, and a brutalist design aesthetic.
+A credential/password manager web application built with a pnpm workspace monorepo. Features user authentication with "remember me", admin settings, CRUD for credentials and categories, dashboard statistics.
 
 ## Stack
 
@@ -24,7 +24,7 @@ A credential/password manager web application built with a pnpm workspace monore
 artifacts-monorepo/
 ├── artifacts/
 │   ├── api-server/         # Express API server (auth, CRUD, settings)
-│   └── web-app/            # React + Vite frontend (brutalist design)
+│   └── web-app/            # React + Vite frontend
 ├── lib/
 │   ├── api-spec/           # OpenAPI spec + Orval codegen config
 │   ├── api-client-react/   # Generated React Query hooks
@@ -45,7 +45,7 @@ artifacts-monorepo/
 - **Credentials CRUD**: Add/edit/delete credentials via popup modals. Table view with copy email/password buttons, password reveal toggle, category filter, and search
 - **Categories CRUD**: Manage categories (name + color) via popup modals with credential count
 - **Admin Settings**: Toggle registration on/off, set site title, logo URL, favicon URL
-- **Brutalist Design**: Flat, bold, no gradients/shadows, sharp edges, uppercase text, yellow/cyan/magenta accent colors
+- **Design**: Clean neutral light theme (warm stone tones), Outfit font, dark sidebar, no shadows/gradients, subtle rounded corners. Uses shadcn/ui components (Dialog, Switch, Checkbox, Combobox, Input, Button, Label)
 
 ## Database Schema
 

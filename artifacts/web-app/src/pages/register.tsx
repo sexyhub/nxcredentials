@@ -3,7 +3,7 @@ import { useLocation, Link } from "wouter";
 import { useRegister, useGetRegistrationStatus, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { ShieldAlert, Lock, ArrowRight } from "lucide-react";
+import { ShieldAlert, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,15 +43,13 @@ export default function Register() {
 
   if (regStatus && !regStatus.enabled) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-[380px] text-center">
-          <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mx-auto mb-5">
-            <ShieldAlert className="w-6 h-6 text-destructive" />
-          </div>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-background">
+        <div className="w-full max-w-[360px] text-center">
+          <ShieldAlert className="w-8 h-8 text-destructive mx-auto mb-5" />
           <h1 className="text-xl font-bold mb-2">Registration Closed</h1>
-          <p className="text-[14px] text-muted-foreground mb-6">The administrator has disabled new account creation.</p>
-          <Button asChild className="h-10">
-            <Link href="/login">Back to Sign In</Link>
+          <p className="text-[14px] text-muted-foreground mb-6">New accounts are not available at this time.</p>
+          <Button asChild className="h-11">
+            <Link href="/login">Back to login</Link>
           </Button>
         </div>
       </div>
@@ -60,22 +58,20 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-[380px]">
-        <div className="flex items-center gap-2.5 mb-10">
-          <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
-            <Lock className="w-4 h-4 text-background" />
+      <div className="w-full max-w-[360px]">
+        <div className="mb-10">
+          <div className="flex items-center gap-2">
+            <div className="w-[6px] h-[6px] rounded-full bg-foreground/40" />
+            <span className="text-[13px] font-medium text-muted-foreground tracking-wide">CREDENTIAL VAULT</span>
           </div>
-          <span className="font-semibold text-sm">Credential Vault</span>
         </div>
 
-        <div className="mb-8">
-          <h1 className="text-[26px] font-bold tracking-tight">Create your account</h1>
-          <p className="text-muted-foreground text-[15px] mt-1.5">Get started with your secure vault</p>
-        </div>
+        <h1 className="text-[28px] font-bold tracking-tight">Create account</h1>
+        <p className="text-muted-foreground text-[14px] mt-1">Set up your secure vault in seconds.</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username" className="text-[13px] font-medium">Username</Label>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="username" className="text-[13px]">Username</Label>
             <Input
               id="username"
               type="text"
@@ -83,36 +79,36 @@ export default function Register() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Choose a username"
-              className="h-10"
+              className="h-11 bg-transparent"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-[13px] font-medium">Password</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-[13px]">Password</Label>
             <Input
               id="password"
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a strong password"
-              className="h-10"
+              placeholder="Create a password"
+              className="h-11 bg-transparent"
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full h-10 mt-2"
+            className="w-full h-11 text-[14px]"
             disabled={registerMutation.isPending}
           >
-            {registerMutation.isPending ? "Creating account..." : "Create account"}
-            {!registerMutation.isPending && <ArrowRight className="w-4 h-4 ml-1.5" />}
+            {registerMutation.isPending ? "Creating..." : "Create account"}
+            {!registerMutation.isPending && <ArrowRight className="w-4 h-4 ml-1" />}
           </Button>
         </form>
 
         <p className="text-center text-[13px] text-muted-foreground mt-8">
-          Already have an account?{" "}
-          <Link href="/login" className="text-foreground font-medium hover:underline">
+          Already registered?{" "}
+          <Link href="/login" className="text-foreground font-medium hover:underline underline-offset-4">
             Sign in
           </Link>
         </p>

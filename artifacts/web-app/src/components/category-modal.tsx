@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface CategoryModalProps {
   open: boolean;
@@ -91,42 +90,41 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-[16px]">{isEditing ? "Edit category" : "New category"}</DialogTitle>
+          <DialogTitle className="text-[16px] font-semibold">{isEditing ? "Edit category" : "New category"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 pt-1">
-          <div className="space-y-2">
-            <Label htmlFor="cat-name" className="text-[13px] font-medium">Name</Label>
-            <Input id="cat-name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Work, Social, Finance" className="h-10" />
+          <div className="space-y-1.5">
+            <Label htmlFor="cat-name" className="text-[13px]">Name</Label>
+            <Input id="cat-name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Work, Finance" className="h-10 bg-transparent" />
           </div>
 
-          <div className="space-y-2.5">
-            <Label className="text-[13px] font-medium">Color</Label>
+          <div className="space-y-2">
+            <Label className="text-[13px]">Color</Label>
             <div className="grid grid-cols-6 gap-2">
               {COLORS.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
-                  className={cn(
-                    "w-full aspect-square rounded-lg flex items-center justify-center transition-all border-2",
-                    color === c ? "border-foreground scale-110" : "border-transparent hover:scale-105"
-                  )}
+                  className={`w-full aspect-square rounded-lg flex items-center justify-center transition-all ${
+                    color === c ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : "hover:opacity-80"
+                  }`}
                   style={{ backgroundColor: c }}
                 >
-                  {color === c && <Check className="w-4 h-4 text-white" />}
+                  {color === c && <Check className="w-3.5 h-3.5 text-white" />}
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2.5 p-3 border rounded-lg bg-muted/30">
-              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }} />
-              <span className="text-[13px] font-medium">{name || "Category name"}</span>
+            <div className="flex items-center gap-2 p-3 border rounded-lg">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+              <span className="text-[13px] font-medium">{name || "Category"}</span>
             </div>
           </div>
 
           <DialogFooter className="pt-1 gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9">Cancel</Button>
-            <Button type="submit" disabled={isPending} className="h-9">{isPending ? "Saving..." : "Save"}</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9 text-[13px]">Cancel</Button>
+            <Button type="submit" disabled={isPending} className="h-9 text-[13px]">{isPending ? "Saving..." : "Save"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

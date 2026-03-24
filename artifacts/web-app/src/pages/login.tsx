@@ -3,7 +3,7 @@ import { useLocation, Link } from "wouter";
 import { useLogin, useGetRegistrationStatus, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,75 +41,85 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-[480px] bg-[hsl(225,15%,11%)] flex-col justify-between p-10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-            <Lock className="w-4 h-4 text-white/70" />
+    <div className="min-h-screen flex bg-background">
+      <div className="hidden lg:flex lg:w-[44%] bg-[hsl(30,12%,10%)] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }} />
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <div className="flex items-center gap-2">
+            <div className="w-[6px] h-[6px] rounded-full bg-white/40" />
+            <span className="text-[13px] font-medium text-white/50 tracking-wide">CREDENTIAL VAULT</span>
           </div>
-          <span className="text-white/90 font-semibold text-sm">Credential Vault</span>
-        </div>
 
-        <div>
-          <h2 className="text-[32px] font-bold text-white leading-[1.15] tracking-tight mb-4">
-            Securely manage<br />all your credentials
-          </h2>
-          <p className="text-white/40 text-[15px] leading-relaxed max-w-[340px]">
-            Store passwords, API keys, and sensitive data with session-based authentication and encrypted storage.
-          </p>
-        </div>
+          <div>
+            <h2 className="text-[40px] font-bold text-white leading-[1.1] tracking-tight">
+              Keep every<br />password in<br />one place.
+            </h2>
+            <p className="text-[15px] text-white/35 leading-relaxed mt-5 max-w-[320px]">
+              A minimal, self-hosted credential manager with encrypted storage and session-based auth.
+            </p>
+          </div>
 
-        <div className="flex items-center gap-6">
-          <span className="text-[11px] font-medium text-white/25 uppercase tracking-wider">Encrypted</span>
-          <span className="text-white/10">·</span>
-          <span className="text-[11px] font-medium text-white/25 uppercase tracking-wider">Session-based</span>
-          <span className="text-white/10">·</span>
-          <span className="text-[11px] font-medium text-white/25 uppercase tracking-wider">Self-hosted</span>
+          <div className="flex gap-8">
+            <div>
+              <div className="text-[28px] font-bold text-white/90 font-mono tabular-nums">256</div>
+              <div className="text-[11px] text-white/30 mt-0.5">bit encryption</div>
+            </div>
+            <div className="w-px bg-white/10" />
+            <div>
+              <div className="text-[28px] font-bold text-white/90 font-mono tabular-nums">0</div>
+              <div className="text-[11px] text-white/30 mt-0.5">third parties</div>
+            </div>
+            <div className="w-px bg-white/10" />
+            <div>
+              <div className="text-[28px] font-bold text-white/90 font-mono tabular-nums">100%</div>
+              <div className="text-[11px] text-white/30 mt-0.5">self-hosted</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-6 bg-background">
-        <div className="w-full max-w-[380px]">
-          <div className="lg:hidden flex items-center gap-2.5 mb-10">
-            <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
-              <Lock className="w-4 h-4 text-background" />
+      <div className="flex-1 flex items-center justify-center px-6">
+        <div className="w-full max-w-[360px]">
+          <div className="lg:hidden mb-10">
+            <div className="flex items-center gap-2">
+              <div className="w-[6px] h-[6px] rounded-full bg-foreground/40" />
+              <span className="text-[13px] font-medium text-muted-foreground tracking-wide">CREDENTIAL VAULT</span>
             </div>
-            <span className="font-semibold text-sm">Credential Vault</span>
           </div>
 
-          <div className="mb-8">
-            <h1 className="text-[26px] font-bold tracking-tight">Welcome back</h1>
-            <p className="text-muted-foreground text-[15px] mt-1.5">Sign in to access your vault</p>
-          </div>
+          <h1 className="text-[28px] font-bold tracking-tight">Welcome back</h1>
+          <p className="text-muted-foreground text-[14px] mt-1">Enter your details to sign in.</p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-[13px] font-medium">Username</Label>
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            <div className="space-y-1.5">
+              <Label htmlFor="username" className="text-[13px]">Username</Label>
               <Input
                 id="username"
                 type="text"
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
-                className="h-10"
+                placeholder="Your username"
+                className="h-11 bg-transparent"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-[13px] font-medium">Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-[13px]">Password</Label>
               <Input
                 id="password"
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="h-10"
+                placeholder="Your password"
+                className="h-11 bg-transparent"
               />
             </div>
 
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex items-center gap-2.5">
               <Checkbox
                 id="remember"
                 checked={rememberMe}
@@ -122,18 +132,18 @@ export default function Login() {
 
             <Button
               type="submit"
-              className="w-full h-10 mt-2"
+              className="w-full h-11 text-[14px]"
               disabled={loginMutation.isPending}
             >
-              {loginMutation.isPending ? "Signing in..." : "Sign in"}
-              {!loginMutation.isPending && <ArrowRight className="w-4 h-4 ml-1.5" />}
+              {loginMutation.isPending ? "Signing in..." : "Continue"}
+              {!loginMutation.isPending && <ArrowRight className="w-4 h-4 ml-1" />}
             </Button>
           </form>
 
           {regStatus?.enabled && (
             <p className="text-center text-[13px] text-muted-foreground mt-8">
-              Don't have an account?{" "}
-              <Link href="/register" className="text-foreground font-medium hover:underline">
+              No account yet?{" "}
+              <Link href="/register" className="text-foreground font-medium hover:underline underline-offset-4">
                 Create one
               </Link>
             </p>
