@@ -246,7 +246,7 @@ export default function Credentials() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-[12px] font-bold truncate">All</div>
-                  <div className="text-[10px] text-muted-foreground">{spaces.reduce((sum, s) => sum + (s.credentialCount || 0), 0) + (allCredentials?.filter(c => !c.vaultId && !c.spaceId).length || 0)}</div>
+                  <div className="text-[10px] text-muted-foreground">{!activeSpaceId ? (allCredentials?.filter(c => !c.vaultId).length || 0) : ""}</div>
                 </div>
               </div>
             </button>
