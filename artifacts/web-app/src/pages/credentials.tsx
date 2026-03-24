@@ -61,13 +61,13 @@ export default function Credentials() {
 
   return (
     <Layout>
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-[24px] font-bold tracking-tight">Credentials</h1>
-            <p className="text-[14px] text-muted-foreground mt-0.5">Your saved passwords and logins.</p>
+            <h1 className="text-3xl font-extrabold tracking-tight">Credentials</h1>
+            <p className="text-muted-foreground text-[15px] mt-1">Your saved passwords and logins.</p>
           </div>
-          <Button onClick={() => { setSelectedCredential(null); setIsModalOpen(true); }} size="sm" className="h-9 text-[13px]">
+          <Button onClick={() => { setSelectedCredential(null); setIsModalOpen(true); }} size="sm" className="h-9 text-[13px] font-semibold">
             <Plus className="w-3.5 h-3.5 mr-1.5" />
             Add credential
           </Button>
@@ -75,16 +75,16 @@ export default function Credentials() {
 
         <div className="flex flex-col sm:flex-row gap-2.5">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
             <Input
               type="text"
-              placeholder="Search..."
+              placeholder="Search credentials..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-9 bg-transparent"
+              className="pl-9 h-10"
             />
           </div>
-          <div className="sm:w-[180px]">
+          <div className="sm:w-[200px]">
             <Combobox
               options={categoryOptions}
               value={categoryFilter}
@@ -96,88 +96,74 @@ export default function Credentials() {
           </div>
         </div>
 
-        <div className="border rounded-lg bg-card overflow-hidden">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b bg-muted/40">
-                <th className="px-4 py-2.5 text-[12px] font-medium text-muted-foreground">Title</th>
-                <th className="px-4 py-2.5 text-[12px] font-medium text-muted-foreground hidden sm:table-cell">Email / Username</th>
-                <th className="px-4 py-2.5 text-[12px] font-medium text-muted-foreground hidden md:table-cell">Password</th>
-                <th className="px-4 py-2.5 w-[90px]"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={4} className="px-4 py-14 text-center text-[13px] text-muted-foreground">
-                    <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
-                    Loading...
-                  </td>
-                </tr>
-              ) : credentials?.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-4 py-14 text-center">
-                    <Key className="w-6 h-6 text-border mx-auto mb-2" />
-                    <p className="text-[13px] text-muted-foreground">No credentials found.</p>
-                  </td>
-                </tr>
-              ) : (
-                credentials?.map((cred) => (
-                  <tr key={cred.id} className="border-b last:border-0 group hover:bg-accent/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="text-[13px] font-medium">{cred.title}</div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : credentials?.length === 0 ? (
+          <div className="border rounded-xl p-16 text-center bg-card">
+            <Key className="w-8 h-8 text-border mx-auto mb-3" />
+            <p className="text-[15px] font-semibold mb-1">No credentials yet</p>
+            <p className="text-[13px] text-muted-foreground">Add your first credential to get started.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {credentials?.map((cred) => (
+              <div key={cred.id} className="border rounded-xl bg-card p-4 flex flex-col justify-between group hover:border-foreground/20 transition-colors">
+                <div>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[15px] font-bold truncate">{cred.title}</h3>
                       {cred.categoryName && (
                         <div className="flex items-center gap-1.5 mt-1">
-                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cred.categoryColor || '#999' }} />
-                          <span className="text-[11px] text-muted-foreground">{cred.categoryName}</span>
+                          <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cred.categoryColor || '#999' }} />
+                          <span className="text-[11px] text-muted-foreground truncate">{cred.categoryName}</span>
                         </div>
                       )}
-                    </td>
-                    <td className="px-4 py-3 hidden sm:table-cell">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[13px] font-mono text-muted-foreground truncate max-w-[200px]">{cred.email}</span>
-                        <CopyButton value={cred.email} label="Copy" />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      <div className="flex items-center gap-1">
-                        <code className="text-[13px] font-mono text-muted-foreground">
-                          {revealedIds.has(cred.id) ? cred.password : "••••••••"}
-                        </code>
-                        <button
-                          onClick={() => toggleReveal(cred.id)}
-                          className="p-1 text-muted-foreground/50 hover:text-foreground transition-colors"
-                        >
-                          {revealedIds.has(cred.id) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                        </button>
-                        <CopyButton value={cred.password} label="Copy" />
-                      </div>
-                      <div className="text-[11px] text-muted-foreground/40 font-mono mt-0.5">
-                        {format(new Date(cred.updatedAt), "MMM d, yyyy")}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => { setSelectedCredential(cred); setIsModalOpen(true); }}
-                          className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => { if (confirm("Delete this credential?")) deleteMutation.mutate({ id: cred.id }); }}
-                          className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    </div>
+                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                      <button
+                        onClick={() => { setSelectedCredential(cred); setIsModalOpen(true); }}
+                        className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-accent"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => { if (confirm("Delete this credential?")) deleteMutation.mutate({ id: cred.id }); }}
+                        className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-accent"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[12px] font-mono text-muted-foreground truncate flex-1">{cred.email}</span>
+                      <CopyButton value={cred.email} label="Copy" />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <code className="text-[12px] font-mono text-muted-foreground truncate flex-1">
+                        {revealedIds.has(cred.id) ? cred.password : "••••••••••"}
+                      </code>
+                      <button
+                        onClick={() => toggleReveal(cred.id)}
+                        className="p-0.5 text-muted-foreground/50 hover:text-foreground transition-colors"
+                      >
+                        {revealedIds.has(cred.id) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                      <CopyButton value={cred.password} label="Copy" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-[10px] text-muted-foreground/40 font-mono mt-3 pt-3 border-t">
+                  Updated {format(new Date(cred.updatedAt), "MMM d, yyyy")}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <CredentialModal open={isModalOpen} onOpenChange={setIsModalOpen} credential={selectedCredential} />

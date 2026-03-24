@@ -70,39 +70,37 @@ export default function Settings() {
     <Layout>
       <div className="max-w-xl space-y-8">
         <div>
-          <h1 className="text-[24px] font-bold tracking-tight">Settings</h1>
-          <p className="text-[14px] text-muted-foreground mt-0.5">Vault configuration and access.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">Settings</h1>
+          <p className="text-muted-foreground text-[15px] mt-1">Vault configuration and access control.</p>
         </div>
 
         {isLoading ? (
           <div className="text-[13px] text-muted-foreground py-14 text-center">Loading...</div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            <section className="space-y-4">
-              <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">General</h2>
-              <div className="border rounded-lg bg-card p-5 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="siteTitle" className="text-[13px]">Site title</Label>
-                  <Input
-                    id="siteTitle"
-                    required
-                    value={formData.siteTitle}
-                    onChange={(e) => setFormData({ ...formData, siteTitle: e.target.value })}
-                    className="h-10 bg-transparent"
-                  />
-                  <p className="text-[12px] text-muted-foreground">Shown in sidebar and browser tab.</p>
-                </div>
+            <div className="border rounded-xl bg-card p-5 space-y-4">
+              <h2 className="text-[15px] font-bold">General</h2>
+              <div>
+                <Label htmlFor="siteTitle" className="text-[13px] font-medium mb-1.5 block">Site title</Label>
+                <Input
+                  id="siteTitle"
+                  required
+                  value={formData.siteTitle}
+                  onChange={(e) => setFormData({ ...formData, siteTitle: e.target.value })}
+                  className="h-10"
+                />
+                <p className="text-[12px] text-muted-foreground mt-1.5">Displayed in the header and browser tab.</p>
               </div>
-            </section>
+            </div>
 
-            <section className="space-y-4">
-              <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">Access</h2>
-              <div className="border rounded-lg bg-card divide-y">
-                <div className="flex items-center justify-between p-5">
+            <div className="border rounded-xl bg-card divide-y overflow-hidden">
+              <div className="p-5">
+                <h2 className="text-[15px] font-bold mb-4">Access control</h2>
+                <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-[13px] font-medium">Public registration</div>
+                    <div className="text-[14px] font-semibold">Public registration</div>
                     <div className="text-[12px] text-muted-foreground mt-0.5">
-                      {formData.registrationEnabled ? "Anyone can sign up" : "Closed to new users"}
+                      {formData.registrationEnabled ? "Anyone can create an account" : "New signups disabled"}
                     </div>
                   </div>
                   <Switch
@@ -110,61 +108,57 @@ export default function Settings() {
                     onCheckedChange={(checked) => setFormData({ ...formData, registrationEnabled: checked })}
                   />
                 </div>
-                <div className="flex items-center justify-between p-5">
-                  <div>
-                    <div className="text-[13px] font-medium">Current role</div>
-                    <div className="text-[12px] text-muted-foreground mt-0.5">
-                      Signed in as <span className="font-medium text-foreground">{user?.username}</span>
-                    </div>
+              </div>
+              <div className="p-5 flex items-center justify-between">
+                <div>
+                  <div className="text-[14px] font-semibold">Your role</div>
+                  <div className="text-[12px] text-muted-foreground mt-0.5">
+                    Signed in as <span className="font-semibold text-foreground">{user?.username}</span>
                   </div>
-                  <span className="text-[11px] font-medium bg-foreground text-background px-2 py-0.5 rounded-md">Admin</span>
                 </div>
+                <span className="text-[11px] font-bold bg-foreground text-background px-2.5 py-1 rounded-lg uppercase tracking-wider">Admin</span>
               </div>
-            </section>
-
-            <section className="space-y-4">
-              <h2 className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">Branding</h2>
-              <div className="border rounded-lg bg-card p-5 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="logoUrl" className="text-[13px]">Logo URL</Label>
-                  <Input
-                    id="logoUrl"
-                    value={formData.siteLogo}
-                    onChange={(e) => setFormData({ ...formData, siteLogo: e.target.value })}
-                    placeholder="https://"
-                    className="h-10 bg-transparent"
-                  />
-                  {formData.siteLogo && (
-                    <div className="flex items-center gap-3 p-3 border rounded-lg mt-2">
-                      <img
-                        src={formData.siteLogo}
-                        alt="Preview"
-                        className="w-7 h-7 object-contain"
-                        onError={(e) => (e.currentTarget.style.display = 'none')}
-                      />
-                      <span className="text-[12px] text-muted-foreground">Logo preview</span>
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="faviconUrl" className="text-[13px]">Favicon URL</Label>
-                  <Input
-                    id="faviconUrl"
-                    value={formData.siteFavicon}
-                    onChange={(e) => setFormData({ ...formData, siteFavicon: e.target.value })}
-                    placeholder="https://"
-                    className="h-10 bg-transparent"
-                  />
-                </div>
-              </div>
-            </section>
-
-            <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={updateMutation.isPending} className="h-9 text-[13px]">
-                <Save className="w-3.5 h-3.5 mr-1.5" />
-                {updateMutation.isPending ? "Saving..." : "Save changes"}
-              </Button>
             </div>
+
+            <div className="border rounded-xl bg-card p-5 space-y-4">
+              <h2 className="text-[15px] font-bold">Branding</h2>
+              <div>
+                <Label htmlFor="logoUrl" className="text-[13px] font-medium mb-1.5 block">Logo URL</Label>
+                <Input
+                  id="logoUrl"
+                  value={formData.siteLogo}
+                  onChange={(e) => setFormData({ ...formData, siteLogo: e.target.value })}
+                  placeholder="https://example.com/logo.png"
+                  className="h-10"
+                />
+                {formData.siteLogo && (
+                  <div className="flex items-center gap-3 p-3 border rounded-lg mt-2">
+                    <img
+                      src={formData.siteLogo}
+                      alt="Preview"
+                      className="w-8 h-8 object-contain rounded"
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                    <span className="text-[12px] text-muted-foreground">Preview</span>
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="faviconUrl" className="text-[13px] font-medium mb-1.5 block">Favicon URL</Label>
+                <Input
+                  id="faviconUrl"
+                  value={formData.siteFavicon}
+                  onChange={(e) => setFormData({ ...formData, siteFavicon: e.target.value })}
+                  placeholder="https://example.com/favicon.ico"
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            <Button type="submit" disabled={updateMutation.isPending} className="h-10 text-[13px] font-semibold px-6">
+              <Save className="w-4 h-4 mr-1.5" />
+              {updateMutation.isPending ? "Saving..." : "Save changes"}
+            </Button>
           </form>
         )}
       </div>

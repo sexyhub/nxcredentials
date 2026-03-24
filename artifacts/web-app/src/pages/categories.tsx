@@ -33,13 +33,13 @@ export default function Categories() {
 
   return (
     <Layout>
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h1 className="text-[24px] font-bold tracking-tight">Categories</h1>
-            <p className="text-[14px] text-muted-foreground mt-0.5">Organize credentials into groups.</p>
+            <h1 className="text-3xl font-extrabold tracking-tight">Categories</h1>
+            <p className="text-muted-foreground text-[15px] mt-1">Organize credentials into groups.</p>
           </div>
-          <Button onClick={() => { setSelectedCategory(null); setIsModalOpen(true); }} size="sm" className="h-9 text-[13px]">
+          <Button onClick={() => { setSelectedCategory(null); setIsModalOpen(true); }} size="sm" className="h-9 text-[13px] font-semibold">
             <Plus className="w-3.5 h-3.5 mr-1.5" />
             Add category
           </Button>
@@ -48,59 +48,48 @@ export default function Categories() {
         {isLoading ? (
           <div className="text-[13px] text-muted-foreground py-14 text-center">Loading...</div>
         ) : categories?.length === 0 ? (
-          <div className="border rounded-lg p-16 text-center bg-card">
-            <Folder className="w-6 h-6 text-border mx-auto mb-2" />
-            <p className="text-[13px] text-muted-foreground">No categories yet.</p>
+          <div className="border rounded-xl p-16 text-center bg-card">
+            <Folder className="w-8 h-8 text-border mx-auto mb-3" />
+            <p className="text-[15px] font-semibold mb-1">No categories yet</p>
+            <p className="text-[13px] text-muted-foreground">Create your first category to organize credentials.</p>
           </div>
         ) : (
-          <div className="border rounded-lg bg-card overflow-hidden">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b bg-muted/40">
-                  <th className="px-4 py-2.5 text-[12px] font-medium text-muted-foreground w-14"></th>
-                  <th className="px-4 py-2.5 text-[12px] font-medium text-muted-foreground">Name</th>
-                  <th className="px-4 py-2.5 text-[12px] font-medium text-muted-foreground text-right">Credentials</th>
-                  <th className="px-4 py-2.5 w-[80px]"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {categories?.map((cat) => (
-                  <tr key={cat.id} className="border-b last:border-0 group hover:bg-accent/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: cat.color }} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-[13px] font-medium">{cat.name}</span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-[13px] font-mono text-muted-foreground tabular-nums">{cat.credentialCount}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => { setSelectedCategory(cat); setIsModalOpen(true); }}
-                          className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (cat.credentialCount > 0) {
-                              alert(`Can't delete — ${cat.credentialCount} credential(s) still use this category.`);
-                              return;
-                            }
-                            if (confirm("Delete this category?")) deleteMutation.mutate({ id: cat.id });
-                          }}
-                          className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {categories?.map((cat) => (
+              <div key={cat.id} className="border rounded-xl bg-card overflow-hidden group hover:border-foreground/20 transition-colors">
+                <div className="h-2" style={{ backgroundColor: cat.color }} />
+                <div className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[16px] font-bold">{cat.name}</h3>
+                      <p className="text-[13px] text-muted-foreground mt-1">
+                        <span className="font-mono font-medium tabular-nums">{cat.credentialCount}</span> credential{cat.credentialCount !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                      <button
+                        onClick={() => { setSelectedCategory(cat); setIsModalOpen(true); }}
+                        className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-accent"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (cat.credentialCount > 0) {
+                            alert(`Can't delete — ${cat.credentialCount} credential(s) use this category.`);
+                            return;
+                          }
+                          if (confirm("Delete this category?")) deleteMutation.mutate({ id: cat.id });
+                        }}
+                        className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-accent"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

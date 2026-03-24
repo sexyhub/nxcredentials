@@ -45,7 +45,7 @@ artifacts-monorepo/
 - **Credentials CRUD**: Add/edit/delete credentials via popup modals. Table view with copy email/password buttons, password reveal toggle, category filter, and search
 - **Categories CRUD**: Manage categories (name + color) via popup modals with credential count
 - **Admin Settings**: Toggle registration on/off, set site title, logo URL, favicon URL
-- **Design**: Clean neutral light theme (warm stone tones), Outfit font, dark sidebar, no shadows/gradients, subtle rounded corners. Uses shadcn/ui components (Dialog, Switch, Checkbox, Combobox, Input, Button, Label)
+- **Design**: Clean neutral light theme (warm stone tones), Bricolage Grotesque font, top header navigation (no sidebar), no shadows/gradients. Credentials displayed as card grid, categories as color tiles. Uses shadcn/ui components (Dialog, Switch, Checkbox, Combobox, Input, Button, Label)
 
 ## Database Schema
 
