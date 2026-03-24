@@ -99,7 +99,7 @@ export function Layout({ children }: LayoutProps) {
                   <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-[11px] font-bold uppercase">
                     {user?.username?.charAt(0)}
                   </div>
-                  <span className="text-[13px] font-medium hidden sm:inline">{user?.username}</span>
+                  <span className="text-[13px] font-medium hidden sm:inline translate-y-[0.4px]">{user?.username}</span>
                   <ChevronDown className="w-3.5 h-3.5 text-muted-foreground hidden sm:block" />
                 </button>
 
