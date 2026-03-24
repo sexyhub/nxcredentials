@@ -5,6 +5,7 @@ import credentialsRouter from "./credentials";
 import categoriesRouter from "./categories";
 import statsRouter from "./stats";
 import settingsRouter from "./settings";
+import vaultRouter from "./vault";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(credentialsRouter);
 router.use(categoriesRouter);
 router.use(statsRouter);
 router.use(settingsRouter);
+router.use(vaultRouter);
 
 export default router;

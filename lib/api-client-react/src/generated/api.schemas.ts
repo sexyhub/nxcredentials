@@ -49,6 +49,7 @@ export interface Credential {
   categoryName: string | null;
   /** @nullable */
   categoryColor: string | null;
+  isVault: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -59,6 +60,7 @@ export interface CreateCredentialBody {
   password: string;
   /** @nullable */
   categoryId?: number | null;
+  isVault?: boolean;
 }
 
 export interface UpdateCredentialBody {
@@ -67,6 +69,7 @@ export interface UpdateCredentialBody {
   password?: string;
   /** @nullable */
   categoryId?: number | null;
+  isVault?: boolean;
 }
 
 export interface Category {
@@ -92,11 +95,22 @@ export interface CategoryStat {
   color: string;
 }
 
+export interface TypeStat {
+  type: string;
+  count: number;
+}
+
 export interface Stats {
   totalCredentials: number;
   totalCategories: number;
   recentlyAdded: number;
+  vaultCredentials: number;
+  uniqueTypes: number;
+  /** @nullable */
+  oldestCredentialDays: number | null;
+  averageAgeDays: number;
   categoryBreakdown: CategoryStat[];
+  typeBreakdown: TypeStat[];
 }
 
 export interface Settings {
@@ -115,6 +129,32 @@ export interface UpdateSettingsBody {
 
 export interface RegistrationStatus {
   enabled: boolean;
+}
+
+export interface VaultStatus {
+  hasPassword: boolean;
+  hasPin: boolean;
+  isUnlocked: boolean;
+}
+
+export interface SetupVaultBody {
+  password: string;
+  pin: string;
+}
+
+export interface VerifyVaultBody {
+  password?: string;
+  pin?: string;
+}
+
+export interface ChangeVaultPasswordBody {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface ChangeVaultPinBody {
+  oldPin: string;
+  newPin: string;
 }
 
 export type ListCredentialsParams = {

@@ -6,10 +6,17 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CategoryStat } from "./categoryStat";
+import type { TypeStat } from "./typeStat";
 
 export interface Stats {
   totalCredentials: number;
   totalCategories: number;
   recentlyAdded: number;
+  vaultCredentials: number;
+  uniqueTypes: number;
+  /** @nullable */
+  oldestCredentialDays: number | null;
+  averageAgeDays: number;
   categoryBreakdown: CategoryStat[];
+  typeBreakdown: TypeStat[];
 }

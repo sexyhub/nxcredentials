@@ -6,11 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CreateCredentialBody {
-  title: string;
-  email: string;
+export interface SetupVaultBody {
   password: string;
-  /** @nullable */
-  categoryId?: number | null;
-  isVault?: boolean;
+  pin: string;
 }

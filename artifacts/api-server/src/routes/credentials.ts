@@ -10,7 +10,7 @@ import {
   UpdateCredentialResponse,
   DeleteCredentialParams,
 } from "@workspace/api-zod";
-import { requireAuth } from "../middlewares/auth";
+import { requireAuth, isVaultSessionActive } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -27,6 +27,7 @@ router.get("/credentials", requireAuth, async (req, res): Promise<void> => {
       categoryId: credentialsTable.categoryId,
       categoryName: categoriesTable.name,
       categoryColor: categoriesTable.color,
+      isVault: credentialsTable.isVault,
       createdAt: credentialsTable.createdAt,
       updatedAt: credentialsTable.updatedAt,
     })
@@ -58,7 +59,16 @@ router.get("/credentials", requireAuth, async (req, res): Promise<void> => {
   }
 
   const results = await query.orderBy(credentialsTable.createdAt);
-  res.json(ListCredentialsResponse.parse(results));
+
+  const vaultActive = isVaultSessionActive(req);
+  const masked = results.map((cred) => {
+    if (cred.isVault && !vaultActive) {
+      return { ...cred, email: "••••••••", password: "••••••••" };
+    }
+    return cred;
+  });
+
+  res.json(ListCredentialsResponse.parse(masked));
 });
 
 router.post("/credentials", requireAuth, async (req, res): Promise<void> => {
@@ -77,6 +87,7 @@ router.post("/credentials", requireAuth, async (req, res): Promise<void> => {
       email: parsed.data.email,
       password: parsed.data.password,
       categoryId: parsed.data.categoryId ?? null,
+      isVault: parsed.data.isVault ?? false,
       userId,
     })
     .returning();
@@ -134,6 +145,7 @@ router.patch("/credentials/:id", requireAuth, async (req, res): Promise<void> =>
   if (parsed.data.email !== undefined) updateData.email = parsed.data.email;
   if (parsed.data.password !== undefined) updateData.password = parsed.data.password;
   if (parsed.data.categoryId !== undefined) updateData.categoryId = parsed.data.categoryId;
+  if (parsed.data.isVault !== undefined) updateData.isVault = parsed.data.isVault;
 
   const [credential] = await db
     .update(credentialsTable)

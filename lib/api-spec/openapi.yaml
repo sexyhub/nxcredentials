@@ -18,6 +18,8 @@ tags:
     description: Admin settings
   - name: stats
     description: Dashboard statistics
+  - name: vault
+    description: Vault management
 paths:
   /healthz:
     get:
@@ -440,6 +442,162 @@ paths:
               schema:
                 $ref: "#/components/schemas/RegistrationStatus"
 
+  /vault/status:
+    get:
+      operationId: getVaultStatus
+      tags: [vault]
+      summary: Check if vault is set up
+      responses:
+        "200":
+          description: Vault status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VaultStatus"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vault/lock:
+    post:
+      operationId: lockVault
+      tags: [vault]
+      summary: Lock the vault
+      responses:
+        "200":
+          description: Vault locked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vault/setup:
+    post:
+      operationId: setupVault
+      tags: [vault]
+      summary: Set up vault password and PIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupVaultBody"
+      responses:
+        "200":
+          description: Vault set up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vault/verify:
+    post:
+      operationId: verifyVault
+      tags: [vault]
+      summary: Verify vault password or PIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyVaultBody"
+      responses:
+        "200":
+          description: Vault unlocked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          description: Not authenticated or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vault/change-password:
+    post:
+      operationId: changeVaultPassword
+      tags: [vault]
+      summary: Change vault password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeVaultPasswordBody"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated or wrong old password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vault/change-pin:
+    post:
+      operationId: changeVaultPin
+      tags: [vault]
+      summary: Change vault PIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeVaultPinBody"
+      responses:
+        "200":
+          description: PIN changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated or wrong old PIN
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -529,6 +687,8 @@ components:
           type: ["string", "null"]
         categoryColor:
           type: ["string", "null"]
+        isVault:
+          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -543,6 +703,7 @@ components:
         - categoryId
         - categoryName
         - categoryColor
+        - isVault
         - createdAt
         - updatedAt
 
@@ -557,6 +718,8 @@ components:
           type: string
         categoryId:
           type: ["integer", "null"]
+        isVault:
+          type: boolean
       required:
         - title
         - email
@@ -573,6 +736,8 @@ components:
           type: string
         categoryId:
           type: ["integer", "null"]
+        isVault:
+          type: boolean
 
     Category:
       type: object
@@ -619,15 +784,32 @@ components:
           type: integer
         recentlyAdded:
           type: integer
+        vaultCredentials:
+          type: integer
+        uniqueTypes:
+          type: integer
+        oldestCredentialDays:
+          type: ["integer", "null"]
+        averageAgeDays:
+          type: integer
         categoryBreakdown:
           type: array
           items:
             $ref: "#/components/schemas/CategoryStat"
+        typeBreakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/TypeStat"
       required:
         - totalCredentials
         - totalCategories
         - recentlyAdded
+        - vaultCredentials
+        - uniqueTypes
+        - oldestCredentialDays
+        - averageAgeDays
         - categoryBreakdown
+        - typeBreakdown
 
     CategoryStat:
       type: object
@@ -642,6 +824,17 @@ components:
         - name
         - count
         - color
+
+    TypeStat:
+      type: object
+      properties:
+        type:
+          type: string
+        count:
+          type: integer
+      required:
+        - type
+        - count
 
     Settings:
       type: object
@@ -679,3 +872,58 @@ components:
           type: boolean
       required:
         - enabled
+
+    VaultStatus:
+      type: object
+      properties:
+        hasPassword:
+          type: boolean
+        hasPin:
+          type: boolean
+        isUnlocked:
+          type: boolean
+      required:
+        - hasPassword
+        - hasPin
+        - isUnlocked
+
+    SetupVaultBody:
+      type: object
+      properties:
+        password:
+          type: string
+        pin:
+          type: string
+      required:
+        - password
+        - pin
+
+    VerifyVaultBody:
+      type: object
+      properties:
+        password:
+          type: string
+        pin:
+          type: string
+
+    ChangeVaultPasswordBody:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+        newPassword:
+          type: string
+      required:
+        - oldPassword
+        - newPassword
+
+    ChangeVaultPinBody:
+      type: object
+      properties:
+        oldPin:
+          type: string
+        newPin:
+          type: string
+      required:
+        - oldPin
+        - newPin

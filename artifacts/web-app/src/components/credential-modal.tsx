@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
 import { SERVICE_TYPES, getServiceType } from "@/lib/service-types";
+import { Shield } from "lucide-react";
 
 interface CredentialModalProps {
   open: boolean;
@@ -33,6 +34,7 @@ export function CredentialModal({ open, onOpenChange, credential }: CredentialMo
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [isVault, setIsVault] = useState(false);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -45,11 +47,13 @@ export function CredentialModal({ open, onOpenChange, credential }: CredentialMo
         setEmail(credential.email);
         setPassword(credential.password);
         setCategoryId(credential.categoryId);
+        setIsVault(credential.isVault ?? false);
       } else {
         setTypeKey("other");
         setEmail("");
         setPassword("");
         setCategoryId(null);
+        setIsVault(false);
       }
     }
   }, [open, credential]);
@@ -78,7 +82,7 @@ export function CredentialModal({ open, onOpenChange, credential }: CredentialMo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const data = { title: typeKey, email, password, categoryId };
+    const data = { title: typeKey, email, password, categoryId, isVault };
     if (isEditing && credential) {
       updateMutation.mutate({ id: credential.id, data });
     } else {
@@ -146,6 +150,31 @@ export function CredentialModal({ open, onOpenChange, credential }: CredentialMo
               emptyText="No tags."
             />
           </div>
+
+          <button
+            type="button"
+            onClick={() => setIsVault(!isVault)}
+            className={`w-full flex items-center gap-3 p-3 border rounded-xl transition-colors ${
+              isVault
+                ? "border-amber-500/40 bg-amber-500/5"
+                : "hover:bg-accent/50"
+            }`}
+          >
+            <Shield className={`w-4 h-4 shrink-0 ${isVault ? "text-amber-500" : "text-muted-foreground/40"}`} />
+            <div className="text-left flex-1">
+              <div className={`text-[13px] font-semibold ${isVault ? "text-amber-600 dark:text-amber-400" : ""}`}>
+                Secure vault
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Requires vault password or PIN to view
+              </div>
+            </div>
+            <div className={`w-8 h-5 rounded-full transition-colors flex items-center ${
+              isVault ? "bg-amber-500 justify-end" : "bg-border justify-start"
+            }`}>
+              <div className="w-3.5 h-3.5 rounded-full bg-white mx-0.5" />
+            </div>
+          </button>
 
           <DialogFooter className="pt-3 gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9 text-[13px]">Cancel</Button>

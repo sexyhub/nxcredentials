@@ -40,12 +40,9 @@ export function Layout({ children }: LayoutProps) {
   const navItems = [
     { label: "Dashboard", href: "/", icon: LayoutDashboard },
     { label: "Credentials", href: "/credentials", icon: Key },
-    { label: "Tags", href: "/categories", icon: Tag },
+    { label: "Manage", href: "/categories", icon: Tag },
+    { label: "Settings", href: "/settings", icon: Settings },
   ];
-
-  if (user?.isAdmin) {
-    navItems.push({ label: "Settings", href: "/settings", icon: Settings });
-  }
 
   const siteTitle = settings?.siteTitle || "Credential Vault";
 

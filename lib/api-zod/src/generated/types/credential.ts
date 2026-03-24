@@ -17,6 +17,7 @@ export interface Credential {
   categoryName: string | null;
   /** @nullable */
   categoryColor: string | null;
+  isVault: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
