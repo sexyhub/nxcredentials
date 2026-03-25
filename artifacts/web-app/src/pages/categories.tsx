@@ -88,39 +88,35 @@ export default function Categories() {
                 <p className="text-[13px] text-muted-foreground">Create your first tag to organize credentials.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
                 {categories?.map((cat) => (
-                  <div key={cat.id} className="border rounded-xl bg-card p-4 group hover:border-foreground/20 transition-colors">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                        <div>
-                          <h3 className="text-[15px] font-bold">{cat.name}</h3>
-                          <p className="text-[12px] text-muted-foreground mt-0.5">
-                            <span className="font-mono font-medium tabular-nums">{cat.credentialCount}</span> credential{cat.credentialCount !== 1 ? 's' : ''}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
-                        <button
-                          onClick={() => { setSelectedCategory(cat); setIsModalOpen(true); }}
-                          className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-accent"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (cat.credentialCount > 0) {
-                              alert(`Can't delete — ${cat.credentialCount} credential(s) use this tag.`);
-                              return;
-                            }
-                            if (confirm("Delete this tag?")) deleteMutation.mutate({ id: cat.id });
-                          }}
-                          className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-accent"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                  <div key={cat.id} className="border rounded-xl bg-card px-3.5 py-3 flex items-center gap-2.5 group hover:border-foreground/20 transition-colors">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: cat.color + '18' }}>
+                      <Tag className="w-4 h-4" style={{ color: cat.color }} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[13px] font-semibold block truncate">{cat.name}</span>
+                      <span className="text-[11px] text-muted-foreground tabular-nums">{cat.credentialCount} credential{cat.credentialCount !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      <button
+                        onClick={() => { setSelectedCategory(cat); setIsModalOpen(true); }}
+                        className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-accent"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (cat.credentialCount > 0) {
+                            alert(`Can't delete — ${cat.credentialCount} credential(s) use this tag.`);
+                            return;
+                          }
+                          if (confirm("Delete this tag?")) deleteMutation.mutate({ id: cat.id });
+                        }}
+                        className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-accent"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))}
