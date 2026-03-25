@@ -316,20 +316,23 @@ export default function Vault() {
                 onClick={() => setSelectedVault(vault)}
                 className="border rounded-xl bg-card px-4 py-5 text-left hover:border-foreground/20 transition-all cursor-pointer group"
               >
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-baseline justify-between mb-4">
                   <span className="text-[40px] font-extrabold tracking-tight leading-none">{vault.credentialCount}</span>
+                  <span className="text-[12px] text-muted-foreground font-medium">{vault.credentialCount === 1 ? "item secured" : "items secured"}</span>
+                </div>
+                <div className="pt-4 border-t flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: vault.color + '18' }}>
                     <Shield className="w-5 h-5" style={{ color: vault.color }} />
                   </div>
-                </div>
-                <div className="pt-4 border-t">
-                  <div className="text-[14px] font-bold truncate">{vault.name}</div>
-                  <div className="text-[12px] text-muted-foreground mt-1.5">
-                    {vault.isUnlocked ? (
-                      <span className="text-green-600 font-semibold">Unlocked</span>
-                    ) : (
-                      <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> Locked</span>
-                    )}
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <div className="text-[14px] font-bold truncate">{vault.name}</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
+                      {vault.isUnlocked ? (
+                        <span className="text-green-600 font-semibold">Unlocked</span>
+                      ) : (
+                        <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> Locked</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </button>

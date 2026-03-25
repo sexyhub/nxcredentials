@@ -351,16 +351,19 @@ export default function Spaces() {
                   onClick={() => setSelectedSpace(space)}
                   className="border rounded-xl bg-card px-4 py-5 text-left hover:border-foreground/20 transition-all cursor-pointer group"
                 >
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-baseline justify-between mb-4">
                     <span className="text-[40px] font-extrabold tracking-tight leading-none">{space.credentialCount}</span>
+                    <span className="text-[12px] text-muted-foreground font-medium">{space.credentialCount === 1 ? "credential saved" : "credentials saved"}</span>
+                  </div>
+                  <div className="pt-4 border-t flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: color + '18' }}>
                       <SpaceIcon className="w-5 h-5" style={{ color }} />
                     </div>
-                  </div>
-                  <div className="pt-4 border-t">
-                    <div className="text-[14px] font-bold truncate">{space.name}</div>
-                    <div className="text-[12px] text-muted-foreground mt-1.5">
-                      {space.defaultType ? getServiceType(space.defaultType).label : "Mixed"} · {space.credentialCount} credential{space.credentialCount !== 1 ? "s" : ""}
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      <div className="text-[14px] font-bold truncate">{space.name}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">
+                        {space.defaultType ? getServiceType(space.defaultType).label : "Mixed types"}
+                      </div>
                     </div>
                   </div>
                 </button>
