@@ -351,19 +351,18 @@ export default function Spaces() {
                   onClick={() => setSelectedSpace(space)}
                   className="border rounded-xl bg-card px-4 py-4 text-left hover:border-foreground/20 transition-all cursor-pointer group"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: color + '18' }}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: color + '18' }}>
                       <SpaceIcon className="w-4.5 h-4.5" style={{ color }} />
                     </div>
-                    <span className="text-[11px] text-muted-foreground font-medium">{space.defaultType ? getServiceType(space.defaultType).label : "Mixed types"}</span>
-                  </div>
-                  <div className="mb-3">
-                    <span className="text-[36px] font-extrabold tracking-tight leading-none">{space.credentialCount}</span>
-                    <span className="text-[12px] text-muted-foreground font-medium ml-1.5">{space.credentialCount === 1 ? "credential" : "credentials"}</span>
+                    <div>
+                      <span className="text-[32px] font-extrabold tracking-tight leading-none">{space.credentialCount}</span>
+                      <span className="text-[11px] text-muted-foreground font-medium ml-1.5">{space.credentialCount === 1 ? "credential" : "credentials"}</span>
+                    </div>
                   </div>
                   <div className="border-t pt-3 space-y-1">
                     <div className="text-[13px] font-bold truncate">{space.name}</div>
-                    <div className="text-[11px] text-muted-foreground">Open space · no password required</div>
+                    <div className="text-[11px] text-muted-foreground">{space.defaultType ? getServiceType(space.defaultType).label : "Mixed types"} · open space</div>
                     <div className="text-[11px] text-muted-foreground/60">Tap to view &amp; manage credentials</div>
                   </div>
                 </button>

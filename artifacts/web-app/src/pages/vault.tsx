@@ -316,23 +316,20 @@ export default function Vault() {
                 onClick={() => setSelectedVault(vault)}
                 className="border rounded-xl bg-card px-4 py-4 text-left hover:border-foreground/20 transition-all cursor-pointer group"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: vault.color + '18' }}>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: vault.color + '18' }}>
                     <Shield className="w-4.5 h-4.5" style={{ color: vault.color }} />
                   </div>
-                  {vault.isUnlocked ? (
-                    <span className="text-[11px] font-semibold text-green-600">Unlocked</span>
-                  ) : (
-                    <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1"><Lock className="w-3 h-3" /> Locked</span>
-                  )}
-                </div>
-                <div className="mb-3">
-                  <span className="text-[36px] font-extrabold tracking-tight leading-none">{vault.credentialCount}</span>
-                  <span className="text-[12px] text-muted-foreground font-medium ml-1.5">{vault.credentialCount === 1 ? "item" : "items"} secured</span>
+                  <div>
+                    <span className="text-[32px] font-extrabold tracking-tight leading-none">{vault.credentialCount}</span>
+                    <span className="text-[11px] text-muted-foreground font-medium ml-1.5">{vault.credentialCount === 1 ? "item" : "items"} secured</span>
+                  </div>
                 </div>
                 <div className="border-t pt-3 space-y-1">
                   <div className="text-[13px] font-bold truncate">{vault.name}</div>
-                  <div className="text-[11px] text-muted-foreground">Encrypted vault · password protected</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {vault.isUnlocked ? <span className="text-green-600 font-semibold">Unlocked</span> : <span className="flex items-center gap-1"><Lock className="w-3 h-3" />Locked</span>} · encrypted vault
+                  </div>
                   <div className="text-[11px] text-muted-foreground/60">{vault.isUnlocked ? "Tap to browse credentials" : "Tap to unlock &amp; view"}</div>
                 </div>
               </button>
