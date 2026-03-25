@@ -21,6 +21,7 @@ import { VaultUnlockModal } from "@/components/vault-unlock-modal";
 import { PinInput } from "@/components/pin-input";
 import { AppearancePicker } from "@/components/appearance-picker";
 import { CopyButton } from "@/components/copy-button";
+import { Pagination } from "@/components/pagination";
 import {
   Dialog,
   DialogContent,
@@ -30,15 +31,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Plus, Shield, Lock, Key, Loader2, Eye, EyeOff, Pencil, Trash2,
-  ChevronLeft, ArrowLeft
+  Plus, Shield, Lock, Key, Loader2, Eye, EyeOff, Pencil, Trash2, ArrowLeft
 } from "lucide-react";
 import { getServiceType } from "@/lib/service-types";
 
-
-function getVaultIcon(icon: string) {
-  return Shield;
-}
+const PAGE_SIZE = 16;
 
 export default function Vault() {
   const [selectedVault, setSelectedVault] = useState<VaultItem | null>(null);
@@ -49,6 +46,8 @@ export default function Vault() {
   const [showCredModal, setShowCredModal] = useState(false);
   const [editingCred, setEditingCred] = useState<Credential | null>(null);
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
+  const [vaultsPage, setVaultsPage] = useState(1);
+  const [credsPage, setCredsPage] = useState(1);
 
   const [createForm, setCreateForm] = useState({ name: "", password: "", pin: "", color: "#6366f1", icon: "shield" });
   const [editForm, setEditForm] = useState({ name: "", color: "", icon: "" });
@@ -63,6 +62,8 @@ export default function Vault() {
   );
 
   const vaultCredentials = allCredentials || [];
+  const pagedVaults = vaults?.slice((vaultsPage - 1) * PAGE_SIZE, vaultsPage * PAGE_SIZE) ?? [];
+  const pagedCreds = vaultCredentials.slice((credsPage - 1) * PAGE_SIZE, credsPage * PAGE_SIZE);
 
   const createMutation = useCreateVault({
     mutation: {
@@ -139,6 +140,11 @@ export default function Vault() {
     });
   };
 
+  const enterVault = (vault: VaultItem) => {
+    setSelectedVault(vault);
+    setCredsPage(1);
+  };
+
   if (selectedVault) {
     const currentVault = vaults?.find(v => v.id === selectedVault.id) || selectedVault;
     const isUnlocked = currentVault.isUnlocked;
@@ -197,47 +203,56 @@ export default function Vault() {
               <p className="text-[13px] text-muted-foreground">Add your first credential to this vault.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
-              {vaultCredentials.map((cred) => {
-                const stype = getServiceType(cred.title);
-                const Icon = stype.icon;
-                return (
-                  <div key={cred.id} className="border rounded-xl bg-card px-3.5 py-3 group hover:border-foreground/20 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: stype.color + '18' }}>
-                          <Icon className="w-3.5 h-3.5" style={{ color: stype.color }} />
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+                {pagedCreds.map((cred) => {
+                  const stype = getServiceType(cred.title);
+                  const Icon = stype.icon;
+                  return (
+                    <div key={cred.id} className="border rounded-xl bg-card px-3.5 py-3 group hover:border-foreground/20 transition-colors">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: stype.color + '18' }}>
+                            <Icon className="w-3.5 h-3.5" style={{ color: stype.color }} />
+                          </div>
+                          <span className="text-[13px] font-bold truncate">{stype.label}</span>
+                          {cred.categoryName && (
+                            <span className="shrink-0 flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-accent text-muted-foreground">
+                              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cred.categoryColor || '#888' }} />
+                              {cred.categoryName}
+                            </span>
+                          )}
                         </div>
-                        <span className="text-[13px] font-bold truncate">{stype.label}</span>
+                        <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
+                          <button onClick={() => { setEditingCred(cred); setShowCredModal(true); }} className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent">
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                          <button onClick={() => { if (confirm("Delete this credential?")) deleteCredMutation.mutate({ id: cred.id }); }} className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
-                        <button onClick={() => { setEditingCred(cred); setShowCredModal(true); }} className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent">
-                          <Pencil className="w-3 h-3" />
-                        </button>
-                        <button onClick={() => { if (confirm("Delete this credential?")) deleteCredMutation.mutate({ id: cred.id }); }} className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent">
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[11px] font-mono text-muted-foreground truncate flex-1">{cred.email}</span>
+                          <CopyButton value={cred.email} label="Copy" />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <code className="text-[11px] font-mono text-muted-foreground truncate flex-1">
+                            {revealedIds.has(cred.id) ? cred.password : "••••••••"}
+                          </code>
+                          <button onClick={() => toggleReveal(cred.id)} className="p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors">
+                            {revealedIds.has(cred.id) ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                          </button>
+                          <CopyButton value={cred.password} label="Copy" />
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[11px] font-mono text-muted-foreground truncate flex-1">{cred.email}</span>
-                        <CopyButton value={cred.email} label="Copy" />
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <code className="text-[11px] font-mono text-muted-foreground truncate flex-1">
-                          {revealedIds.has(cred.id) ? cred.password : "••••••••"}
-                        </code>
-                        <button onClick={() => toggleReveal(cred.id)} className="p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors">
-                          {revealedIds.has(cred.id) ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                        </button>
-                        <CopyButton value={cred.password} label="Copy" />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+              <Pagination page={credsPage} total={vaultCredentials.length} pageSize={PAGE_SIZE} onChange={setCredsPage} />
+            </>
           )}
         </div>
 
@@ -305,41 +320,44 @@ export default function Vault() {
             <p className="text-[13px] text-muted-foreground">Create a vault to store high-security credentials with their own password and PIN.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {vaults.map((vault) => (
-              <button
-                key={vault.id}
-                onClick={() => {
-                  if (vault.isUnlocked) {
-                    setSelectedVault(vault);
-                  } else {
-                    setUnlockingVault(vault);
-                    setShowUnlockModal(true);
-                  }
-                }}
-                className="border rounded-xl bg-card px-4 py-4 text-left hover:border-foreground/20 transition-all cursor-pointer group"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: vault.color + '18' }}>
-                    <Shield className="w-4.5 h-4.5" style={{ color: vault.color }} />
-                  </div>
-                  <div>
-                    <span className="text-[32px] font-extrabold tracking-tight leading-none">{vault.credentialCount}</span>
-                    <span className="text-[11px] text-muted-foreground font-medium ml-1.5">private credential{vault.credentialCount !== 1 ? "s" : ""}</span>
-                  </div>
-                </div>
-                <div className="border-t pt-3 space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="text-[13px] font-bold truncate">{vault.name}</div>
-                    <div className="text-[11px] text-muted-foreground shrink-0 whitespace-nowrap flex items-center gap-1">
-                      {vault.isUnlocked ? <span className="text-green-600 font-semibold">Unlocked</span> : <><Lock className="w-3 h-3 shrink-0" /><span>Locked</span></>} <span>· encrypted vault</span>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {pagedVaults.map((vault) => (
+                <button
+                  key={vault.id}
+                  onClick={() => {
+                    if (vault.isUnlocked) {
+                      enterVault(vault);
+                    } else {
+                      setUnlockingVault(vault);
+                      setShowUnlockModal(true);
+                    }
+                  }}
+                  className="border rounded-xl bg-card px-4 py-4 text-left hover:border-foreground/20 transition-all cursor-pointer group"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: vault.color + '18' }}>
+                      <Shield className="w-4.5 h-4.5" style={{ color: vault.color }} />
+                    </div>
+                    <div>
+                      <span className="text-[32px] font-extrabold tracking-tight leading-none">{vault.credentialCount}</span>
+                      <span className="text-[11px] text-muted-foreground font-medium ml-1.5">private credential{vault.credentialCount !== 1 ? "s" : ""}</span>
                     </div>
                   </div>
-                  <div className="text-[11px] text-muted-foreground/60">{vault.isUnlocked ? "Tap to browse private credentials" : "Tap to unlock & view private credentials"}</div>
-                </div>
-              </button>
-            ))}
-          </div>
+                  <div className="border-t pt-3 space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-[13px] font-bold truncate">{vault.name}</div>
+                      <div className="text-[11px] text-muted-foreground shrink-0 whitespace-nowrap flex items-center gap-1">
+                        {vault.isUnlocked ? <span className="text-green-600 font-semibold">Unlocked</span> : <><Lock className="w-3 h-3 shrink-0" /><span>Locked</span></>} <span>· encrypted vault</span>
+                      </div>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground/60">{vault.isUnlocked ? "Tap to browse private credentials" : "Tap to unlock & view private credentials"}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <Pagination page={vaultsPage} total={vaults.length} pageSize={PAGE_SIZE} onChange={setVaultsPage} />
+          </>
         )}
       </div>
 

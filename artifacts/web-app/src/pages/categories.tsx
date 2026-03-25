@@ -10,64 +10,12 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { CategoryModal } from "@/components/category-modal";
-import { Plus, Pencil, Trash2, Tag, Grid3X3, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SERVICE_TYPES } from "@/lib/service-types";
+import { Pagination } from "@/components/pagination";
 
 const PAGE_SIZE = 20;
-
-function Pagination({ page, total, onChange }: { page: number; total: number; onChange: (p: number) => void }) {
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-  if (totalPages <= 1) return null;
-
-  const pages: (number | "...")[] = [];
-  for (let i = 1; i <= totalPages; i++) {
-    if (i === 1 || i === totalPages || (i >= page - 1 && i <= page + 1)) {
-      pages.push(i);
-    } else if (pages[pages.length - 1] !== "...") {
-      pages.push("...");
-    }
-  }
-
-  return (
-    <div className="flex items-center justify-between pt-2">
-      <p className="text-[12px] text-muted-foreground">
-        Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
-      </p>
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => onChange(page - 1)}
-          disabled={page === 1}
-          className="h-8 w-8 flex items-center justify-center rounded-lg border text-[13px] hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          <ChevronLeft className="w-3.5 h-3.5" />
-        </button>
-        {pages.map((p, i) =>
-          p === "..." ? (
-            <span key={`ellipsis-${i}`} className="h-8 w-8 flex items-center justify-center text-[13px] text-muted-foreground">…</span>
-          ) : (
-            <button
-              key={p}
-              onClick={() => onChange(p as number)}
-              className={`h-8 w-8 flex items-center justify-center rounded-lg text-[13px] font-medium transition-colors ${
-                page === p ? "bg-foreground text-background" : "border hover:bg-accent"
-              }`}
-            >
-              {p}
-            </button>
-          )
-        )}
-        <button
-          onClick={() => onChange(page + 1)}
-          disabled={page === totalPages}
-          className="h-8 w-8 flex items-center justify-center rounded-lg border text-[13px] hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          <ChevronRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default function Categories() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -179,7 +127,7 @@ export default function Categories() {
                     </div>
                   ))}
                 </div>
-                <Pagination page={tagsPage} total={categories?.length ?? 0} onChange={setTagsPage} />
+                <Pagination page={tagsPage} total={categories?.length ?? 0} pageSize={PAGE_SIZE} onChange={setTagsPage} />
               </>
             )}
           </div>
@@ -206,7 +154,7 @@ export default function Categories() {
                 );
               })}
             </div>
-            <Pagination page={typesPage} total={SERVICE_TYPES.length} onChange={setTypesPage} />
+            <Pagination page={typesPage} total={SERVICE_TYPES.length} pageSize={PAGE_SIZE} onChange={setTypesPage} />
           </div>
         )}
       </div>

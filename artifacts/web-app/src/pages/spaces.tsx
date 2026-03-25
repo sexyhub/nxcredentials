@@ -17,6 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { CopyButton } from "@/components/copy-button";
 import { CredentialModal } from "@/components/credential-modal";
+import { Pagination } from "@/components/pagination";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ import { getServiceType, SERVICE_TYPES } from "@/lib/service-types";
 import { getSpaceIcon } from "@/lib/space-icons";
 import { AppearancePicker } from "@/components/appearance-picker";
 
+const PAGE_SIZE = 16;
 
 export default function Spaces() {
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
@@ -41,6 +43,8 @@ export default function Spaces() {
   const [showCredModal, setShowCredModal] = useState(false);
   const [editingCred, setEditingCred] = useState<Credential | null>(null);
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
+  const [spacesPage, setSpacesPage] = useState(1);
+  const [credsPage, setCredsPage] = useState(1);
 
   const [spaceForm, setSpaceForm] = useState({ name: "", defaultType: "", color: "#6366f1", icon: "folder" });
 
@@ -54,6 +58,8 @@ export default function Spaces() {
   );
 
   const credentials = spaceCredentials || [];
+  const pagedSpaces = spaces?.slice((spacesPage - 1) * PAGE_SIZE, spacesPage * PAGE_SIZE) ?? [];
+  const pagedCreds = credentials.slice((credsPage - 1) * PAGE_SIZE, credsPage * PAGE_SIZE);
 
   const createMutation = useCreateSpace({
     mutation: {
@@ -120,8 +126,7 @@ export default function Spaces() {
     const newType = val || "";
     if (newType) {
       const st = getServiceType(newType);
-      const iconMatch = SPACE_ICONS.find((i) => i.icon === st.icon);
-      setSpaceForm((prev) => ({ ...prev, defaultType: newType, color: st.color, icon: iconMatch?.key || "folder" }));
+      setSpaceForm((prev) => ({ ...prev, defaultType: newType, color: st.color }));
     } else {
       setSpaceForm((prev) => ({ ...prev, defaultType: newType }));
     }
@@ -141,6 +146,11 @@ export default function Spaces() {
       icon: selectedSpace.icon || "folder",
     });
     setShowEditModal(true);
+  };
+
+  const enterSpace = (space: Space) => {
+    setSelectedSpace(space);
+    setCredsPage(1);
   };
 
   const SpaceFormIcon = getSpaceIcon(spaceForm.icon);
@@ -183,47 +193,56 @@ export default function Spaces() {
               <p className="text-[13px] text-muted-foreground">Add your first credential to this space.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
-              {credentials.map((cred) => {
-                const stype = getServiceType(cred.title);
-                const Icon = stype.icon;
-                return (
-                  <div key={cred.id} className="border rounded-xl bg-card px-3.5 py-3 group hover:border-foreground/20 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: stype.color + '18' }}>
-                          <Icon className="w-3.5 h-3.5" style={{ color: stype.color }} />
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+                {pagedCreds.map((cred) => {
+                  const stype = getServiceType(cred.title);
+                  const Icon = stype.icon;
+                  return (
+                    <div key={cred.id} className="border rounded-xl bg-card px-3.5 py-3 group hover:border-foreground/20 transition-colors">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: stype.color + '18' }}>
+                            <Icon className="w-3.5 h-3.5" style={{ color: stype.color }} />
+                          </div>
+                          <span className="text-[13px] font-bold truncate">{stype.label}</span>
+                          {cred.categoryName && (
+                            <span className="shrink-0 flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-accent text-muted-foreground">
+                              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cred.categoryColor || '#888' }} />
+                              {cred.categoryName}
+                            </span>
+                          )}
                         </div>
-                        <span className="text-[13px] font-bold truncate">{stype.label}</span>
+                        <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
+                          <button onClick={() => { setEditingCred(cred); setShowCredModal(true); }} className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent">
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                          <button onClick={() => { if (confirm("Delete this credential?")) deleteCredMutation.mutate({ id: cred.id }); }} className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1">
-                        <button onClick={() => { setEditingCred(cred); setShowCredModal(true); }} className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent">
-                          <Pencil className="w-3 h-3" />
-                        </button>
-                        <button onClick={() => { if (confirm("Delete this credential?")) deleteCredMutation.mutate({ id: cred.id }); }} className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent">
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[11px] font-mono text-muted-foreground truncate flex-1">{cred.email}</span>
+                          <CopyButton value={cred.email} label="Copy" />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <code className="text-[11px] font-mono text-muted-foreground truncate flex-1">
+                            {revealedIds.has(cred.id) ? cred.password : "••••••••"}
+                          </code>
+                          <button onClick={() => toggleReveal(cred.id)} className="p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors">
+                            {revealedIds.has(cred.id) ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                          </button>
+                          <CopyButton value={cred.password} label="Copy" />
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[11px] font-mono text-muted-foreground truncate flex-1">{cred.email}</span>
-                        <CopyButton value={cred.email} label="Copy" />
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <code className="text-[11px] font-mono text-muted-foreground truncate flex-1">
-                          {revealedIds.has(cred.id) ? cred.password : "••••••••"}
-                        </code>
-                        <button onClick={() => toggleReveal(cred.id)} className="p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors">
-                          {revealedIds.has(cred.id) ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                        </button>
-                        <CopyButton value={cred.password} label="Copy" />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+              <Pagination page={credsPage} total={credentials.length} pageSize={PAGE_SIZE} onChange={setCredsPage} />
+            </>
           )}
         </div>
 
@@ -317,36 +336,39 @@ export default function Spaces() {
             <p className="text-[13px] text-muted-foreground">Create a space to group and organize your credentials.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {spaces.map((space) => {
-              const SpaceIcon = getSpaceIcon(space.icon);
-              const color = space.color || "#6366f1";
-              return (
-                <button
-                  key={space.id}
-                  onClick={() => setSelectedSpace(space)}
-                  className="border rounded-xl bg-card px-4 py-4 text-left hover:border-foreground/20 transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: color + '18' }}>
-                      <SpaceIcon className="w-4.5 h-4.5" style={{ color }} />
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {pagedSpaces.map((space) => {
+                const SpaceIcon = getSpaceIcon(space.icon);
+                const color = space.color || "#6366f1";
+                return (
+                  <button
+                    key={space.id}
+                    onClick={() => enterSpace(space)}
+                    className="border rounded-xl bg-card px-4 py-4 text-left hover:border-foreground/20 transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: color + '18' }}>
+                        <SpaceIcon className="w-4.5 h-4.5" style={{ color }} />
+                      </div>
+                      <div>
+                        <span className="text-[32px] font-extrabold tracking-tight leading-none">{space.credentialCount}</span>
+                        <span className="text-[11px] text-muted-foreground font-medium ml-1.5">{space.credentialCount === 1 ? "credential" : "credentials"}</span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[32px] font-extrabold tracking-tight leading-none">{space.credentialCount}</span>
-                      <span className="text-[11px] text-muted-foreground font-medium ml-1.5">{space.credentialCount === 1 ? "credential" : "credentials"}</span>
+                    <div className="border-t pt-3 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-[13px] font-bold truncate">{space.name}</div>
+                        <div className="text-[11px] text-muted-foreground shrink-0">{space.defaultType ? getServiceType(space.defaultType).label : "Mixed types"} · open space</div>
+                      </div>
+                      <div className="text-[11px] text-muted-foreground/60">Tap to view & manage credentials</div>
                     </div>
-                  </div>
-                  <div className="border-t pt-3 space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="text-[13px] font-bold truncate">{space.name}</div>
-                      <div className="text-[11px] text-muted-foreground shrink-0">{space.defaultType ? getServiceType(space.defaultType).label : "Mixed types"} · open space</div>
-                    </div>
-                    <div className="text-[11px] text-muted-foreground/60">Tap to view & manage credentials</div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                  </button>
+                );
+              })}
+            </div>
+            <Pagination page={spacesPage} total={spaces.length} pageSize={PAGE_SIZE} onChange={setSpacesPage} />
+          </>
         )}
       </div>
 
