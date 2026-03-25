@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useGetSettings } from "@workspace/api-client-react";
-import { Key, Tag, Settings, LogOut, Loader2, LayoutDashboard, Menu, X, ChevronDown, Shield, FolderOpen } from "lucide-react";
+import { Tag, Settings, LogOut, Loader2, LayoutDashboard, Menu, X, ChevronDown, Shield, FolderOpen } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 interface LayoutProps {
@@ -39,7 +39,6 @@ export function Layout({ children }: LayoutProps) {
 
   const navItems = [
     { label: "Dashboard", href: "/", icon: LayoutDashboard },
-    { label: "Credentials", href: "/credentials", icon: Key },
     { label: "Spaces", href: "/spaces", icon: FolderOpen },
     { label: "Vaults", href: "/vault", icon: Shield },
     { label: "Manage", href: "/categories", icon: Tag },
