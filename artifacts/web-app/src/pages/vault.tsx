@@ -217,8 +217,7 @@ export default function Vault() {
                           </div>
                           <span className="text-[13px] font-bold truncate">{stype.label}</span>
                           {cred.categoryName && (
-                            <span className="shrink-0 flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-accent text-muted-foreground">
-                              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cred.categoryColor || '#888' }} />
+                            <span className="shrink-0 text-[10px] font-semibold tracking-wide" style={{ color: cred.categoryColor || '#888' }}>
                               {cred.categoryName}
                             </span>
                           )}
