@@ -349,22 +349,19 @@ export default function Spaces() {
                 <button
                   key={space.id}
                   onClick={() => setSelectedSpace(space)}
-                  className="border rounded-xl bg-card px-4 py-4 text-left hover:border-foreground/20 transition-all cursor-pointer group"
+                  className="border rounded-xl bg-card px-4 py-5 text-left hover:border-foreground/20 transition-all cursor-pointer group"
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start justify-between mb-4">
+                    <span className="text-[40px] font-extrabold tracking-tight leading-none">{space.credentialCount}</span>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: color + '18' }}>
                       <SpaceIcon className="w-5 h-5" style={{ color }} />
                     </div>
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      <div className="text-[14px] font-bold truncate">{space.name}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">
-                        {space.defaultType ? getServiceType(space.defaultType).label : "Mixed"}
-                      </div>
-                    </div>
                   </div>
-                  <div className="mt-3 pt-3 border-t flex items-baseline justify-between">
-                    <span className="text-[22px] font-extrabold tracking-tight">{space.credentialCount}</span>
-                    <span className="text-[11px] text-muted-foreground font-medium">credential{space.credentialCount !== 1 ? "s" : ""}</span>
+                  <div className="pt-4 border-t">
+                    <div className="text-[14px] font-bold truncate">{space.name}</div>
+                    <div className="text-[12px] text-muted-foreground mt-1.5">
+                      {space.defaultType ? getServiceType(space.defaultType).label : "Mixed"} · {space.credentialCount} credential{space.credentialCount !== 1 ? "s" : ""}
+                    </div>
                   </div>
                 </button>
               );
