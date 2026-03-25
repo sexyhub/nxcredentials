@@ -18,6 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { CredentialModal } from "@/components/credential-modal";
 import { VaultUnlockModal } from "@/components/vault-unlock-modal";
+import { PinInput } from "@/components/pin-input";
 import { CopyButton } from "@/components/copy-button";
 import {
   Dialog,
@@ -378,19 +379,20 @@ export default function Vault() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label className="text-[13px] block text-center">PIN</Label>
+              <PinInput value={createForm.pin} onChange={(v) => setCreateForm({ ...createForm, pin: v })} length={6} />
+              <p className="text-[11px] text-muted-foreground text-center">Choose a 4–6 digit PIN</p>
+            </div>
+
             <div className="space-y-1.5">
               <Label className="text-[13px]">Password</Label>
               <Input type="password" required minLength={6} value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })} placeholder="At least 6 characters" className="h-10" />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-[13px]">PIN</Label>
-              <Input type="password" inputMode="numeric" required pattern="\d{4,8}" value={createForm.pin} onChange={(e) => setCreateForm({ ...createForm, pin: e.target.value.replace(/\D/g, "").slice(0, 8) })} placeholder="4-8 digit PIN" className="h-10" />
-            </div>
-
             <DialogFooter className="pt-2 gap-2">
               <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)} className="h-9 text-[13px]">Cancel</Button>
-              <Button type="submit" disabled={createMutation.isPending} className="h-9 text-[13px]">
+              <Button type="submit" disabled={createMutation.isPending || createForm.pin.length < 4} className="h-9 text-[13px]">
                 {createMutation.isPending ? "Creating..." : "Create vault"}
               </Button>
             </DialogFooter>
