@@ -322,7 +322,7 @@ export default function Vault() {
                   </div>
                   <div>
                     <span className="text-[32px] font-extrabold tracking-tight leading-none">{vault.credentialCount}</span>
-                    <span className="text-[11px] text-muted-foreground font-medium ml-1.5">{vault.credentialCount === 1 ? "item" : "items"} secured</span>
+                    <span className="text-[11px] text-muted-foreground font-medium ml-1.5">private credential{vault.credentialCount !== 1 ? "s" : ""}</span>
                   </div>
                 </div>
                 <div className="border-t pt-3 space-y-1">
