@@ -332,7 +332,7 @@ export default function Vault() {
                       {vault.isUnlocked ? <span className="text-green-600 font-semibold">Unlocked</span> : <><Lock className="w-3 h-3 shrink-0" /><span>Locked</span></>} <span>· encrypted vault</span>
                     </div>
                   </div>
-                  <div className="text-[11px] text-muted-foreground/60">{vault.isUnlocked ? "Tap to browse credentials" : "Tap to unlock &amp; view"}</div>
+                  <div className="text-[11px] text-muted-foreground/60">{vault.isUnlocked ? "Tap to browse credentials" : "Tap to unlock & view"}</div>
                 </div>
               </button>
             ))}
