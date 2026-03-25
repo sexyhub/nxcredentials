@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CredentialModal } from "@/components/credential-modal";
 import { VaultUnlockModal } from "@/components/vault-unlock-modal";
 import { PinInput } from "@/components/pin-input";
+import { AppearancePicker } from "@/components/appearance-picker";
 import { CopyButton } from "@/components/copy-button";
 import {
   Dialog,
@@ -34,12 +35,6 @@ import {
 } from "lucide-react";
 import { getServiceType } from "@/lib/service-types";
 
-const VAULT_COLORS = [
-  "#6366f1", "#8B5CF6", "#EC4899", "#EF4444", "#F59E0B",
-  "#10B981", "#06B6D4", "#3B82F6", "#6B7280", "#1F2937"
-];
-
-const VAULT_ICONS = ["shield", "lock", "key", "star", "heart", "diamond", "crown", "gem"];
 
 function getVaultIcon(icon: string) {
   return Shield;
@@ -267,16 +262,11 @@ export default function Vault() {
                 <Label className="text-[13px]">Vault name</Label>
                 <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} required className="h-10" />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-[13px]">Color</Label>
-                <div className="flex gap-2 flex-wrap">
-                  {VAULT_COLORS.map((c) => (
-                    <button key={c} type="button" onClick={() => setEditForm({ ...editForm, color: c })}
-                      className={`w-7 h-7 rounded-lg transition-all ${editForm.color === c ? "ring-2 ring-offset-2 ring-foreground scale-110" : "hover:scale-105"}`}
-                      style={{ backgroundColor: c }} />
-                  ))}
-                </div>
-              </div>
+              <AppearancePicker
+                color={editForm.color}
+                onColorChange={(c) => setEditForm({ ...editForm, color: c })}
+                fixedIcon={Shield}
+              />
               <DialogFooter className="pt-2 gap-2">
                 <Button type="button" variant="outline" size="sm" className="h-8 text-[12px] text-destructive hover:text-destructive"
                   onClick={() => { if (confirm(`Delete "${currentVault.name}" and all its credentials? This cannot be undone.`)) { deleteMutation.mutate({ id: currentVault.id }); setShowEditModal(false); } }}>
@@ -368,16 +358,11 @@ export default function Vault() {
               <Input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} required placeholder="e.g. Banking, Top Secret" className="h-10" />
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-[13px]">Color</Label>
-              <div className="flex gap-2 flex-wrap">
-                {VAULT_COLORS.map((c) => (
-                  <button key={c} type="button" onClick={() => setCreateForm({ ...createForm, color: c })}
-                    className={`w-7 h-7 rounded-lg transition-all ${createForm.color === c ? "ring-2 ring-offset-2 ring-foreground scale-110" : "hover:scale-105"}`}
-                    style={{ backgroundColor: c }} />
-                ))}
-              </div>
-            </div>
+            <AppearancePicker
+              color={createForm.color}
+              onColorChange={(c) => setCreateForm({ ...createForm, color: c })}
+              fixedIcon={Shield}
+            />
 
             <div className="space-y-2">
               <Label className="text-[13px] block text-center">PIN</Label>

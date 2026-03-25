@@ -30,12 +30,9 @@ import {
   Plus, FolderOpen, Loader2, Eye, EyeOff, Pencil, Trash2, Key, ArrowLeft
 } from "lucide-react";
 import { getServiceType, SERVICE_TYPES } from "@/lib/service-types";
-import { SPACE_ICONS, getSpaceIcon } from "@/lib/space-icons";
+import { getSpaceIcon } from "@/lib/space-icons";
+import { AppearancePicker } from "@/components/appearance-picker";
 
-const SPACE_COLORS = [
-  "#6366f1", "#8B5CF6", "#EC4899", "#EF4444", "#F59E0B",
-  "#10B981", "#06B6D4", "#3B82F6", "#6B7280", "#1F2937"
-];
 
 export default function Spaces() {
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
@@ -273,34 +270,13 @@ export default function Spaces() {
                   emptyText="No match."
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-[13px]">Color</Label>
-                <div className="flex gap-2 flex-wrap">
-                  {SPACE_COLORS.map((c) => (
-                    <button key={c} type="button" onClick={() => setSpaceForm({ ...spaceForm, color: c })}
-                      className={`w-7 h-7 rounded-lg transition-all ${spaceForm.color === c ? "ring-2 ring-offset-2 ring-foreground scale-110" : "hover:scale-105"}`}
-                      style={{ backgroundColor: c }} />
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-[13px]">Icon</Label>
-                <div className="flex gap-1.5 flex-wrap">
-                  {SPACE_ICONS.map((si) => {
-                    const SIcon = si.icon;
-                    const isSelected = spaceForm.icon === si.key;
-                    return (
-                      <button key={si.key} type="button" onClick={() => setSpaceForm({ ...spaceForm, icon: si.key })}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                          isSelected ? "ring-2 ring-offset-1 ring-foreground bg-accent" : "hover:bg-accent/50"
-                        }`}
-                      >
-                        <SIcon className="w-4 h-4" style={{ color: isSelected ? spaceForm.color : undefined }} />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              <AppearancePicker
+                color={spaceForm.color}
+                onColorChange={(c) => setSpaceForm({ ...spaceForm, color: c })}
+                icon={spaceForm.icon}
+                onIconChange={(i) => setSpaceForm({ ...spaceForm, icon: i })}
+                showIcons
+              />
               <DialogFooter className="pt-2 gap-2">
                 <Button type="button" variant="outline" size="sm" className="h-8 text-[12px] text-destructive hover:text-destructive"
                   onClick={() => { if (confirm(`Delete "${currentSpace.name}" and unassign its credentials? This cannot be undone.`)) { deleteMutation.mutate({ id: currentSpace.id }); setShowEditModal(false); } }}>
@@ -414,35 +390,13 @@ export default function Spaces() {
               </p>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-[13px]">Color</Label>
-              <div className="flex gap-2 flex-wrap">
-                {SPACE_COLORS.map((c) => (
-                  <button key={c} type="button" onClick={() => setSpaceForm({ ...spaceForm, color: c })}
-                    className={`w-7 h-7 rounded-lg transition-all ${spaceForm.color === c ? "ring-2 ring-offset-2 ring-foreground scale-110" : "hover:scale-105"}`}
-                    style={{ backgroundColor: c }} />
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-[13px]">Icon</Label>
-              <div className="flex gap-1.5 flex-wrap">
-                {SPACE_ICONS.map((si) => {
-                  const SIcon = si.icon;
-                  const isSelected = spaceForm.icon === si.key;
-                  return (
-                    <button key={si.key} type="button" onClick={() => setSpaceForm({ ...spaceForm, icon: si.key })}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                        isSelected ? "ring-2 ring-offset-1 ring-foreground bg-accent" : "hover:bg-accent/50"
-                      }`}
-                    >
-                      <SIcon className="w-4 h-4" style={{ color: isSelected ? spaceForm.color : undefined }} />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <AppearancePicker
+              color={spaceForm.color}
+              onColorChange={(c) => setSpaceForm({ ...spaceForm, color: c })}
+              icon={spaceForm.icon}
+              onIconChange={(i) => setSpaceForm({ ...spaceForm, icon: i })}
+              showIcons
+            />
 
             <DialogFooter className="pt-2 gap-2">
               <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)} className="h-9 text-[13px]">Cancel</Button>
