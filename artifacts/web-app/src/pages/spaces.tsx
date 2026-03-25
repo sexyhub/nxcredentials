@@ -361,8 +361,10 @@ export default function Spaces() {
                     </div>
                   </div>
                   <div className="border-t pt-3 space-y-1">
-                    <div className="text-[13px] font-bold truncate">{space.name}</div>
-                    <div className="text-[11px] text-muted-foreground">{space.defaultType ? getServiceType(space.defaultType).label : "Mixed types"} · open space</div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-[13px] font-bold truncate">{space.name}</div>
+                      <div className="text-[11px] text-muted-foreground shrink-0">{space.defaultType ? getServiceType(space.defaultType).label : "Mixed types"} · open space</div>
+                    </div>
                     <div className="text-[11px] text-muted-foreground/60">Tap to view &amp; manage credentials</div>
                   </div>
                 </button>

@@ -326,9 +326,11 @@ export default function Vault() {
                   </div>
                 </div>
                 <div className="border-t pt-3 space-y-1">
-                  <div className="text-[13px] font-bold truncate">{vault.name}</div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {vault.isUnlocked ? <span className="text-green-600 font-semibold">Unlocked</span> : <span className="flex items-center gap-1"><Lock className="w-3 h-3" />Locked</span>} · encrypted vault
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[13px] font-bold truncate">{vault.name}</div>
+                    <div className="text-[11px] text-muted-foreground shrink-0">
+                      {vault.isUnlocked ? <span className="text-green-600 font-semibold">Unlocked</span> : <span className="flex items-center gap-1"><Lock className="w-3 h-3" />Locked</span>} · encrypted vault
+                    </div>
                   </div>
                   <div className="text-[11px] text-muted-foreground/60">{vault.isUnlocked ? "Tap to browse credentials" : "Tap to unlock &amp; view"}</div>
                 </div>
