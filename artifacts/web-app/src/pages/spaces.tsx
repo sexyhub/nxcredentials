@@ -349,22 +349,20 @@ export default function Spaces() {
                 <button
                   key={space.id}
                   onClick={() => setSelectedSpace(space)}
-                  className="relative rounded-2xl p-4 text-left transition-all cursor-pointer group overflow-hidden hover:scale-[1.02] active:scale-[0.98]"
-                  style={{ backgroundColor: color + '0d' }}
+                  className="border rounded-xl bg-card px-4 pt-3.5 pb-4 text-left hover:border-foreground/20 transition-all cursor-pointer group"
                 >
-                  <div className="absolute top-3 right-3 opacity-[0.07]">
-                    <SpaceIcon className="w-16 h-16" style={{ color }} />
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <span className="text-[38px] font-extrabold tracking-tighter leading-none tabular-nums">{space.credentialCount}</span>
+                      <span className="block text-[11px] text-muted-foreground font-medium mt-0.5 uppercase tracking-widest">credential{space.credentialCount !== 1 ? "s" : ""}</span>
+                    </div>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: color + '15' }}>
+                      <SpaceIcon className="w-4.5 h-4.5" style={{ color }} />
+                    </div>
                   </div>
-                  <div className="relative">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style={{ backgroundColor: color + '20' }}>
-                      <SpaceIcon className="w-4 h-4" style={{ color }} />
-                    </div>
-                    <div className="text-[13px] font-bold truncate mb-1">{space.name}</div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-[26px] font-extrabold tracking-tight leading-none" style={{ color }}>{space.credentialCount}</span>
-                      <span className="text-[11px] text-muted-foreground font-medium">credential{space.credentialCount !== 1 ? "s" : ""}</span>
-                    </div>
-                    <div className="text-[11px] text-muted-foreground/70 mt-1.5 font-medium">
+                  <div className="border-t pt-3">
+                    <div className="text-[14px] font-bold truncate">{space.name}</div>
+                    <div className="text-[11px] text-muted-foreground/70 mt-0.5 font-medium">
                       {space.defaultType ? getServiceType(space.defaultType).label : "Mixed types"}
                     </div>
                   </div>
