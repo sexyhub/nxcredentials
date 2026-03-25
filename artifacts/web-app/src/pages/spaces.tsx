@@ -341,7 +341,7 @@ export default function Spaces() {
             <p className="text-[13px] text-muted-foreground">Create a space to group and organize your credentials.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
             {spaces.map((space) => {
               const SpaceIcon = getSpaceIcon(space.icon);
               const color = space.color || "#6366f1";
@@ -349,17 +349,17 @@ export default function Spaces() {
                 <button
                   key={space.id}
                   onClick={() => setSelectedSpace(space)}
-                  className="border rounded-xl bg-card px-3.5 py-3 text-left hover:border-foreground/20 transition-all cursor-pointer"
+                  className="border rounded-lg bg-card px-3 py-2.5 text-left hover:border-foreground/20 transition-all cursor-pointer flex items-center gap-2.5"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: color + '18' }}>
-                      <SpaceIcon className="w-3.5 h-3.5" style={{ color }} />
-                    </div>
-                    <span className="text-[20px] font-extrabold tracking-tight leading-none">{space.credentialCount}</span>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: color + '18' }}>
+                    <SpaceIcon className="w-4 h-4" style={{ color }} />
                   </div>
-                  <div className="text-[13px] font-semibold truncate">{space.name}</div>
-                  <div className="text-[11px] text-muted-foreground truncate">
-                    {space.defaultType ? getServiceType(space.defaultType).label : "Mixed"}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[17px] font-extrabold tracking-tight leading-none">{space.credentialCount}</span>
+                      <span className="text-[11px] text-muted-foreground font-medium">items</span>
+                    </div>
+                    <div className="text-[12px] font-semibold truncate mt-0.5">{space.name}</div>
                   </div>
                 </button>
               );
