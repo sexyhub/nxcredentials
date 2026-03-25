@@ -287,7 +287,7 @@ export default function Vault() {
 
   return (
     <Layout>
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight">Secure vaults</h1>
