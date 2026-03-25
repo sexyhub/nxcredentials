@@ -46,6 +46,7 @@ function getVaultIcon(icon: string) {
 
 export default function Vault() {
   const [selectedVault, setSelectedVault] = useState<VaultItem | null>(null);
+  const [unlockingVault, setUnlockingVault] = useState<VaultItem | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
@@ -127,6 +128,10 @@ export default function Vault() {
   const handleVaultUnlocked = () => {
     queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
     queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() });
+    if (unlockingVault) {
+      setSelectedVault(unlockingVault);
+      setUnlockingVault(null);
+    }
   };
 
   const toggleReveal = (id: number) => {
@@ -313,7 +318,14 @@ export default function Vault() {
             {vaults.map((vault) => (
               <button
                 key={vault.id}
-                onClick={() => setSelectedVault(vault)}
+                onClick={() => {
+                  if (vault.isUnlocked) {
+                    setSelectedVault(vault);
+                  } else {
+                    setUnlockingVault(vault);
+                    setShowUnlockModal(true);
+                  }
+                }}
                 className="border rounded-xl bg-card px-4 py-4 text-left hover:border-foreground/20 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3 mb-3">
@@ -385,6 +397,16 @@ export default function Vault() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {unlockingVault && (
+        <VaultUnlockModal
+          open={showUnlockModal}
+          onOpenChange={(open) => { setShowUnlockModal(open); if (!open) setUnlockingVault(null); }}
+          onUnlocked={handleVaultUnlocked}
+          vaultId={unlockingVault.id}
+          vaultName={unlockingVault.name}
+        />
+      )}
     </Layout>
   );
 }
