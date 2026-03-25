@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
 import {
-  Plus, FolderOpen, Loader2, Eye, EyeOff, Pencil, Trash2, Key, ArrowLeft
+  Plus, FolderOpen, Loader2, Eye, EyeOff, Pencil, Trash2, Key, ArrowLeft, Tag
 } from "lucide-react";
 import { getServiceType, SERVICE_TYPES } from "@/lib/service-types";
 import { getSpaceIcon } from "@/lib/space-icons";
@@ -207,7 +207,8 @@ export default function Spaces() {
                           </div>
                           <span className="text-[13px] font-bold truncate">{stype.label}</span>
                           {cred.categoryName && (
-                            <span className="shrink-0 text-[10px] font-semibold tracking-wide" style={{ color: cred.categoryColor || '#888' }}>
+                            <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-semibold tracking-wide" style={{ color: cred.categoryColor || '#888' }}>
+                              <Tag className="w-2.5 h-2.5" />
                               {cred.categoryName}
                             </span>
                           )}
