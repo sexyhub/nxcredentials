@@ -72,7 +72,8 @@ export default function Categories() {
 
         {activeTab === "tags" && (
           <div className="space-y-4">
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              <p className="text-[13px] text-muted-foreground">Custom tags to label and filter your credentials.</p>
               <Button onClick={() => { setSelectedCategory(null); setIsModalOpen(true); }} size="sm" className="h-9 text-[13px] font-semibold">
                 <Plus className="w-3.5 h-3.5 mr-1.5" />
                 Add tag
