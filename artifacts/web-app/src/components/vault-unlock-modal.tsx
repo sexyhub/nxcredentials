@@ -20,7 +20,7 @@ interface VaultUnlockModalProps {
 }
 
 export function VaultUnlockModal({ open, onOpenChange, onUnlocked, vaultId, vaultName }: VaultUnlockModalProps) {
-  const [mode, setMode] = useState<"password" | "pin">("password");
+  const [mode, setMode] = useState<"password" | "pin">("pin");
   const [value, setValue] = useState("");
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
@@ -69,16 +69,6 @@ export function VaultUnlockModal({ open, onOpenChange, onUnlocked, vaultId, vaul
         <div className="flex gap-1 bg-accent rounded-lg p-1">
           <button
             type="button"
-            onClick={() => { setMode("password"); reset(); }}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] font-semibold rounded-md transition-colors ${
-              mode === "password" ? "bg-background shadow-sm" : "text-muted-foreground"
-            }`}
-          >
-            <KeyRound className="w-3 h-3" />
-            Password
-          </button>
-          <button
-            type="button"
             onClick={() => { setMode("pin"); reset(); }}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] font-semibold rounded-md transition-colors ${
               mode === "pin" ? "bg-background shadow-sm" : "text-muted-foreground"
@@ -86,6 +76,16 @@ export function VaultUnlockModal({ open, onOpenChange, onUnlocked, vaultId, vaul
           >
             <Hash className="w-3 h-3" />
             PIN
+          </button>
+          <button
+            type="button"
+            onClick={() => { setMode("password"); reset(); }}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[12px] font-semibold rounded-md transition-colors ${
+              mode === "password" ? "bg-background shadow-sm" : "text-muted-foreground"
+            }`}
+          >
+            <KeyRound className="w-3 h-3" />
+            Password
           </button>
         </div>
 
@@ -107,8 +107,8 @@ export function VaultUnlockModal({ open, onOpenChange, onUnlocked, vaultId, vaul
           ) : (
             <div className="space-y-2">
               <Label className="text-[13px] block text-center">Vault PIN</Label>
-              <PinInput value={pin} onChange={setPin} length={6} autoFocus />
-              <p className="text-[11px] text-muted-foreground text-center">Enter 4–6 digits</p>
+              <PinInput value={pin} onChange={setPin} length={4} autoFocus />
+              <p className="text-[11px] text-muted-foreground text-center">Enter your 4-digit PIN</p>
             </div>
           )}
 

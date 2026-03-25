@@ -366,8 +366,8 @@ export default function Vault() {
 
             <div className="space-y-2">
               <Label className="text-[13px] block text-center">PIN</Label>
-              <PinInput value={createForm.pin} onChange={(v) => setCreateForm({ ...createForm, pin: v })} length={6} />
-              <p className="text-[11px] text-muted-foreground text-center">Choose a 4–6 digit PIN</p>
+              <PinInput value={createForm.pin} onChange={(v) => setCreateForm({ ...createForm, pin: v })} length={4} />
+              <p className="text-[11px] text-muted-foreground text-center">Choose a 4-digit PIN</p>
             </div>
 
             <div className="space-y-1.5">
