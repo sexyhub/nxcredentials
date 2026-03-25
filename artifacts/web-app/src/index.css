@@ -121,16 +121,21 @@
 
   html {
     overflow-y: scroll;
-    scrollbar-gutter: stable;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
   }
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    scrollbar-width: none;
   }
 
   body[data-scroll-locked] {
     overflow: hidden !important;
-    padding-right: var(--removed-body-scroll-bar-size, 0px) !important;
+    padding-right: 0 !important;
+    margin-right: 0 !important;
   }
 
   h1, h2, h3 {
