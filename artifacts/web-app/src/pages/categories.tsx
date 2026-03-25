@@ -135,9 +135,9 @@ export default function Categories() {
 
         {activeTab === "types" && (
           <div className="space-y-4">
-            <p className="text-[13px] text-muted-foreground">
-              These are the built-in service types available when creating credentials.
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-[13px] text-muted-foreground">These are the built-in service types available when creating credentials.</p>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
               {pagedTypes.map((t) => {
                 const Icon = t.icon;
