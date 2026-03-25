@@ -309,28 +309,30 @@ export default function Vault() {
             <p className="text-[13px] text-muted-foreground">Create a vault to store high-security credentials with their own password and PIN.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {vaults.map((vault) => (
               <button
                 key={vault.id}
                 onClick={() => setSelectedVault(vault)}
-                className="border rounded-lg bg-card px-3 py-2.5 text-left hover:border-foreground/20 transition-all cursor-pointer flex items-center gap-2.5"
+                className="border rounded-xl bg-card p-4 text-left hover:border-foreground/20 transition-all cursor-pointer group"
+                style={{ borderLeft: `3px solid ${vault.color}` }}
               >
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: vault.color + '18' }}>
-                  <Shield className="w-4 h-4" style={{ color: vault.color }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-[17px] font-extrabold tracking-tight leading-none">{vault.credentialCount}</span>
-                    <span className="text-[11px] text-muted-foreground font-medium">
-                      {vault.isUnlocked ? (
-                        <span className="text-green-600">open</span>
-                      ) : (
-                        <span className="flex items-center gap-0.5"><Lock className="w-2.5 h-2.5 inline" /> locked</span>
-                      )}
-                    </span>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[28px] font-extrabold tracking-tight leading-none">{vault.credentialCount}</span>
+                  <div className="flex items-center gap-2">
+                    {vault.isUnlocked ? (
+                      <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Unlocked</span>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> Locked</span>
+                    )}
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: vault.color + '18' }}>
+                      <Shield className="w-4.5 h-4.5" style={{ color: vault.color }} />
+                    </div>
                   </div>
-                  <div className="text-[12px] font-semibold truncate mt-0.5">{vault.name}</div>
+                </div>
+                <div className="text-[14px] font-bold truncate">{vault.name}</div>
+                <div className="text-[12px] text-muted-foreground mt-0.5">
+                  {vault.credentialCount} credential{vault.credentialCount !== 1 ? "s" : ""} stored
                 </div>
               </button>
             ))}
