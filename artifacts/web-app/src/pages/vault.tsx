@@ -42,7 +42,7 @@ import {
 import {
   Plus, Shield, Lock, Key, Loader2, Eye, EyeOff, Pencil, Trash2, ArrowLeft, Tag, KeyRound, Timer
 } from "lucide-react";
-import { getServiceType } from "@/lib/service-types";
+import { getServiceType, getIconComponent } from "@/lib/service-types";
 
 const PAGE_SIZE = 16;
 
@@ -368,7 +368,7 @@ export default function Vault() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
                 {pagedCreds.map((cred) => {
                   const stype = getServiceType(cred.title);
-                  const Icon = stype.icon;
+                  const Icon = getIconComponent(stype.icon);
                   return (
                     <div key={cred.id} className="border rounded-xl bg-card px-3.5 py-3 group hover:border-foreground/20 transition-colors">
                       <div className="flex items-center justify-between mb-2">

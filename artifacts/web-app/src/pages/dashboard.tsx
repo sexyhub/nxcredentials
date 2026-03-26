@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Loader2, Plus, ArrowRight, KeyRound, Tag, Clock, Shield, Grid3X3, Calendar, FolderOpen } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { getServiceType } from "@/lib/service-types";
+import { getServiceType, getIconComponent } from "@/lib/service-types";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -179,7 +179,7 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {typeBreakdown.slice(0, 8).map((t) => {
                   const stype = getServiceType(t.type);
-                  const Icon = stype.icon;
+                  const Icon = getIconComponent(stype.icon);
                   return (
                     <div key={t.type}>
                       <div className="flex items-center justify-between mb-1.5">

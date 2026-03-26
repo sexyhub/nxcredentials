@@ -30,7 +30,7 @@ import { Combobox } from "@/components/ui/combobox";
 import {
   Plus, FolderOpen, Loader2, Eye, EyeOff, Pencil, Trash2, Key, ArrowLeft, Tag
 } from "lucide-react";
-import { getServiceType, SERVICE_TYPES } from "@/lib/service-types";
+import { getServiceType, getIconComponent, SERVICE_TYPES } from "@/lib/service-types";
 import { getSpaceIcon } from "@/lib/space-icons";
 import { AppearancePicker } from "@/components/appearance-picker";
 
@@ -117,7 +117,7 @@ export default function Spaces() {
   const spaceTypeOptions = [
     { value: "", label: "No default type" },
     ...SERVICE_TYPES.map((t) => {
-      const Icon = t.icon;
+      const Icon = getIconComponent(t.icon);
       return { value: t.key, label: t.label, icon: <Icon className="w-3.5 h-3.5" style={{ color: t.color }} /> };
     }),
   ];
@@ -197,7 +197,7 @@ export default function Spaces() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
                 {pagedCreds.map((cred) => {
                   const stype = getServiceType(cred.title);
-                  const Icon = stype.icon;
+                  const Icon = getIconComponent(stype.icon);
                   return (
                     <div key={cred.id} className="border rounded-xl bg-card px-3.5 py-3 group hover:border-foreground/20 transition-colors">
                       <div className="flex items-center justify-between mb-2">

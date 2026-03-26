@@ -25,6 +25,7 @@ import type {
   CreateCredentialBody,
   CreateSpaceBody,
   CreateVaultBody,
+  CreateServiceTypeBody,
   Credential,
   ErrorResponse,
   HealthStatus,
@@ -33,11 +34,13 @@ import type {
   MessageResponse,
   RegisterBody,
   RegistrationStatus,
+  ServiceType,
   Settings,
   Space,
   Stats,
   UpdateCategoryBody,
   UpdateCredentialBody,
+  UpdateServiceTypeBody,
   UpdateSettingsBody,
   UpdateSpaceBody,
   UpdateVaultBody,
@@ -2434,4 +2437,88 @@ export const useChangeVaultPin = <
   TContext
 > => {
   return useMutation(getChangeVaultPinMutationOptions(options));
+};
+
+// ─── Service Types ───────────────────────────────────────────────────────────
+
+export const getListServiceTypesUrl = () => `/api/service-types`;
+
+export const listServiceTypes = (options?: RequestInit): Promise<ServiceType[]> => {
+  return customFetch<ServiceType[]>(getListServiceTypesUrl(), { ...options });
+};
+
+export const getListServiceTypesQueryKey = () => ["listServiceTypes"] as const;
+
+export const getListServiceTypesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listServiceTypes>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listServiceTypes>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+  return {
+    queryKey: getListServiceTypesQueryKey(),
+    queryFn: () => listServiceTypes(requestOptions),
+    ...queryOptions,
+  } satisfies UseQueryOptions<Awaited<ReturnType<typeof listServiceTypes>>, TError, TData>;
+};
+
+export const useListServiceTypes = <
+  TData = Awaited<ReturnType<typeof listServiceTypes>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listServiceTypes>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> => {
+  return useQuery(getListServiceTypesQueryOptions(options));
+};
+
+// Create
+export const createServiceType = (body: CreateServiceTypeBody, options?: RequestInit): Promise<ServiceType> => {
+  return customFetch<ServiceType>(getListServiceTypesUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(body),
+  });
+};
+
+export const useCreateServiceType = <TError = ErrorType<ErrorResponse>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof createServiceType>>, TError, { data: BodyType<CreateServiceTypeBody> }, TContext>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<Awaited<ReturnType<typeof createServiceType>>, TError, { data: BodyType<CreateServiceTypeBody> }, TContext> => {
+  const mutationFn = (props: { data: BodyType<CreateServiceTypeBody> }) => createServiceType(props.data, options?.request);
+  return useMutation({ mutationFn, ...options?.mutation });
+};
+
+// Update
+export const updateServiceType = (id: number, body: UpdateServiceTypeBody, options?: RequestInit): Promise<ServiceType> => {
+  return customFetch<ServiceType>(`/api/service-types/${id}`, {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(body),
+  });
+};
+
+export const useUpdateServiceType = <TError = ErrorType<ErrorResponse>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateServiceType>>, TError, { id: number; data: BodyType<UpdateServiceTypeBody> }, TContext>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<Awaited<ReturnType<typeof updateServiceType>>, TError, { id: number; data: BodyType<UpdateServiceTypeBody> }, TContext> => {
+  const mutationFn = (props: { id: number; data: BodyType<UpdateServiceTypeBody> }) => updateServiceType(props.id, props.data, options?.request);
+  return useMutation({ mutationFn, ...options?.mutation });
+};
+
+// Delete
+export const deleteServiceType = (id: number, options?: RequestInit): Promise<void> => {
+  return customFetch<void>(`/api/service-types/${id}`, { ...options, method: "DELETE" });
+};
+
+export const useDeleteServiceType = <TError = ErrorType<ErrorResponse>, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteServiceType>>, TError, { id: number }, TContext>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<Awaited<ReturnType<typeof deleteServiceType>>, TError, { id: number }, TContext> => {
+  const mutationFn = (props: { id: number }) => deleteServiceType(props.id, options?.request);
+  return useMutation({ mutationFn, ...options?.mutation });
 };

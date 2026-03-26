@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, sql, gte, and, isNotNull } from "drizzle-orm";
-import { db, credentialsTable, categoriesTable, spacesTable, vaultsTable } from "@workspace/db";
+import { db, credentialsTable, categoriesTable, spacesTable, vaultsTable, serviceTypesTable } from "@workspace/db";
 import { GetStatsResponse } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/auth";
 
@@ -63,9 +63,8 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
     );
 
   const uniqueTypesResult = await db
-    .select({ count: sql<number>`cast(count(distinct ${credentialsTable.title}) as integer)` })
-    .from(credentialsTable)
-    .where(eq(credentialsTable.userId, userId));
+    .select({ count: sql<number>`cast(count(*) as integer)` })
+    .from(serviceTypesTable);
 
   const ageStats = await db
     .select({

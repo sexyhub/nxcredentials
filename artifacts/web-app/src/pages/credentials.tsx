@@ -17,7 +17,7 @@ import { Plus, Search, Eye, EyeOff, Pencil, Trash2, Key, Loader2 } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
-import { getServiceType, SERVICE_TYPES } from "@/lib/service-types";
+import { getServiceType, getIconComponent, SERVICE_TYPES } from "@/lib/service-types";
 
 export default function Credentials() {
   const [search, setSearch] = useState("");
@@ -77,14 +77,14 @@ export default function Credentials() {
     ...SERVICE_TYPES
       .filter((t) => usedTypeKeys.has(t.key))
       .map((t) => {
-        const Icon = t.icon;
+        const Icon = getIconComponent(t.icon);
         return { value: t.key, label: t.label, icon: <Icon className="w-3.5 h-3.5" style={{ color: t.color }} /> };
       }),
   ];
 
   const renderCredCard = (cred: Credential) => {
     const stype = getServiceType(cred.title);
-    const Icon = stype.icon;
+    const Icon = getIconComponent(stype.icon);
     return (
       <div key={cred.id} className="border rounded-xl bg-card px-3.5 py-3 group hover:border-foreground/20 transition-colors">
         <div className="flex items-center justify-between mb-2">

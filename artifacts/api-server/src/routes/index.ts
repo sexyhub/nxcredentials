@@ -7,6 +7,7 @@ import spacesRouter from "./spaces";
 import statsRouter from "./stats";
 import settingsRouter from "./settings";
 import vaultRouter from "./vault";
+import serviceTypesRouter from "./service-types";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(spacesRouter);
 router.use(statsRouter);
 router.use(settingsRouter);
 router.use(vaultRouter);
+router.use(serviceTypesRouter);
 
 export default router;

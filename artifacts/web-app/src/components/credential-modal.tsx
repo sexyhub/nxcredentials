@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
-import { SERVICE_TYPES, getServiceType } from "@/lib/service-types";
+import { SERVICE_TYPES, getServiceType, getIconComponent } from "@/lib/service-types";
 
 interface CredentialModalProps {
   open: boolean;
@@ -100,7 +100,7 @@ export function CredentialModal({ open, onOpenChange, credential, defaultSpaceId
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const typeOptions = SERVICE_TYPES.map((t) => {
-    const Icon = t.icon;
+    const Icon = getIconComponent(t.icon);
     return {
       value: t.key,
       label: t.label,

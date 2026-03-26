@@ -1,40 +1,7 @@
-import {
-  Mail, Shield, Cloud, Code2, Tv, Music, MessageCircle,
-  Camera, Briefcase, Hash, ShoppingCart, CreditCard,
-  Gamepad2, Globe, Lock, Server, Database, Phone,
-  Video, BookOpen, Plane, Heart, Cpu, Wifi, Star,
-  Key, Folder, Home, Users, Settings, Bell, Zap, Package
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { db, serviceTypesTable } from "@workspace/db";
+import { sql } from "drizzle-orm";
 
-export interface ServiceType {
-  id?: number;
-  key: string;
-  label: string;
-  icon: string;
-  color: string;
-}
-
-export const ICON_MAP: Record<string, LucideIcon> = {
-  Mail, Shield, Cloud, Code2, Tv, Music, MessageCircle,
-  Camera, Briefcase, Hash, ShoppingCart, CreditCard,
-  Gamepad2, Globe, Lock, Server, Database, Phone,
-  Video, BookOpen, Plane, Heart, Cpu, Wifi, Star,
-  Key, Folder, Home, Users, Settings, Bell, Zap, Package
-};
-
-export const AVAILABLE_ICONS = Object.keys(ICON_MAP);
-
-export function getIconComponent(iconName: string): LucideIcon {
-  return ICON_MAP[iconName] ?? Globe;
-}
-
-export function getServiceTypeFromList(list: ServiceType[], key: string): ServiceType {
-  return list.find((t) => t.key === key) ?? { key: "other", label: "Other", icon: "Globe", color: "#78909C" };
-}
-
-// Legacy static lookup (used as fallback when API data isn't loaded)
-const STATIC_TYPES: ServiceType[] = [
+const BUILT_IN_TYPES = [
   { key: "gmail", label: "Gmail", icon: "Mail", color: "#EA4335" },
   { key: "protonmail", label: "Proton Mail", icon: "Shield", color: "#6D4AFF" },
   { key: "outlook", label: "Outlook", icon: "Mail", color: "#0078D4" },
@@ -79,8 +46,9 @@ const STATIC_TYPES: ServiceType[] = [
   { key: "other", label: "Other", icon: "Globe", color: "#78909C" },
 ];
 
-export const SERVICE_TYPES = STATIC_TYPES;
-
-export function getServiceType(key: string): ServiceType {
-  return STATIC_TYPES.find((t) => t.key === key) ?? STATIC_TYPES[STATIC_TYPES.length - 1];
+export async function seedServiceTypes() {
+  await db
+    .insert(serviceTypesTable)
+    .values(BUILT_IN_TYPES)
+    .onConflictDoNothing({ target: serviceTypesTable.key });
 }

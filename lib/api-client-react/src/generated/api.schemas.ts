@@ -183,12 +183,35 @@ export interface Stats {
   totalVaults: number;
   recentlyAdded: number;
   vaultCredentials: number;
+  spaceCredentials: number;
   uniqueTypes: number;
   /** @nullable */
   oldestCredentialDays: number | null;
   averageAgeDays: number;
   categoryBreakdown: CategoryStat[];
   typeBreakdown: TypeStat[];
+}
+
+export interface ServiceType {
+  id: number;
+  key: string;
+  label: string;
+  icon: string;
+  color: string;
+  createdAt: string;
+}
+
+export interface CreateServiceTypeBody {
+  key: string;
+  label: string;
+  icon: string;
+  color: string;
+}
+
+export interface UpdateServiceTypeBody {
+  label?: string;
+  icon?: string;
+  color?: string;
 }
 
 export interface Settings {
