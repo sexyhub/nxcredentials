@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout";
 import {
   useListSpaces,
@@ -32,7 +32,7 @@ import {
   Plus, FolderOpen, Loader2, Eye, EyeOff, Pencil, Trash2, Key, ArrowLeft, Tag
 } from "lucide-react";
 import { getServiceType, getIconComponent, SERVICE_TYPES } from "@/lib/service-types";
-import { getSpaceIcon, LEGACY_KEY_MAP } from "@/lib/space-icons";
+import { getSpaceIcon } from "@/lib/space-icons";
 import { AppearancePicker } from "@/components/appearance-picker";
 
 const PAGE_SIZE = 16;
@@ -124,15 +124,25 @@ export default function Spaces() {
     }),
   ];
 
-  const handleTypeChange = (val: string) => {
-    const newType = val || "";
-    if (newType) {
-      const st = getServiceType(newType);
-      const spaceIconKey = LEGACY_KEY_MAP[st.icon] || "folder";
-      setSpaceForm((prev) => ({ ...prev, defaultType: newType, color: st.color, icon: spaceIconKey }));
-    } else {
-      setSpaceForm((prev) => ({ ...prev, defaultType: newType }));
+  useEffect(() => {
+    if (spaceForm.defaultType) {
+      const st = getServiceType(spaceForm.defaultType);
+      const iconMap: Record<string, string> = {
+        Mail: "mail", Shield: "shield", Cloud: "cloud", Code2: "code",
+        Tv: "tv", Music: "music", MessageCircle: "message", Camera: "camera",
+        Briefcase: "briefcase", Hash: "hash", ShoppingCart: "cart",
+        CreditCard: "card", Gamepad2: "game", Globe: "globe", Lock: "lock",
+        Server: "server", Database: "database", Phone: "phone", Video: "video",
+        BookOpen: "book", Plane: "plane", Heart: "heart", Cpu: "cpu", Wifi: "wifi",
+        FolderOpen: "folder", Star: "star", Bookmark: "bookmark", Archive: "archive",
+      };
+      const iconKey = iconMap[st.icon] || "folder";
+      setSpaceForm((prev) => ({ ...prev, color: st.color, icon: iconKey }));
     }
+  }, [spaceForm.defaultType]);
+
+  const handleTypeChange = (val: string) => {
+    setSpaceForm((prev) => ({ ...prev, defaultType: val || "" }));
   };
 
   const openCreate = () => {
