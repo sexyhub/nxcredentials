@@ -258,6 +258,14 @@ export const GetStatsResponse = zod.object({
       count: zod.number(),
     }),
   ),
+  spaceBreakdown: zod.array(
+    zod.object({
+      name: zod.string(),
+      count: zod.number(),
+      color: zod.string(),
+      icon: zod.string(),
+    }),
+  ),
 });
 
 /**

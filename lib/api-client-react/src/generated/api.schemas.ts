@@ -191,6 +191,14 @@ export interface Stats {
   averageAgeDays: number;
   tagBreakdown: TagStat[];
   typeBreakdown: TypeStat[];
+  spaceBreakdown: SpaceStat[];
+}
+
+export interface SpaceStat {
+  name: string;
+  count: number;
+  color: string;
+  icon: string;
 }
 
 export interface ServiceType {

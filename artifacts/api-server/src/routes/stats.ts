@@ -112,6 +112,25 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
     .groupBy(credentialsTable.title)
     .orderBy(sql`count(*) desc`);
 
+  const spaceBreakdown = await db
+    .select({
+      name: spacesTable.name,
+      color: spacesTable.color,
+      icon: spacesTable.icon,
+      count: sql<number>`cast(count(${credentialsTable.id}) as integer)`,
+    })
+    .from(spacesTable)
+    .leftJoin(
+      credentialsTable,
+      and(
+        eq(spacesTable.id, credentialsTable.spaceId),
+        eq(credentialsTable.userId, userId)
+      )
+    )
+    .where(eq(spacesTable.userId, userId))
+    .groupBy(spacesTable.id)
+    .orderBy(sql`count(${credentialsTable.id}) desc`);
+
   const totalCount = totalCreds[0]?.count ?? 0;
   const oldestDays = totalCount > 0 ? (ageStats[0]?.oldest ?? null) : null;
 
@@ -130,6 +149,7 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
       averageAgeDays: ageStats[0]?.avgAge ?? 0,
       tagBreakdown: breakdown,
       typeBreakdown: typeBreakdown,
+      spaceBreakdown: spaceBreakdown,
     })
   );
 });
