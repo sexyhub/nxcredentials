@@ -75,6 +75,7 @@ export default function Vault() {
   const [securityTab, setSecurityTab] = useState<"password" | "pin">("password");
   const [editingCred, setEditingCred] = useState<Credential | null>(null);
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
+  const [locallyUnlockedIds, setLocallyUnlockedIds] = useState<Set<number>>(new Set());
   const [vaultsPage, setVaultsPage] = useState(1);
   const [credsPage, setCredsPage] = useState(1);
 
@@ -95,14 +96,16 @@ export default function Vault() {
   );
 
   const currentVault = selectedVault ? (vaults?.find(v => v.id === selectedVault.id) || selectedVault) : null;
-  const isUnlocked = currentVault?.isUnlocked ?? false;
+  const isUnlocked = locallyUnlockedIds.has(currentVault?.id ?? -1) || (currentVault?.isUnlocked ?? false);
   const vaultCredentials = allCredentials || [];
   const pagedVaults = vaults?.slice((vaultsPage - 1) * PAGE_SIZE, vaultsPage * PAGE_SIZE) ?? [];
   const pagedCreds = vaultCredentials.slice((credsPage - 1) * PAGE_SIZE, credsPage * PAGE_SIZE);
 
   const lockMutation = useLockVault({
     mutation: {
-      onSuccess: () => {
+      onSuccess: (_data, variables) => {
+        const id = (variables as any).id;
+        setLocallyUnlockedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
         queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() });
         setSelectedVault(null);
@@ -221,12 +224,13 @@ export default function Vault() {
   }, [selectedVault?.id, isUnlocked]);
 
   const handleVaultUnlocked = () => {
-    queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
-    queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() });
     if (unlockingVault) {
+      setLocallyUnlockedIds(prev => new Set([...prev, unlockingVault.id]));
       setSelectedVault(unlockingVault);
       setUnlockingVault(null);
     }
+    queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() });
   };
 
   const toggleReveal = (id: number) => {
