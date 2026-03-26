@@ -64,6 +64,27 @@ const saveAutoLockSeconds = (vaultId: number, secs: number): void => {
   localStorage.setItem(`vault_al_${vaultId}`, String(secs));
 };
 
+interface PendingAutoLock {
+  vaultId: number;
+  lastActivity: number;
+  autoLockSecs: number;
+}
+const PENDING_AL_KEY = "vault_al_pending";
+const getPendingAutoLock = (): PendingAutoLock | null => {
+  try {
+    const s = localStorage.getItem(PENDING_AL_KEY);
+    return s ? JSON.parse(s) : null;
+  } catch { return null; }
+};
+const setPendingAutoLock = (data: PendingAutoLock | null) => {
+  if (data) localStorage.setItem(PENDING_AL_KEY, JSON.stringify(data));
+  else localStorage.removeItem(PENDING_AL_KEY);
+};
+const touchPendingActivity = () => {
+  const p = getPendingAutoLock();
+  if (p) { p.lastActivity = Date.now(); setPendingAutoLock(p); }
+};
+
 export default function Vault() {
   const [selectedVault, setSelectedVault] = useState<VaultItem | null>(null);
   const [unlockingVault, setUnlockingVault] = useState<VaultItem | null>(null);
@@ -109,6 +130,7 @@ export default function Vault() {
           clearTimeout(autoLockTimerRef.current);
           autoLockTimerRef.current = null;
         }
+        setPendingAutoLock(null);
         setLocallyUnlockedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
         queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() });
@@ -193,25 +215,39 @@ export default function Vault() {
     },
   });
 
-  useEffect(() => {
-    if (!selectedVault?.id || !isUnlocked) {
-      // User navigated away or vault not unlocked — don't touch the timer here.
-      // If they left an unlocked vault, the timer should keep counting down.
-      return;
+  const lockIfExpired = () => {
+    const pending = getPendingAutoLock();
+    if (!pending || !pending.autoLockSecs) return;
+    if (Date.now() - pending.lastActivity >= pending.autoLockSecs * 1000) {
+      lockMutation.mutate({ id: pending.vaultId });
+      toast({ title: "Vault auto-locked", description: "Locked after inactivity." });
     }
+  };
+
+  useEffect(() => {
+    lockIfExpired();
+    const onVisible = () => { if (document.visibilityState === "visible") lockIfExpired(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedVault?.id || !isUnlocked) return;
 
     const vaultId = selectedVault.id;
     const secs = getAutoLockSeconds(vaultId);
 
-    // Entering a vault: cancel any previous vault's pending timer first.
     if (autoLockTimerRef.current) {
       clearTimeout(autoLockTimerRef.current);
       autoLockTimerRef.current = null;
     }
 
-    if (!secs) return; // "Never"
+    if (!secs) { setPendingAutoLock(null); return; }
+
+    setPendingAutoLock({ vaultId, lastActivity: Date.now(), autoLockSecs: secs });
 
     const resetTimer = () => {
+      touchPendingActivity();
       if (autoLockTimerRef.current) clearTimeout(autoLockTimerRef.current);
       autoLockTimerRef.current = setTimeout(() => {
         lockMutation.mutate({ id: vaultId });
@@ -224,8 +260,6 @@ export default function Vault() {
     events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }));
 
     return () => {
-      // Only remove activity listeners on cleanup — keep the timer running
-      // so the vault locks even after the user navigates back to the vault list.
       events.forEach(e => window.removeEventListener(e, resetTimer));
     };
   }, [selectedVault?.id, isUnlocked]);
