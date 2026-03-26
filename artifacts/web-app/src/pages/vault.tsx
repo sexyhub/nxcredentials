@@ -105,6 +105,10 @@ export default function Vault() {
     mutation: {
       onSuccess: (_data, variables) => {
         const id = (variables as any).id;
+        if (autoLockTimerRef.current) {
+          clearTimeout(autoLockTimerRef.current);
+          autoLockTimerRef.current = null;
+        }
         setLocallyUnlockedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
         queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() });
@@ -191,16 +195,21 @@ export default function Vault() {
 
   useEffect(() => {
     if (!selectedVault?.id || !isUnlocked) {
-      if (autoLockTimerRef.current) {
-        clearTimeout(autoLockTimerRef.current);
-        autoLockTimerRef.current = null;
-      }
+      // User navigated away or vault not unlocked — don't touch the timer here.
+      // If they left an unlocked vault, the timer should keep counting down.
       return;
     }
 
     const vaultId = selectedVault.id;
     const secs = getAutoLockSeconds(vaultId);
-    if (!secs) return;
+
+    // Entering a vault: cancel any previous vault's pending timer first.
+    if (autoLockTimerRef.current) {
+      clearTimeout(autoLockTimerRef.current);
+      autoLockTimerRef.current = null;
+    }
+
+    if (!secs) return; // "Never"
 
     const resetTimer = () => {
       if (autoLockTimerRef.current) clearTimeout(autoLockTimerRef.current);
@@ -215,11 +224,9 @@ export default function Vault() {
     events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }));
 
     return () => {
+      // Only remove activity listeners on cleanup — keep the timer running
+      // so the vault locks even after the user navigates back to the vault list.
       events.forEach(e => window.removeEventListener(e, resetTimer));
-      if (autoLockTimerRef.current) {
-        clearTimeout(autoLockTimerRef.current);
-        autoLockTimerRef.current = null;
-      }
     };
   }, [selectedVault?.id, isUnlocked]);
 
