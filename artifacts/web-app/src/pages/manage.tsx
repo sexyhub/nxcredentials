@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { TagModal } from "@/components/tag-modal";
 import { ServiceTypeModal } from "@/components/service-type-modal";
+import { DeleteConfirmModal } from "@/components/delete-confirm-modal";
 import { Plus, Pencil, Trash2, Tag as TagIcon, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIconComponent } from "@/lib/service-types";
@@ -30,6 +31,7 @@ export default function Manage() {
   const [activeTab, setActiveTab] = useState<"tags" | "types">("tags");
   const [tagsPage, setTagsPage] = useState(1);
   const [typesPage, setTypesPage] = useState(1);
+  const [pendingDelete, setPendingDelete] = useState<{ title: string; description?: string; onConfirm: () => void } | null>(null);
 
   const { data: tags, isLoading: tagsLoading } = useListTags();
   const { data: serviceTypes, isLoading: typesLoading } = useListServiceTypes();
@@ -137,10 +139,10 @@ export default function Manage() {
                         <button
                           onClick={() => {
                             if (t.credentialCount > 0) {
-                              alert(`Can't delete — ${t.credentialCount} credential(s) use this tag.`);
+                              toast({ title: `Can't delete — ${t.credentialCount} credential(s) use this tag.`, variant: "destructive" });
                               return;
                             }
-                            if (confirm("Delete this tag?")) deleteTagMutation.mutate({ id: t.id });
+                            setPendingDelete({ title: "Delete tag?", description: `"${t.name}" will be removed from all credentials.`, onConfirm: () => deleteTagMutation.mutate({ id: t.id }) });
                           }}
                           className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-accent"
                         >
@@ -201,9 +203,7 @@ export default function Manage() {
                           </button>
                           <button
                             onClick={() => {
-                              if (confirm(`Delete "${t.label}"? Credentials using this type will still exist but show as unknown.`)) {
-                                deleteTypeMutation.mutate({ id: t.id! });
-                              }
+                              setPendingDelete({ title: `Delete "${t.label}"?`, description: "Credentials using this type will still exist but show as unknown.", onConfirm: () => deleteTypeMutation.mutate({ id: t.id! }) });
                             }}
                             className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-accent"
                           >
@@ -223,6 +223,14 @@ export default function Manage() {
 
       <TagModal open={isTagModalOpen} onOpenChange={setIsTagModalOpen} tag={selectedTag} />
       <ServiceTypeModal open={isTypeModalOpen} onOpenChange={setIsTypeModalOpen} serviceType={selectedType} />
+      <DeleteConfirmModal
+        open={!!pendingDelete}
+        onOpenChange={(o) => { if (!o) setPendingDelete(null); }}
+        title={pendingDelete?.title ?? ""}
+        description={pendingDelete?.description}
+        onConfirm={() => { pendingDelete?.onConfirm(); setPendingDelete(null); }}
+        isPending={deleteTagMutation.isPending || deleteTypeMutation.isPending}
+      />
     </Layout>
   );
 }

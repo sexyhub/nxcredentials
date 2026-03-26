@@ -20,6 +20,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { CredentialModal } from "@/components/credential-modal";
 import { VaultUnlockModal } from "@/components/vault-unlock-modal";
+import { DeleteConfirmModal } from "@/components/delete-confirm-modal";
 import { PinInput } from "@/components/pin-input";
 import { AppearancePicker } from "@/components/appearance-picker";
 import { CopyButton } from "@/components/copy-button";
@@ -99,6 +100,7 @@ export default function Vault() {
   const [locallyUnlockedIds, setLocallyUnlockedIds] = useState<Set<number>>(new Set());
   const [vaultsPage, setVaultsPage] = useState(1);
   const [credsPage, setCredsPage] = useState(1);
+  const [pendingDelete, setPendingDelete] = useState<{ title: string; description?: string; onConfirm: () => void } | null>(null);
 
   const [createForm, setCreateForm] = useState({ name: "", password: "", pin: "", color: "#6366f1", icon: "shield", autoLockSeconds: 30 });
   const [editForm, setEditForm] = useState({ name: "", color: "", icon: "", autoLockSeconds: 30 });
@@ -388,7 +390,7 @@ export default function Vault() {
                           <button onClick={() => { setEditingCred(cred); setShowCredModal(true); }} className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent">
                             <Pencil className="w-3 h-3" />
                           </button>
-                          <button onClick={() => { if (confirm("Delete this credential?")) deleteCredMutation.mutate({ id: cred.id }); }} className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent">
+                          <button onClick={() => setPendingDelete({ title: "Delete credential?", description: "This action cannot be undone.", onConfirm: () => deleteCredMutation.mutate({ id: cred.id }) })} className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
@@ -462,7 +464,7 @@ export default function Vault() {
               </div>
               <DialogFooter className="pt-2 gap-2">
                 <Button type="button" variant="outline" size="sm" className="h-8 text-[12px] text-destructive hover:text-destructive"
-                  onClick={() => { if (confirm(`Delete "${currentVault.name}" and all its credentials? This cannot be undone.`)) { deleteMutation.mutate({ id: currentVault.id }); setShowEditModal(false); } }}>
+                  onClick={() => setPendingDelete({ title: `Delete "${currentVault.name}"?`, description: "All credentials inside will be permanently deleted.", onConfirm: () => { deleteMutation.mutate({ id: currentVault.id }); setShowEditModal(false); } })}>
                   Delete vault
                 </Button>
                 <Button type="submit" size="sm" className="h-8 text-[12px]">Save</Button>
@@ -679,6 +681,14 @@ export default function Vault() {
           vaultName={unlockingVault.name}
         />
       )}
+      <DeleteConfirmModal
+        open={!!pendingDelete}
+        onOpenChange={(o) => { if (!o) setPendingDelete(null); }}
+        title={pendingDelete?.title ?? ""}
+        description={pendingDelete?.description}
+        onConfirm={() => { pendingDelete?.onConfirm(); setPendingDelete(null); }}
+        isPending={deleteMutation.isPending || deleteCredMutation.isPending}
+      />
     </Layout>
   );
 }

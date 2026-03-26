@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { CopyButton } from "@/components/copy-button";
 import { CredentialModal } from "@/components/credential-modal";
+import { DeleteConfirmModal } from "@/components/delete-confirm-modal";
 import { Plus, Search, Eye, EyeOff, Pencil, Trash2, Key, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ export default function Credentials() {
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCredential, setSelectedCredential] = useState<Credential | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ title: string; description?: string; onConfirm: () => void } | null>(null);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -106,7 +108,7 @@ export default function Credentials() {
             <button onClick={() => { setSelectedCredential(cred); setIsModalOpen(true); }} className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent">
               <Pencil className="w-3 h-3" />
             </button>
-            <button onClick={() => { if (confirm("Delete this credential?")) deleteMutation.mutate({ id: cred.id }); }} className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent">
+            <button onClick={() => setPendingDelete({ title: "Delete credential?", description: "This action cannot be undone.", onConfirm: () => deleteMutation.mutate({ id: cred.id }) })} className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent">
               <Trash2 className="w-3 h-3" />
             </button>
           </div>
@@ -174,6 +176,14 @@ export default function Credentials() {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         credential={selectedCredential}
+      />
+      <DeleteConfirmModal
+        open={!!pendingDelete}
+        onOpenChange={(o) => { if (!o) setPendingDelete(null); }}
+        title={pendingDelete?.title ?? ""}
+        description={pendingDelete?.description}
+        onConfirm={() => { pendingDelete?.onConfirm(); setPendingDelete(null); }}
+        isPending={deleteMutation.isPending}
       />
     </Layout>
   );

@@ -17,6 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { CopyButton } from "@/components/copy-button";
 import { CredentialModal } from "@/components/credential-modal";
+import { DeleteConfirmModal } from "@/components/delete-confirm-modal";
 import { Pagination } from "@/components/pagination";
 import {
   Dialog,
@@ -45,6 +46,7 @@ export default function Spaces() {
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
   const [spacesPage, setSpacesPage] = useState(1);
   const [credsPage, setCredsPage] = useState(1);
+  const [pendingDelete, setPendingDelete] = useState<{ title: string; description?: string; onConfirm: () => void } | null>(null);
 
   const [spaceForm, setSpaceForm] = useState({ name: "", defaultType: "", color: "#6366f1", icon: "folder" });
 
@@ -217,7 +219,7 @@ export default function Spaces() {
                           <button onClick={() => { setEditingCred(cred); setShowCredModal(true); }} className="p-1 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent">
                             <Pencil className="w-3 h-3" />
                           </button>
-                          <button onClick={() => { if (confirm("Delete this credential?")) deleteCredMutation.mutate({ id: cred.id }); }} className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent">
+                          <button onClick={() => setPendingDelete({ title: "Delete credential?", description: "This action cannot be undone.", onConfirm: () => deleteCredMutation.mutate({ id: cred.id }) })} className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-md hover:bg-accent">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
@@ -298,7 +300,7 @@ export default function Spaces() {
               />
               <DialogFooter className="pt-2 gap-2">
                 <Button type="button" variant="outline" size="sm" className="h-8 text-[12px] text-destructive hover:text-destructive"
-                  onClick={() => { if (confirm(`Delete "${currentSpace.name}" and unassign its credentials? This cannot be undone.`)) { deleteMutation.mutate({ id: currentSpace.id }); setShowEditModal(false); } }}>
+                  onClick={() => setPendingDelete({ title: `Delete "${currentSpace.name}"?`, description: "Its credentials will become unassigned.", onConfirm: () => { deleteMutation.mutate({ id: currentSpace.id }); setShowEditModal(false); } })}>
                   Delete space
                 </Button>
                 <Button type="submit" size="sm" className="h-8 text-[12px]" disabled={updateMutation.isPending}>
@@ -429,6 +431,14 @@ export default function Spaces() {
           </form>
         </DialogContent>
       </Dialog>
+      <DeleteConfirmModal
+        open={!!pendingDelete}
+        onOpenChange={(o) => { if (!o) setPendingDelete(null); }}
+        title={pendingDelete?.title ?? ""}
+        description={pendingDelete?.description}
+        onConfirm={() => { pendingDelete?.onConfirm(); setPendingDelete(null); }}
+        isPending={deleteMutation.isPending || deleteCredMutation.isPending}
+      />
     </Layout>
   );
 }
