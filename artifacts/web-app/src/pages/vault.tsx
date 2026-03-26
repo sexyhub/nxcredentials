@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Layout } from "@/components/layout";
 import {
   useListVaults,
@@ -6,6 +6,8 @@ import {
   useUpdateVault,
   useDeleteVault,
   useLockVault,
+  useChangeVaultPassword,
+  useChangeVaultPin,
   useListCredentials,
   useDeleteCredential,
   getListVaultsQueryKey,
@@ -31,11 +33,36 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Plus, Shield, Lock, Key, Loader2, Eye, EyeOff, Pencil, Trash2, ArrowLeft, Tag
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Plus, Shield, Lock, Key, Loader2, Eye, EyeOff, Pencil, Trash2, ArrowLeft, Tag, KeyRound, Timer
 } from "lucide-react";
 import { getServiceType } from "@/lib/service-types";
 
 const PAGE_SIZE = 16;
+
+const AUTO_LOCK_OPTIONS = [
+  { value: 15, label: "15 seconds" },
+  { value: 30, label: "30 seconds" },
+  { value: 60, label: "1 minute" },
+  { value: 300, label: "5 minutes" },
+  { value: 600, label: "10 minutes" },
+  { value: 1800, label: "30 minutes" },
+  { value: 0, label: "Never" },
+];
+
+const getAutoLockSeconds = (vaultId: number): number => {
+  const stored = localStorage.getItem(`vault_al_${vaultId}`);
+  return stored !== null ? parseInt(stored, 10) : 30;
+};
+const saveAutoLockSeconds = (vaultId: number, secs: number): void => {
+  localStorage.setItem(`vault_al_${vaultId}`, String(secs));
+};
 
 export default function Vault() {
   const [selectedVault, setSelectedVault] = useState<VaultItem | null>(null);
@@ -44,13 +71,19 @@ export default function Vault() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [showCredModal, setShowCredModal] = useState(false);
+  const [showSecurityModal, setShowSecurityModal] = useState(false);
+  const [securityTab, setSecurityTab] = useState<"password" | "pin">("password");
   const [editingCred, setEditingCred] = useState<Credential | null>(null);
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
   const [vaultsPage, setVaultsPage] = useState(1);
   const [credsPage, setCredsPage] = useState(1);
 
-  const [createForm, setCreateForm] = useState({ name: "", password: "", pin: "", color: "#6366f1", icon: "shield" });
-  const [editForm, setEditForm] = useState({ name: "", color: "", icon: "" });
+  const [createForm, setCreateForm] = useState({ name: "", password: "", pin: "", color: "#6366f1", icon: "shield", autoLockSeconds: 30 });
+  const [editForm, setEditForm] = useState({ name: "", color: "", icon: "", autoLockSeconds: 30 });
+  const [pwForm, setPwForm] = useState({ oldPassword: "", newPassword: "" });
+  const [pinForm, setPinForm] = useState({ oldPin: "", newPin: "" });
+
+  const autoLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -61,18 +94,32 @@ export default function Vault() {
     { query: { enabled: !!selectedVault } }
   );
 
+  const currentVault = selectedVault ? (vaults?.find(v => v.id === selectedVault.id) || selectedVault) : null;
+  const isUnlocked = currentVault?.isUnlocked ?? false;
   const vaultCredentials = allCredentials || [];
   const pagedVaults = vaults?.slice((vaultsPage - 1) * PAGE_SIZE, vaultsPage * PAGE_SIZE) ?? [];
   const pagedCreds = vaultCredentials.slice((credsPage - 1) * PAGE_SIZE, credsPage * PAGE_SIZE);
 
-  const createMutation = useCreateVault({
+  const lockMutation = useLockVault({
     mutation: {
       onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() });
+        setSelectedVault(null);
+        setRevealedIds(new Set());
+      },
+    },
+  });
+
+  const createMutation = useCreateVault({
+    mutation: {
+      onSuccess: (data) => {
+        saveAutoLockSeconds(data.id, createForm.autoLockSeconds);
         queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
         toast({ title: "Vault created" });
         setShowCreateModal(false);
-        setCreateForm({ name: "", password: "", pin: "", color: "#6366f1", icon: "shield" });
+        setCreateForm({ name: "", password: "", pin: "", color: "#6366f1", icon: "shield", autoLockSeconds: 30 });
       },
       onError: (err: any) => {
         toast({ title: "Failed", description: err?.data?.error || "Could not create vault.", variant: "destructive" });
@@ -83,6 +130,7 @@ export default function Vault() {
   const updateMutation = useUpdateVault({
     mutation: {
       onSuccess: (data) => {
+        saveAutoLockSeconds(data.id, editForm.autoLockSeconds);
         queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
         setSelectedVault(data as VaultItem);
         toast({ title: "Vault updated" });
@@ -102,16 +150,6 @@ export default function Vault() {
     },
   });
 
-  const lockMutation = useLockVault({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() });
-        setRevealedIds(new Set());
-      },
-    },
-  });
-
   const deleteCredMutation = useDeleteCredential({
     mutation: {
       onSuccess: () => {
@@ -121,6 +159,66 @@ export default function Vault() {
       },
     },
   });
+
+  const changePasswordMutation = useChangeVaultPassword({
+    mutation: {
+      onSuccess: () => {
+        toast({ title: "Password changed" });
+        setShowSecurityModal(false);
+        setPwForm({ oldPassword: "", newPassword: "" });
+      },
+      onError: (err: any) => {
+        toast({ title: "Failed", description: err?.data?.error || "Could not change password.", variant: "destructive" });
+      },
+    },
+  });
+
+  const changePinMutation = useChangeVaultPin({
+    mutation: {
+      onSuccess: () => {
+        toast({ title: "PIN changed" });
+        setShowSecurityModal(false);
+        setPinForm({ oldPin: "", newPin: "" });
+      },
+      onError: (err: any) => {
+        toast({ title: "Failed", description: err?.data?.error || "Could not change PIN.", variant: "destructive" });
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (!selectedVault?.id || !isUnlocked) {
+      if (autoLockTimerRef.current) {
+        clearTimeout(autoLockTimerRef.current);
+        autoLockTimerRef.current = null;
+      }
+      return;
+    }
+
+    const vaultId = selectedVault.id;
+    const secs = getAutoLockSeconds(vaultId);
+    if (!secs) return;
+
+    const resetTimer = () => {
+      if (autoLockTimerRef.current) clearTimeout(autoLockTimerRef.current);
+      autoLockTimerRef.current = setTimeout(() => {
+        lockMutation.mutate({ id: vaultId });
+        toast({ title: "Vault auto-locked", description: "Locked after inactivity." });
+      }, secs * 1000);
+    };
+
+    resetTimer();
+    const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart", "click"];
+    events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }));
+
+    return () => {
+      events.forEach(e => window.removeEventListener(e, resetTimer));
+      if (autoLockTimerRef.current) {
+        clearTimeout(autoLockTimerRef.current);
+        autoLockTimerRef.current = null;
+      }
+    };
+  }, [selectedVault?.id, isUnlocked]);
 
   const handleVaultUnlocked = () => {
     queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
@@ -145,10 +243,25 @@ export default function Vault() {
     setCredsPage(1);
   };
 
-  if (selectedVault) {
-    const currentVault = vaults?.find(v => v.id === selectedVault.id) || selectedVault;
-    const isUnlocked = currentVault.isUnlocked;
+  const openEditModal = () => {
+    if (!currentVault) return;
+    setEditForm({
+      name: currentVault.name,
+      color: currentVault.color,
+      icon: currentVault.icon,
+      autoLockSeconds: getAutoLockSeconds(currentVault.id),
+    });
+    setShowEditModal(true);
+  };
 
+  const openSecurityModal = (tab: "password" | "pin" = "password") => {
+    setSecurityTab(tab);
+    setPwForm({ oldPassword: "", newPassword: "" });
+    setPinForm({ oldPin: "", newPin: "" });
+    setShowSecurityModal(true);
+  };
+
+  if (selectedVault && currentVault) {
     return (
       <Layout>
         <div className="space-y-4">
@@ -175,7 +288,10 @@ export default function Vault() {
                   <Button variant="outline" size="sm" className="h-8 text-[12px]" onClick={() => lockMutation.mutate({ id: currentVault.id })}>
                     <Lock className="w-3 h-3 mr-1" /> Lock
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-8 text-[12px]" onClick={() => { setEditForm({ name: currentVault.name, color: currentVault.color, icon: currentVault.icon }); setShowEditModal(true); }}>
+                  <Button variant="ghost" size="sm" className="h-8 text-[12px]" onClick={() => openSecurityModal()}>
+                    <KeyRound className="w-3.5 h-3.5 mr-1" /> Security
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-8 text-[12px]" onClick={openEditModal}>
                     <Pencil className="w-3 h-3" />
                   </Button>
                 </>
@@ -272,7 +388,7 @@ export default function Vault() {
 
         <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
           <DialogContent className="sm:max-w-sm">
-            <form onSubmit={(e) => { e.preventDefault(); updateMutation.mutate({ id: currentVault.id, data: editForm }); }} className="space-y-4 pt-1">
+            <form onSubmit={(e) => { e.preventDefault(); updateMutation.mutate({ id: currentVault.id, data: { name: editForm.name, color: editForm.color, icon: editForm.icon } }); }} className="space-y-4 pt-1">
               <div className="space-y-1.5">
                 <Label className="text-[13px]">Vault name</Label>
                 <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} required className="h-10" />
@@ -282,6 +398,23 @@ export default function Vault() {
                 onColorChange={(c) => setEditForm({ ...editForm, color: c })}
                 fixedIcon={Shield}
               />
+              <div className="space-y-1.5">
+                <Label className="text-[13px] flex items-center gap-1.5"><Timer className="w-3.5 h-3.5 text-muted-foreground" />Auto-lock</Label>
+                <Select
+                  value={String(editForm.autoLockSeconds)}
+                  onValueChange={(v) => setEditForm({ ...editForm, autoLockSeconds: parseInt(v, 10) })}
+                >
+                  <SelectTrigger className="h-10 text-[13px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AUTO_LOCK_OPTIONS.map(o => (
+                      <SelectItem key={o.value} value={String(o.value)} className="text-[13px]">{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">Lock vault after this period of inactivity.</p>
+              </div>
               <DialogFooter className="pt-2 gap-2">
                 <Button type="button" variant="outline" size="sm" className="h-8 text-[12px] text-destructive hover:text-destructive"
                   onClick={() => { if (confirm(`Delete "${currentVault.name}" and all its credentials? This cannot be undone.`)) { deleteMutation.mutate({ id: currentVault.id }); setShowEditModal(false); } }}>
@@ -290,6 +423,77 @@ export default function Vault() {
                 <Button type="submit" size="sm" className="h-8 text-[12px]">Save</Button>
               </DialogFooter>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showSecurityModal} onOpenChange={setShowSecurityModal}>
+          <DialogContent className="sm:max-w-sm">
+            <div className="space-y-4 pt-1">
+              <div className="flex flex-col items-center gap-1.5 pb-1">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: currentVault.color + '18' }}>
+                  <KeyRound className="w-5 h-5" style={{ color: currentVault.color }} />
+                </div>
+                <h3 className="text-[15px] font-bold">Change security</h3>
+                <p className="text-[12px] text-muted-foreground text-center">Update your vault password or PIN.</p>
+              </div>
+
+              <div className="flex border-b">
+                <button
+                  onClick={() => setSecurityTab("password")}
+                  className={`flex-1 py-2 text-[13px] font-medium border-b-2 -mb-px transition-colors ${securityTab === "password" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                >
+                  Password
+                </button>
+                <button
+                  onClick={() => setSecurityTab("pin")}
+                  className={`flex-1 py-2 text-[13px] font-medium border-b-2 -mb-px transition-colors ${securityTab === "pin" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+                >
+                  PIN
+                </button>
+              </div>
+
+              {securityTab === "password" ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    changePasswordMutation.mutate({ id: currentVault.id, data: { oldPassword: pwForm.oldPassword, newPassword: pwForm.newPassword } });
+                  }}
+                  className="space-y-3"
+                >
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px]">Current password</Label>
+                    <Input type="password" required value={pwForm.oldPassword} onChange={(e) => setPwForm({ ...pwForm, oldPassword: e.target.value })} className="h-10" placeholder="Enter current password" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px]">New password</Label>
+                    <Input type="password" required minLength={6} value={pwForm.newPassword} onChange={(e) => setPwForm({ ...pwForm, newPassword: e.target.value })} className="h-10" placeholder="At least 6 characters" />
+                  </div>
+                  <Button type="submit" className="w-full h-10 text-[13px]" disabled={changePasswordMutation.isPending}>
+                    {changePasswordMutation.isPending ? "Changing..." : "Change password"}
+                  </Button>
+                </form>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    changePinMutation.mutate({ id: currentVault.id, data: { oldPin: pinForm.oldPin, newPin: pinForm.newPin } });
+                  }}
+                  className="space-y-3"
+                >
+                  <div className="space-y-1.5">
+                    <Label className="text-[13px]">Current PIN</Label>
+                    <Input type="password" required maxLength={8} value={pinForm.oldPin} onChange={(e) => setPinForm({ ...pinForm, oldPin: e.target.value.replace(/\D/g, '') })} className="h-10 font-mono tracking-[0.4em] text-center" placeholder="····" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[13px] block text-center">New PIN</Label>
+                    <PinInput value={pinForm.newPin} onChange={(v) => setPinForm({ ...pinForm, newPin: v })} length={4} />
+                  </div>
+                  <Button type="submit" className="w-full h-10 text-[13px]" disabled={changePinMutation.isPending || pinForm.newPin.length < 4}>
+                    {changePinMutation.isPending ? "Changing..." : "Change PIN"}
+                  </Button>
+                </form>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </Layout>
@@ -363,7 +567,7 @@ export default function Vault() {
 
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
         <DialogContent className="sm:max-w-sm">
-          <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate({ data: createForm }); }} className="space-y-4 pt-1">
+          <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate({ data: { name: createForm.name, password: createForm.password, pin: createForm.pin, color: createForm.color, icon: createForm.icon } }); }} className="space-y-4 pt-1">
             <div className="flex flex-col items-center gap-2 pb-2">
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: createForm.color + '18' }}>
                 <Shield className="w-6 h-6" style={{ color: createForm.color }} />
@@ -391,6 +595,24 @@ export default function Vault() {
             <div className="space-y-1.5">
               <Label className="text-[13px]">Password</Label>
               <Input type="password" required minLength={6} value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })} placeholder="At least 6 characters" className="h-10" />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-[13px] flex items-center gap-1.5"><Timer className="w-3.5 h-3.5 text-muted-foreground" />Auto-lock</Label>
+              <Select
+                value={String(createForm.autoLockSeconds)}
+                onValueChange={(v) => setCreateForm({ ...createForm, autoLockSeconds: parseInt(v, 10) })}
+              >
+                <SelectTrigger className="h-10 text-[13px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {AUTO_LOCK_OPTIONS.map(o => (
+                    <SelectItem key={o.value} value={String(o.value)} className="text-[13px]">{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">Automatically lock after this period of inactivity.</p>
             </div>
 
             <DialogFooter className="pt-2 gap-2">
