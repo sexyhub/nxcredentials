@@ -53,7 +53,6 @@ export default function Dashboard() {
   const tagBreakdown = stats.tagBreakdown ?? [];
   const typeBreakdown = stats.typeBreakdown ?? [];
   const spaceBreakdown = stats.spaceBreakdown ?? [];
-  const totalTagCount = tagBreakdown.reduce((s, t) => s + t.count, 0);
 
   const vaultPct = stats.totalCredentials > 0 ? Math.round((stats.vaultCredentials / stats.totalCredentials) * 100) : 0;
   const tagPct = stats.totalCredentials > 0 ? Math.round((stats.taggedCredentials / stats.totalCredentials) * 100) : 0;
@@ -213,33 +212,18 @@ export default function Dashboard() {
               </Link>
             </div>
             {tagBreakdown.length > 0 ? (
-              <div>
-                {totalTagCount > 0 && (
-                  <div className="flex w-full h-2.5 rounded-full overflow-hidden mb-4 bg-accent">
-                    {tagBreakdown.filter(t => t.count > 0).map((t, i) => (
-                      <div
-                        key={i}
-                        className="h-full first:rounded-l-full last:rounded-r-full transition-all duration-500"
-                        style={{
-                          width: `${(t.count / totalTagCount) * 100}%`,
-                          backgroundColor: t.color,
-                          minWidth: t.count > 0 ? "4px" : "0",
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
-                <div className="space-y-2.5">
-                  {tagBreakdown.slice(0, 6).map((t) => (
-                    <div key={t.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-2.5 h-2.5 rounded-[3px] shrink-0" style={{ backgroundColor: t.color }} />
-                        <span className="text-[13px] font-medium truncate">{t.name}</span>
-                      </div>
-                      <span className="text-[12px] font-mono text-muted-foreground tabular-nums shrink-0 ml-2">{t.count}</span>
+              <div className="grid grid-cols-2 gap-2">
+                {tagBreakdown.slice(0, 4).map((t) => (
+                  <div key={t.name} className="border rounded-lg p-2.5 flex items-center gap-2.5 bg-background hover:bg-accent/40 transition-colors">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${t.color}18` }}>
+                      <Tag className="w-4 h-4" style={{ color: t.color }} />
                     </div>
-                  ))}
-                </div>
+                    <div className="min-w-0">
+                      <div className="text-[12px] font-semibold truncate">{t.name}</div>
+                      <div className="text-[11px] font-mono text-muted-foreground tabular-nums">{t.count}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="py-8 text-center">
@@ -260,7 +244,7 @@ export default function Dashboard() {
             </div>
             {typeBreakdown.length > 0 ? (
               <div className="grid grid-cols-2 gap-2">
-                {typeBreakdown.slice(0, 6).map((t) => {
+                {typeBreakdown.slice(0, 4).map((t) => {
                   const stype = getServiceType(t.type);
                   const Icon = getIconComponent(stype.icon);
                   return (
@@ -294,18 +278,18 @@ export default function Dashboard() {
               </Link>
             </div>
             {spaceBreakdown.length > 0 ? (
-              <div className="space-y-2.5">
-                {spaceBreakdown.slice(0, 6).map((sp) => {
+              <div className="grid grid-cols-2 gap-2">
+                {spaceBreakdown.slice(0, 4).map((sp) => {
                   const Icon = getSpaceIcon(sp.icon);
                   return (
-                    <div key={sp.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: `${sp.color}18` }}>
-                          <Icon className="w-3.5 h-3.5" style={{ color: sp.color }} />
-                        </div>
-                        <span className="text-[13px] font-medium truncate">{sp.name}</span>
+                    <div key={sp.name} className="border rounded-lg p-2.5 flex items-center gap-2.5 bg-background hover:bg-accent/40 transition-colors">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${sp.color}18` }}>
+                        <Icon className="w-4 h-4" style={{ color: sp.color }} />
                       </div>
-                      <span className="text-[12px] font-mono text-muted-foreground tabular-nums shrink-0 ml-2">{sp.count}</span>
+                      <div className="min-w-0">
+                        <div className="text-[12px] font-semibold truncate">{sp.name}</div>
+                        <div className="text-[11px] font-mono text-muted-foreground tabular-nums">{sp.count}</div>
+                      </div>
                     </div>
                   );
                 })}
