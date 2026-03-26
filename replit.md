@@ -41,7 +41,7 @@ artifacts-monorepo/
 
 - **Authentication**: Login/Register with "Remember Me" checkbox (30-day session)
 - **First user is admin**: The first registered account automatically gets admin privileges
-- **Dashboard**: Stats overview with total credentials, tags, recently added (7 days), vault count, space count, unique types, oldest/average credential age, vault credential count, tag breakdown, service type breakdown
+- **Dashboard**: Stats overview with total credentials, tags, vaults, spaces. Three health-index ring cards (Vault protection %, Tag coverage %, Space allocation %) with color-coded status labels. Stacked color bar for tag distribution. Icon-grid for top service types. Bottom row: recently added (7d), service type count, oldest credential age, average age
 - **Credentials CRUD**: Add/edit/delete credentials via popup modals. Card grid with copy email/password buttons, password reveal toggle, tag filter, type filter, and search. Vault credentials excluded from main list (shown in vault pages)
 - **Credential Spaces**: Folder-like groupings with optional default type. Space tabs at top of credentials page for filtering. Create/delete spaces
 - **Unified Manage page**: Tags + Service Types in one tabbed page — create/edit/delete tags, browse built-in service types

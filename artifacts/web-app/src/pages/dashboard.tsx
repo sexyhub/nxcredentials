@@ -1,10 +1,29 @@
 import { useGetStats } from "@workspace/api-client-react";
 import { Layout } from "@/components/layout";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, Plus, ArrowRight, KeyRound, Tag, Clock, Shield, Grid3X3, Calendar, FolderOpen } from "lucide-react";
+import { Loader2, Plus, ArrowRight, KeyRound, Tag, Shield, Grid3X3, FolderOpen } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { getServiceType, getIconComponent } from "@/lib/service-types";
+
+function RingProgress({ value, size = 80, stroke = 7, color }: { value: number; size?: number; stroke?: number; color: string }) {
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.max(0, Math.min(100, value));
+  const offset = circumference - (clamped / 100) * circumference;
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke} className="text-accent" />
+      <circle
+        cx={size / 2} cy={size / 2} r={radius} fill="none"
+        stroke={color} strokeWidth={stroke} strokeLinecap="round"
+        strokeDasharray={circumference} strokeDashoffset={offset}
+        className="transition-all duration-700 ease-out"
+      />
+    </svg>
+  );
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -32,8 +51,11 @@ export default function Dashboard() {
 
   const tagBreakdown = stats.tagBreakdown ?? [];
   const typeBreakdown = stats.typeBreakdown ?? [];
-  const maxCount = Math.max(...(tagBreakdown.map(c => c.count)), 1);
-  const maxTypeCount = Math.max(...(typeBreakdown.map(t => t.count)), 1);
+  const totalTagCount = tagBreakdown.reduce((s, t) => s + t.count, 0);
+
+  const vaultPct = stats.totalCredentials > 0 ? Math.round((stats.vaultCredentials / stats.totalCredentials) * 100) : 0;
+  const tagPct = stats.totalCredentials > 0 ? Math.round((stats.taggedCredentials / stats.totalCredentials) * 100) : 0;
+  const orgPct = stats.totalCredentials > 0 ? Math.round((stats.spaceCredentials / stats.totalCredentials) * 100) : 0;
 
   return (
     <Layout>
@@ -71,14 +93,6 @@ export default function Dashboard() {
           </div>
           <div className="w-px h-8 bg-border hidden sm:block" />
           <div className="flex items-center gap-3">
-            <Grid3X3 className="w-5 h-5 text-muted-foreground/60" />
-            <div>
-              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.uniqueTypes}</span>
-              <span className="text-muted-foreground text-[13px] ml-1.5">type{stats.uniqueTypes !== 1 ? "s" : ""}</span>
-            </div>
-          </div>
-          <div className="w-px h-8 bg-border hidden sm:block" />
-          <div className="flex items-center gap-3">
             <Shield className="w-5 h-5 text-amber-500/60" />
             <div>
               <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.totalVaults}</span>
@@ -95,38 +109,53 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="border rounded-xl bg-card p-4">
-            <div className="flex items-center gap-1.5 mb-2">
-              <FolderOpen className="w-3.5 h-3.5 text-muted-foreground/60" />
-              <span className="text-[12px] text-muted-foreground font-medium">In space</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="border rounded-xl bg-card p-5 flex items-center gap-5">
+            <div className="relative flex items-center justify-center shrink-0">
+              <RingProgress value={vaultPct} color="hsl(35, 80%, 50%)" />
+              <span className="absolute text-[15px] font-extrabold font-mono tabular-nums">{vaultPct}%</span>
             </div>
-            <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.spaceCredentials}</span>
+            <div>
+              <div className="text-[13px] font-semibold">Vault protection</div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">
+                {stats.vaultCredentials} of {stats.totalCredentials} credentials secured
+              </div>
+              <div className="text-[11px] mt-2" style={{ color: vaultPct >= 75 ? "hsl(142, 60%, 40%)" : vaultPct >= 40 ? "hsl(35, 80%, 45%)" : "hsl(0, 60%, 50%)" }}>
+                {vaultPct >= 75 ? "Strong" : vaultPct >= 40 ? "Moderate" : "Needs attention"}
+              </div>
+            </div>
           </div>
-          <div className="border rounded-xl bg-card p-4">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Shield className="w-3.5 h-3.5 text-amber-500/60" />
-              <span className="text-[12px] text-muted-foreground font-medium">In vault</span>
+
+          <div className="border rounded-xl bg-card p-5 flex items-center gap-5">
+            <div className="relative flex items-center justify-center shrink-0">
+              <RingProgress value={tagPct} color="hsl(250, 60%, 55%)" />
+              <span className="absolute text-[15px] font-extrabold font-mono tabular-nums">{tagPct}%</span>
             </div>
-            <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.vaultCredentials}</span>
+            <div>
+              <div className="text-[13px] font-semibold">Tag coverage</div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">
+                {stats.taggedCredentials} of {stats.totalCredentials} labeled
+              </div>
+              <div className="text-[11px] mt-2" style={{ color: tagPct >= 75 ? "hsl(142, 60%, 40%)" : tagPct >= 40 ? "hsl(35, 80%, 45%)" : "hsl(0, 60%, 50%)" }}>
+                {tagPct >= 75 ? "Well organized" : tagPct >= 40 ? "Partially tagged" : "Tag more items"}
+              </div>
+            </div>
           </div>
-          <div className="border rounded-xl bg-card p-4">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Calendar className="w-3.5 h-3.5 text-muted-foreground/60" />
-              <span className="text-[12px] text-muted-foreground font-medium">Oldest</span>
+
+          <div className="border rounded-xl bg-card p-5 flex items-center gap-5">
+            <div className="relative flex items-center justify-center shrink-0">
+              <RingProgress value={orgPct} color="hsl(190, 60%, 45%)" />
+              <span className="absolute text-[15px] font-extrabold font-mono tabular-nums">{orgPct}%</span>
             </div>
-            <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">
-              {stats.oldestCredentialDays != null ? `${stats.oldestCredentialDays}d` : "—"}
-            </span>
-          </div>
-          <div className="border rounded-xl bg-card p-4">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Clock className="w-3.5 h-3.5 text-muted-foreground/60" />
-              <span className="text-[12px] text-muted-foreground font-medium">Avg age</span>
+            <div>
+              <div className="text-[13px] font-semibold">Space allocation</div>
+              <div className="text-[12px] text-muted-foreground mt-0.5">
+                {stats.spaceCredentials} of {stats.totalCredentials} assigned
+              </div>
+              <div className="text-[11px] mt-2" style={{ color: orgPct >= 75 ? "hsl(142, 60%, 40%)" : orgPct >= 40 ? "hsl(35, 80%, 45%)" : "hsl(0, 60%, 50%)" }}>
+                {orgPct >= 75 ? "Great structure" : orgPct >= 40 ? "Good start" : "Assign spaces"}
+              </div>
             </div>
-            <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">
-              {stats.averageAgeDays}d
-            </span>
           </div>
         </div>
 
@@ -135,28 +164,37 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[16px] font-bold">Tags</h2>
               <Link href="/manage" className="text-[12px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors">
-                View all <ArrowRight className="w-3 h-3" />
+                Manage <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             {tagBreakdown.length > 0 ? (
-              <div className="space-y-3">
-                {tagBreakdown.map((t) => (
-                  <div key={t.name}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[13px] font-medium">{t.name}</span>
-                      <span className="text-[12px] font-mono text-muted-foreground tabular-nums">{t.count}</span>
-                    </div>
-                    <div className="w-full h-2 bg-accent rounded-full overflow-hidden">
+              <div>
+                {totalTagCount > 0 && (
+                  <div className="flex w-full h-3 rounded-full overflow-hidden mb-5 bg-accent">
+                    {tagBreakdown.filter(t => t.count > 0).map((t, i) => (
                       <div
-                        className="h-full rounded-full transition-all duration-500"
+                        key={i}
+                        className="h-full first:rounded-l-full last:rounded-r-full transition-all duration-500"
                         style={{
-                          width: `${(t.count / maxCount) * 100}%`,
+                          width: `${(t.count / totalTagCount) * 100}%`,
                           backgroundColor: t.color,
+                          minWidth: t.count > 0 ? "4px" : "0",
                         }}
                       />
-                    </div>
+                    ))}
                   </div>
-                ))}
+                )}
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                  {tagBreakdown.map((t) => (
+                    <div key={t.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-2.5 h-2.5 rounded-[3px] shrink-0" style={{ backgroundColor: t.color }} />
+                        <span className="text-[13px] font-medium truncate">{t.name}</span>
+                      </div>
+                      <span className="text-[12px] font-mono text-muted-foreground tabular-nums shrink-0 ml-2">{t.count}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="py-10 text-center">
@@ -170,33 +208,24 @@ export default function Dashboard() {
 
           <div className="border rounded-xl bg-card p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-[16px] font-bold">Service types</h2>
+              <h2 className="text-[16px] font-bold">Top services</h2>
               <Link href="/manage" className="text-[12px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors">
                 View all <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             {typeBreakdown.length > 0 ? (
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {typeBreakdown.slice(0, 8).map((t) => {
                   const stype = getServiceType(t.type);
                   const Icon = getIconComponent(stype.icon);
                   return (
-                    <div key={t.type}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-2">
-                          <Icon className="w-3.5 h-3.5" style={{ color: stype.color }} />
-                          <span className="text-[13px] font-medium">{stype.label}</span>
-                        </div>
-                        <span className="text-[12px] font-mono text-muted-foreground tabular-nums">{t.count}</span>
+                    <div key={t.type} className="border rounded-lg p-3 flex flex-col items-center gap-2 bg-background hover:bg-accent/40 transition-colors">
+                      <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${stype.color}15` }}>
+                        <Icon className="w-4.5 h-4.5" style={{ color: stype.color }} />
                       </div>
-                      <div className="w-full h-2 bg-accent rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{
-                            width: `${(t.count / maxTypeCount) * 100}%`,
-                            backgroundColor: stype.color,
-                          }}
-                        />
+                      <div className="text-center min-w-0 w-full">
+                        <div className="text-[12px] font-semibold truncate">{stype.label}</div>
+                        <div className="text-[11px] font-mono text-muted-foreground tabular-nums">{t.count}</div>
                       </div>
                     </div>
                   );
@@ -213,29 +242,34 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="border rounded-xl bg-card p-6">
-          <h2 className="text-[16px] font-bold mb-5">Quick actions</h2>
-          <div className="space-y-2">
-            {[
-              { label: "Add a new credential", desc: "Store a login or API key", href: "/credentials" },
-              { label: "Create a vault", desc: "Encrypted storage for sensitive credentials", href: "/vault" },
-              { label: "Create a tag", desc: "Organize your credentials", href: "/manage" },
-              ...(user?.isAdmin
-                ? [{ label: "Admin settings", desc: "Registration and branding", href: "/settings" }]
-                : []),
-            ].map((action) => (
-              <Link
-                key={action.label}
-                href={action.href}
-                className="flex items-center justify-between p-4 border rounded-xl hover:bg-accent/50 transition-colors group"
-              >
-                <div>
-                  <div className="text-[14px] font-semibold">{action.label}</div>
-                  <div className="text-[12px] text-muted-foreground mt-0.5">{action.desc}</div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-              </Link>
-            ))}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="border rounded-xl bg-card p-4">
+            <span className="text-[12px] text-muted-foreground font-medium">Recently added</span>
+            <div className="mt-1.5">
+              <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.recentlyAdded}</span>
+              <span className="text-[11px] text-muted-foreground ml-1">last 7d</span>
+            </div>
+          </div>
+          <div className="border rounded-xl bg-card p-4">
+            <span className="text-[12px] text-muted-foreground font-medium">Service types</span>
+            <div className="mt-1.5">
+              <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.uniqueTypes}</span>
+              <span className="text-[11px] text-muted-foreground ml-1">available</span>
+            </div>
+          </div>
+          <div className="border rounded-xl bg-card p-4">
+            <span className="text-[12px] text-muted-foreground font-medium">Oldest credential</span>
+            <div className="mt-1.5">
+              <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">
+                {stats.oldestCredentialDays != null ? `${stats.oldestCredentialDays}d` : "—"}
+              </span>
+            </div>
+          </div>
+          <div className="border rounded-xl bg-card p-4">
+            <span className="text-[12px] text-muted-foreground font-medium">Average age</span>
+            <div className="mt-1.5">
+              <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.averageAgeDays}d</span>
+            </div>
           </div>
         </div>
       </div>

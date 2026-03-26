@@ -62,6 +62,16 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
       )
     );
 
+  const taggedCreds = await db
+    .select({ count: sql<number>`cast(count(*) as integer)` })
+    .from(credentialsTable)
+    .where(
+      and(
+        eq(credentialsTable.userId, userId),
+        isNotNull(credentialsTable.tagId)
+      )
+    );
+
   const uniqueTypesResult = await db
     .select({ count: sql<number>`cast(count(*) as integer)` })
     .from(serviceTypesTable);
@@ -114,6 +124,7 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
       recentlyAdded: recentCreds[0]?.count ?? 0,
       vaultCredentials: vaultCreds[0]?.count ?? 0,
       spaceCredentials: spaceCreds[0]?.count ?? 0,
+      taggedCredentials: taggedCreds[0]?.count ?? 0,
       uniqueTypes: uniqueTypesResult[0]?.count ?? 0,
       oldestCredentialDays: oldestDays,
       averageAgeDays: ageStats[0]?.avgAge ?? 0,
