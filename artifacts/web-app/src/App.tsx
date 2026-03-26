@@ -7,7 +7,7 @@ import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
-import Categories from "@/pages/categories";
+import Manage from "@/pages/manage";
 import Settings from "@/pages/settings";
 import Vault from "@/pages/vault";
 import Spaces from "@/pages/spaces";
@@ -17,7 +17,6 @@ import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
-// A simple wrapper component to protect routes that require authentication
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -43,11 +42,10 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       
-      {/* Protected Routes */}
       <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/vault" component={() => <ProtectedRoute component={Vault} />} />
       <Route path="/spaces" component={() => <ProtectedRoute component={Spaces} />} />
-      <Route path="/categories" component={() => <ProtectedRoute component={Categories} />} />
+      <Route path="/manage" component={() => <ProtectedRoute component={Manage} />} />
       <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
       
       <Route component={NotFound} />

@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, ilike, or, sql, isNull } from "drizzle-orm";
-import { db, credentialsTable, categoriesTable, spacesTable } from "@workspace/db";
+import { db, credentialsTable, tagsTable, spacesTable } from "@workspace/db";
 import {
   ListCredentialsQueryParams,
   ListCredentialsResponse,
@@ -25,9 +25,9 @@ router.get("/credentials", requireAuth, async (req, res): Promise<void> => {
       title: credentialsTable.title,
       email: credentialsTable.email,
       password: credentialsTable.password,
-      categoryId: credentialsTable.categoryId,
-      categoryName: categoriesTable.name,
-      categoryColor: categoriesTable.color,
+      tagId: credentialsTable.tagId,
+      tagName: tagsTable.name,
+      tagColor: tagsTable.color,
       vaultId: credentialsTable.vaultId,
       spaceId: credentialsTable.spaceId,
       spaceName: spacesTable.name,
@@ -35,16 +35,16 @@ router.get("/credentials", requireAuth, async (req, res): Promise<void> => {
       updatedAt: credentialsTable.updatedAt,
     })
     .from(credentialsTable)
-    .leftJoin(categoriesTable, eq(credentialsTable.categoryId, categoriesTable.id))
+    .leftJoin(tagsTable, eq(credentialsTable.tagId, tagsTable.id))
     .leftJoin(spacesTable, eq(credentialsTable.spaceId, spacesTable.id))
     .where(eq(credentialsTable.userId, userId))
     .$dynamic();
 
-  if (params.success && params.data.category) {
+  if (params.success && params.data.tag) {
     query = query.where(
       and(
         eq(credentialsTable.userId, userId),
-        eq(categoriesTable.name, params.data.category)
+        eq(tagsTable.name, params.data.tag)
       )
     );
   }
@@ -109,23 +109,23 @@ router.post("/credentials", requireAuth, async (req, res): Promise<void> => {
       title: parsed.data.title,
       email: parsed.data.email,
       password: parsed.data.password,
-      categoryId: parsed.data.categoryId ?? null,
+      tagId: parsed.data.tagId ?? null,
       vaultId: parsed.data.vaultId ?? null,
       spaceId: parsed.data.spaceId ?? null,
       userId,
     })
     .returning();
 
-  let categoryName: string | null = null;
-  let categoryColor: string | null = null;
-  if (credential.categoryId) {
-    const [cat] = await db
+  let tagName: string | null = null;
+  let tagColor: string | null = null;
+  if (credential.tagId) {
+    const [t] = await db
       .select()
-      .from(categoriesTable)
-      .where(eq(categoriesTable.id, credential.categoryId));
-    if (cat) {
-      categoryName = cat.name;
-      categoryColor = cat.color;
+      .from(tagsTable)
+      .where(eq(tagsTable.id, credential.tagId));
+    if (t) {
+      tagName = t.name;
+      tagColor = t.color;
     }
   }
 
@@ -138,8 +138,8 @@ router.post("/credentials", requireAuth, async (req, res): Promise<void> => {
   res.status(201).json(
     UpdateCredentialResponse.parse({
       ...credential,
-      categoryName,
-      categoryColor,
+      tagName,
+      tagColor,
       spaceName,
     })
   );
@@ -175,7 +175,7 @@ router.patch("/credentials/:id", requireAuth, async (req, res): Promise<void> =>
   if (parsed.data.title !== undefined) updateData.title = parsed.data.title;
   if (parsed.data.email !== undefined) updateData.email = parsed.data.email;
   if (parsed.data.password !== undefined) updateData.password = parsed.data.password;
-  if (parsed.data.categoryId !== undefined) updateData.categoryId = parsed.data.categoryId;
+  if (parsed.data.tagId !== undefined) updateData.tagId = parsed.data.tagId;
   if (parsed.data.vaultId !== undefined) updateData.vaultId = parsed.data.vaultId;
   if (parsed.data.spaceId !== undefined) updateData.spaceId = parsed.data.spaceId;
 
@@ -185,16 +185,16 @@ router.patch("/credentials/:id", requireAuth, async (req, res): Promise<void> =>
     .where(eq(credentialsTable.id, params.data.id))
     .returning();
 
-  let categoryName: string | null = null;
-  let categoryColor: string | null = null;
-  if (credential.categoryId) {
-    const [cat] = await db
+  let tagName: string | null = null;
+  let tagColor: string | null = null;
+  if (credential.tagId) {
+    const [t] = await db
       .select()
-      .from(categoriesTable)
-      .where(eq(categoriesTable.id, credential.categoryId));
-    if (cat) {
-      categoryName = cat.name;
-      categoryColor = cat.color;
+      .from(tagsTable)
+      .where(eq(tagsTable.id, credential.tagId));
+    if (t) {
+      tagName = t.name;
+      tagColor = t.color;
     }
   }
 
@@ -207,8 +207,8 @@ router.patch("/credentials/:id", requireAuth, async (req, res): Promise<void> =>
   res.json(
     UpdateCredentialResponse.parse({
       ...credential,
-      categoryName,
-      categoryColor,
+      tagName,
+      tagColor,
       spaceName,
     })
   );

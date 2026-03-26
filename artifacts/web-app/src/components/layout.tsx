@@ -41,7 +41,7 @@ export function Layout({ children }: LayoutProps) {
     { label: "Dashboard", href: "/", icon: LayoutDashboard },
     { label: "Spaces", href: "/spaces", icon: FolderOpen },
     { label: "Vaults", href: "/vault", icon: Shield },
-    { label: "Manage", href: "/categories", icon: Tag },
+    { label: "Manage", href: "/manage", icon: Tag },
     { label: "Settings", href: "/settings", icon: Settings },
   ];
 

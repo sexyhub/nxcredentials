@@ -377,10 +377,10 @@ export default function Vault() {
                             <Icon className="w-3.5 h-3.5" style={{ color: stype.color }} />
                           </div>
                           <span className="text-[13px] font-bold truncate">{stype.label}</span>
-                          {cred.categoryName && (
-                            <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-semibold tracking-wide" style={{ color: cred.categoryColor || '#888' }}>
+                          {cred.tagName && (
+                            <span className="shrink-0 flex items-center gap-0.5 text-[10px] font-semibold tracking-wide" style={{ color: cred.tagColor || '#888' }}>
                               <Tag className="w-2.5 h-2.5" />
-                              {cred.categoryName}
+                              {cred.tagName}
                             </span>
                           )}
                         </div>

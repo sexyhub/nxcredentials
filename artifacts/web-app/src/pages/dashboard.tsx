@@ -30,9 +30,9 @@ export default function Dashboard() {
     );
   }
 
-  const categoryBreakdown = stats.categoryBreakdown ?? [];
+  const tagBreakdown = stats.tagBreakdown ?? [];
   const typeBreakdown = stats.typeBreakdown ?? [];
-  const maxCount = Math.max(...(categoryBreakdown.map(c => c.count)), 1);
+  const maxCount = Math.max(...(tagBreakdown.map(c => c.count)), 1);
   const maxTypeCount = Math.max(...(typeBreakdown.map(t => t.count)), 1);
 
   return (
@@ -65,7 +65,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <Tag className="w-5 h-5 text-muted-foreground/60" />
             <div>
-              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.totalCategories}</span>
+              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.totalTags}</span>
               <span className="text-muted-foreground text-[13px] ml-1.5">tags</span>
             </div>
           </div>
@@ -134,24 +134,24 @@ export default function Dashboard() {
           <div className="border rounded-xl bg-card p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[16px] font-bold">Tags</h2>
-              <Link href="/categories" className="text-[12px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors">
+              <Link href="/manage" className="text-[12px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors">
                 View all <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
-            {categoryBreakdown.length > 0 ? (
+            {tagBreakdown.length > 0 ? (
               <div className="space-y-3">
-                {categoryBreakdown.map((cat) => (
-                  <div key={cat.name}>
+                {tagBreakdown.map((t) => (
+                  <div key={t.name}>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[13px] font-medium">{cat.name}</span>
-                      <span className="text-[12px] font-mono text-muted-foreground tabular-nums">{cat.count}</span>
+                      <span className="text-[13px] font-medium">{t.name}</span>
+                      <span className="text-[12px] font-mono text-muted-foreground tabular-nums">{t.count}</span>
                     </div>
                     <div className="w-full h-2 bg-accent rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{
-                          width: `${(cat.count / maxCount) * 100}%`,
-                          backgroundColor: cat.color,
+                          width: `${(t.count / maxCount) * 100}%`,
+                          backgroundColor: t.color,
                         }}
                       />
                     </div>
@@ -162,7 +162,7 @@ export default function Dashboard() {
               <div className="py-10 text-center">
                 <p className="text-[13px] text-muted-foreground">No tags yet.</p>
                 <Button asChild variant="outline" size="sm" className="mt-3 h-8 text-[12px]">
-                  <Link href="/categories">Create one</Link>
+                  <Link href="/manage">Create one</Link>
                 </Button>
               </div>
             )}
@@ -171,7 +171,7 @@ export default function Dashboard() {
           <div className="border rounded-xl bg-card p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-[16px] font-bold">Service types</h2>
-              <Link href="/categories" className="text-[12px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors">
+              <Link href="/manage" className="text-[12px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 transition-colors">
                 View all <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -219,7 +219,7 @@ export default function Dashboard() {
             {[
               { label: "Add a new credential", desc: "Store a login or API key", href: "/credentials" },
               { label: "Create a vault", desc: "Encrypted storage for sensitive credentials", href: "/vault" },
-              { label: "Create a tag", desc: "Organize your credentials", href: "/categories" },
+              { label: "Create a tag", desc: "Organize your credentials", href: "/manage" },
               ...(user?.isAdmin
                 ? [{ label: "Admin settings", desc: "Registration and branding", href: "/settings" }]
                 : []),

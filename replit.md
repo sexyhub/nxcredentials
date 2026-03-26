@@ -2,7 +2,7 @@
 
 ## Overview
 
-A credential/password manager web application built with a pnpm workspace monorepo. Features user authentication with "remember me", admin settings, CRUD for credentials and categories, dashboard statistics, multiple independent secure vaults (each with own password/PIN/color), and credential spaces (folder-like groupings with optional default type).
+A credential/password manager web application built with a pnpm workspace monorepo. Features user authentication with "remember me", admin settings, CRUD for credentials and tags, dashboard statistics, multiple independent secure vaults (each with own password/PIN/color), and credential spaces (folder-like groupings with optional default type).
 
 ## Stack
 
@@ -41,8 +41,8 @@ artifacts-monorepo/
 
 - **Authentication**: Login/Register with "Remember Me" checkbox (30-day session)
 - **First user is admin**: The first registered account automatically gets admin privileges
-- **Dashboard**: Stats overview with total credentials, categories, recently added (7 days), vault count, space count, unique types, oldest/average credential age, vault credential count, category breakdown, service type breakdown
-- **Credentials CRUD**: Add/edit/delete credentials via popup modals. Card grid with copy email/password buttons, password reveal toggle, category filter, type filter, and search. Vault credentials excluded from main list (shown in vault pages)
+- **Dashboard**: Stats overview with total credentials, tags, recently added (7 days), vault count, space count, unique types, oldest/average credential age, vault credential count, tag breakdown, service type breakdown
+- **Credentials CRUD**: Add/edit/delete credentials via popup modals. Card grid with copy email/password buttons, password reveal toggle, tag filter, type filter, and search. Vault credentials excluded from main list (shown in vault pages)
 - **Credential Spaces**: Folder-like groupings with optional default type. Space tabs at top of credentials page for filtering. Create/delete spaces
 - **Unified Manage page**: Tags + Service Types in one tabbed page — create/edit/delete tags, browse built-in service types
 - **Multi-Vault System**: Multiple independent secure vaults, each with own name/password/PIN/color. Per-vault unlock with 15-min session expiry. Vault detail page shows credentials inside. Create/edit/delete vaults. Change vault password/PIN per-vault
@@ -52,8 +52,8 @@ artifacts-monorepo/
 ## Database Schema
 
 - **users**: id, username, passwordHash, isAdmin, createdAt
-- **categories**: id, name, color, userId, createdAt
-- **credentials**: id, title, email, password, userId, categoryId, vaultId, spaceId, createdAt, updatedAt
+- **tags**: id, name, color, userId, createdAt
+- **credentials**: id, title, email, password, userId, tagId, vaultId, spaceId, createdAt, updatedAt
 - **vaults**: id, name, passwordHash, pinHash, color, icon, userId, createdAt
 - **spaces**: id, name, defaultType, color, icon, userId, createdAt
 - **settings**: id, registrationEnabled, siteTitle, siteLogo, siteFavicon
@@ -65,15 +65,15 @@ All endpoints under `/api`:
 - `POST /auth/login` — Login with optional rememberMe
 - `GET /auth/me` — Get current user
 - `POST /auth/logout` — Log out
-- `GET /credentials` — List credentials (with search/category/spaceId/vaultId filter)
+- `GET /credentials` — List credentials (with search/tag/spaceId/vaultId filter)
 - `POST /credentials` — Create credential (with optional vaultId/spaceId)
 - `PATCH /credentials/:id` — Update credential
 - `DELETE /credentials/:id` — Delete credential
-- `GET /categories` — List categories with credential counts
-- `POST /categories` — Create category
-- `PATCH /categories/:id` — Update category
-- `DELETE /categories/:id` — Delete category
-- `GET /stats` — Dashboard statistics (totalCredentials, totalCategories, totalSpaces, totalVaults, vaultCredentials, etc.)
+- `GET /tags` — List tags with credential counts
+- `POST /tags` — Create tag
+- `PATCH /tags/:id` — Update tag
+- `DELETE /tags/:id` — Delete tag
+- `GET /stats` — Dashboard statistics (totalCredentials, totalTags, totalSpaces, totalVaults, vaultCredentials, etc.)
 - `GET /settings` — Get app settings (admin only)
 - `PATCH /settings` — Update settings (admin only)
 - `GET /settings/registration-status` — Public registration check
@@ -106,5 +106,6 @@ All endpoints under `/api`:
 - Credential `title` field stores service type key (e.g. "gmail", "github")
 - Per-vault session tracking: `req.session.unlockedVaults` is `Record<number, number>` (vaultId → timestamp); `isVaultUnlocked(req, vaultId)` checks expiry
 - Vault protection is enforced server-side: vault credential email/password are masked ("••••••••") in API responses unless vault session is active (15-min expiry after verify)
-- Nav items: Dashboard, Credentials, Vaults, Manage, Settings
+- Nav items: Dashboard, Spaces, Vaults, Manage (/manage), Settings
+- Manage page route: `/manage` (was `/categories`)
 - User dislikes: bottom border/underline, dot indicator, dark pill background for nav active state

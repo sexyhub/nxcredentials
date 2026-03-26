@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import {
-  useCreateCategory,
-  useUpdateCategory,
-  getListCategoriesQueryKey,
+  useCreateTag,
+  useUpdateTag,
+  getListTagsQueryKey,
   getGetStatsQueryKey,
-  type Category
+  type Tag
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -18,10 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Check } from "lucide-react";
 
-interface CategoryModalProps {
+interface TagModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  category?: Category | null;
+  tag?: Tag | null;
 }
 
 const COLORS = [
@@ -30,8 +30,8 @@ const COLORS = [
   "#6366f1", "#d946ef", "#f43f5e", "#64748b",
 ];
 
-export function CategoryModal({ open, onOpenChange, category }: CategoryModalProps) {
-  const isEditing = !!category;
+export function TagModal({ open, onOpenChange, tag }: TagModalProps) {
+  const isEditing = !!tag;
 
   const [name, setName] = useState("");
   const [color, setColor] = useState(COLORS[0]);
@@ -41,20 +41,20 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
 
   useEffect(() => {
     if (open) {
-      if (category) {
-        setName(category.name);
-        setColor(category.color);
+      if (tag) {
+        setName(tag.name);
+        setColor(tag.color);
       } else {
         setName("");
         setColor(COLORS[0]);
       }
     }
-  }, [open, category]);
+  }, [open, tag]);
 
-  const createMutation = useCreateCategory({
+  const createMutation = useCreateTag({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListCategoriesQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListTagsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
         toast({ title: "Tag created" });
         onOpenChange(false);
@@ -62,10 +62,10 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
     },
   });
 
-  const updateMutation = useUpdateCategory({
+  const updateMutation = useUpdateTag({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListCategoriesQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListTagsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
         toast({ title: "Tag updated" });
         onOpenChange(false);
@@ -75,8 +75,8 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isEditing && category) {
-      updateMutation.mutate({ id: category.id, data: { name, color } });
+    if (isEditing && tag) {
+      updateMutation.mutate({ id: tag.id, data: { name, color } });
     } else {
       createMutation.mutate({ data: { name, color } });
     }
@@ -89,8 +89,8 @@ export function CategoryModal({ open, onOpenChange, category }: CategoryModalPro
       <DialogContent className="sm:max-w-sm">
         <form onSubmit={handleSubmit} className="space-y-5 pt-1">
           <div className="space-y-1.5">
-            <Label htmlFor="cat-name" className="text-[13px]">Name</Label>
-            <Input id="cat-name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Work, Finance" className="h-10 bg-transparent" />
+            <Label htmlFor="tag-name" className="text-[13px]">Name</Label>
+            <Input id="tag-name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Work, Finance" className="h-10 bg-transparent" />
           </div>
 
           <div className="space-y-2">

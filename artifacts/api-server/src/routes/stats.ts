@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, sql, gte, and, isNotNull } from "drizzle-orm";
-import { db, credentialsTable, categoriesTable, spacesTable, vaultsTable, serviceTypesTable } from "@workspace/db";
+import { db, credentialsTable, tagsTable, spacesTable, vaultsTable, serviceTypesTable } from "@workspace/db";
 import { GetStatsResponse } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/auth";
 
@@ -14,10 +14,10 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
     .from(credentialsTable)
     .where(eq(credentialsTable.userId, userId));
 
-  const totalCats = await db
+  const totalTagsResult = await db
     .select({ count: sql<number>`cast(count(*) as integer)` })
-    .from(categoriesTable)
-    .where(eq(categoriesTable.userId, userId));
+    .from(tagsTable)
+    .where(eq(tagsTable.userId, userId));
 
   const totalSpacesResult = await db
     .select({ count: sql<number>`cast(count(*) as integer)` })
@@ -76,21 +76,21 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
 
   const breakdown = await db
     .select({
-      name: categoriesTable.name,
-      color: categoriesTable.color,
+      name: tagsTable.name,
+      color: tagsTable.color,
       count: sql<number>`cast(count(${credentialsTable.id}) as integer)`,
     })
-    .from(categoriesTable)
+    .from(tagsTable)
     .leftJoin(
       credentialsTable,
       and(
-        eq(categoriesTable.id, credentialsTable.categoryId),
+        eq(tagsTable.id, credentialsTable.tagId),
         eq(credentialsTable.userId, userId)
       )
     )
-    .where(eq(categoriesTable.userId, userId))
-    .groupBy(categoriesTable.id)
-    .orderBy(categoriesTable.name);
+    .where(eq(tagsTable.userId, userId))
+    .groupBy(tagsTable.id)
+    .orderBy(tagsTable.name);
 
   const typeBreakdown = await db
     .select({
@@ -108,7 +108,7 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
   res.json(
     GetStatsResponse.parse({
       totalCredentials: totalCount,
-      totalCategories: totalCats[0]?.count ?? 0,
+      totalTags: totalTagsResult[0]?.count ?? 0,
       totalSpaces: totalSpacesResult[0]?.count ?? 0,
       totalVaults: totalVaultsResult[0]?.count ?? 0,
       recentlyAdded: recentCreds[0]?.count ?? 0,
@@ -117,7 +117,7 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
       uniqueTypes: uniqueTypesResult[0]?.count ?? 0,
       oldestCredentialDays: oldestDays,
       averageAgeDays: ageStats[0]?.avgAge ?? 0,
-      categoryBreakdown: breakdown,
+      tagBreakdown: breakdown,
       typeBreakdown: typeBreakdown,
     })
   );

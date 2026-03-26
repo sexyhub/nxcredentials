@@ -1,45 +1,45 @@
 import { useState } from "react";
 import { Layout } from "@/components/layout";
 import {
-  useListCategories,
-  useDeleteCategory,
+  useListTags,
+  useDeleteTag,
   useListServiceTypes,
   useDeleteServiceType,
-  getListCategoriesQueryKey,
+  getListTagsQueryKey,
   getGetStatsQueryKey,
   getListServiceTypesQueryKey,
-  type Category,
+  type Tag,
   type ServiceType,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { CategoryModal } from "@/components/category-modal";
+import { TagModal } from "@/components/tag-modal";
 import { ServiceTypeModal } from "@/components/service-type-modal";
-import { Plus, Pencil, Trash2, Tag, Grid3X3 } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag as TagIcon, Grid3X3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getIconComponent } from "@/lib/service-types";
 import { Pagination } from "@/components/pagination";
 
 const PAGE_SIZE = 20;
 
-export default function Categories() {
+export default function Manage() {
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
   const [selectedType, setSelectedType] = useState<ServiceType | null>(null);
   const [activeTab, setActiveTab] = useState<"tags" | "types">("tags");
   const [tagsPage, setTagsPage] = useState(1);
   const [typesPage, setTypesPage] = useState(1);
 
-  const { data: categories, isLoading: tagsLoading } = useListCategories();
+  const { data: tags, isLoading: tagsLoading } = useListTags();
   const { data: serviceTypes, isLoading: typesLoading } = useListServiceTypes();
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const deleteCategoryMutation = useDeleteCategory({
+  const deleteTagMutation = useDeleteTag({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListCategoriesQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListTagsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
         toast({ title: "Tag deleted" });
       },
@@ -59,7 +59,7 @@ export default function Categories() {
     },
   });
 
-  const pagedCategories = categories?.slice((tagsPage - 1) * PAGE_SIZE, tagsPage * PAGE_SIZE) ?? [];
+  const pagedTags = tags?.slice((tagsPage - 1) * PAGE_SIZE, tagsPage * PAGE_SIZE) ?? [];
   const pagedTypes = (serviceTypes ?? []).slice((typesPage - 1) * PAGE_SIZE, typesPage * PAGE_SIZE);
 
   return (
@@ -77,10 +77,10 @@ export default function Categories() {
               activeTab === "tags" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Tag className="w-3.5 h-3.5" />
+            <TagIcon className="w-3.5 h-3.5" />
             Tags
-            {categories && (
-              <span className="text-[11px] bg-accent px-1.5 py-0.5 rounded-md font-mono tabular-nums">{categories.length}</span>
+            {tags && (
+              <span className="text-[11px] bg-accent px-1.5 py-0.5 rounded-md font-mono tabular-nums">{tags.length}</span>
             )}
           </button>
           <button
@@ -101,7 +101,7 @@ export default function Categories() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-[13px] text-muted-foreground">Custom tags to label and filter your credentials.</p>
-              <Button onClick={() => { setSelectedCategory(null); setIsTagModalOpen(true); }} size="sm" className="h-9 text-[13px] font-semibold">
+              <Button onClick={() => { setSelectedTag(null); setIsTagModalOpen(true); }} size="sm" className="h-9 text-[13px] font-semibold">
                 <Plus className="w-3.5 h-3.5 mr-1.5" />
                 Add tag
               </Button>
@@ -109,38 +109,38 @@ export default function Categories() {
 
             {tagsLoading ? (
               <div className="text-[13px] text-muted-foreground py-14 text-center">Loading...</div>
-            ) : categories?.length === 0 ? (
+            ) : tags?.length === 0 ? (
               <div className="border rounded-xl p-16 text-center bg-card">
-                <Tag className="w-8 h-8 text-border mx-auto mb-3" />
+                <TagIcon className="w-8 h-8 text-border mx-auto mb-3" />
                 <p className="text-[15px] font-semibold mb-1">No tags yet</p>
                 <p className="text-[13px] text-muted-foreground">Create your first tag to organize credentials.</p>
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
-                  {pagedCategories.map((cat) => (
-                    <div key={cat.id} className="border rounded-xl bg-card px-3.5 py-3 flex items-center gap-2.5 group hover:border-foreground/20 transition-colors">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: cat.color + '18' }}>
-                        <Tag className="w-4 h-4" style={{ color: cat.color }} />
+                  {pagedTags.map((t) => (
+                    <div key={t.id} className="border rounded-xl bg-card px-3.5 py-3 flex items-center gap-2.5 group hover:border-foreground/20 transition-colors">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: t.color + '18' }}>
+                        <TagIcon className="w-4 h-4" style={{ color: t.color }} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[13px] font-semibold block truncate">{cat.name}</span>
-                        <span className="text-[11px] text-muted-foreground tabular-nums">{cat.credentialCount} credential{cat.credentialCount !== 1 ? 's' : ''}</span>
+                        <span className="text-[13px] font-semibold block truncate">{t.name}</span>
+                        <span className="text-[11px] text-muted-foreground tabular-nums">{t.credentialCount} credential{t.credentialCount !== 1 ? 's' : ''}</span>
                       </div>
                       <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                         <button
-                          onClick={() => { setSelectedCategory(cat); setIsTagModalOpen(true); }}
+                          onClick={() => { setSelectedTag(t); setIsTagModalOpen(true); }}
                           className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-accent"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => {
-                            if (cat.credentialCount > 0) {
-                              alert(`Can't delete — ${cat.credentialCount} credential(s) use this tag.`);
+                            if (t.credentialCount > 0) {
+                              alert(`Can't delete — ${t.credentialCount} credential(s) use this tag.`);
                               return;
                             }
-                            if (confirm("Delete this tag?")) deleteCategoryMutation.mutate({ id: cat.id });
+                            if (confirm("Delete this tag?")) deleteTagMutation.mutate({ id: t.id });
                           }}
                           className="p-1.5 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-accent"
                         >
@@ -150,7 +150,7 @@ export default function Categories() {
                     </div>
                   ))}
                 </div>
-                <Pagination page={tagsPage} total={categories?.length ?? 0} pageSize={PAGE_SIZE} onChange={setTagsPage} />
+                <Pagination page={tagsPage} total={tags?.length ?? 0} pageSize={PAGE_SIZE} onChange={setTagsPage} />
               </>
             )}
           </div>
@@ -221,7 +221,7 @@ export default function Categories() {
         )}
       </div>
 
-      <CategoryModal open={isTagModalOpen} onOpenChange={setIsTagModalOpen} category={selectedCategory} />
+      <TagModal open={isTagModalOpen} onOpenChange={setIsTagModalOpen} tag={selectedTag} />
       <ServiceTypeModal open={isTypeModalOpen} onOpenChange={setIsTypeModalOpen} serviceType={selectedType} />
     </Layout>
   );

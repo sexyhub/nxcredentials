@@ -44,11 +44,11 @@ export interface Credential {
   email: string;
   password: string;
   /** @nullable */
-  categoryId: number | null;
+  tagId: number | null;
   /** @nullable */
-  categoryName: string | null;
+  tagName: string | null;
   /** @nullable */
-  categoryColor: string | null;
+  tagColor: string | null;
   /** @nullable */
   vaultId: number | null;
   /** @nullable */
@@ -64,7 +64,7 @@ export interface CreateCredentialBody {
   email: string;
   password: string;
   /** @nullable */
-  categoryId?: number | null;
+  tagId?: number | null;
   /** @nullable */
   vaultId?: number | null;
   /** @nullable */
@@ -76,26 +76,26 @@ export interface UpdateCredentialBody {
   email?: string;
   password?: string;
   /** @nullable */
-  categoryId?: number | null;
+  tagId?: number | null;
   /** @nullable */
   vaultId?: number | null;
   /** @nullable */
   spaceId?: number | null;
 }
 
-export interface Category {
+export interface Tag {
   id: number;
   name: string;
   color: string;
   credentialCount: number;
 }
 
-export interface CreateCategoryBody {
+export interface CreateTagBody {
   name: string;
   color: string;
 }
 
-export interface UpdateCategoryBody {
+export interface UpdateTagBody {
   name?: string;
   color?: string;
 }
@@ -165,7 +165,7 @@ export interface ChangeVaultPinBody {
   newPin: string;
 }
 
-export interface CategoryStat {
+export interface TagStat {
   name: string;
   count: number;
   color: string;
@@ -178,7 +178,7 @@ export interface TypeStat {
 
 export interface Stats {
   totalCredentials: number;
-  totalCategories: number;
+  totalTags: number;
   totalSpaces: number;
   totalVaults: number;
   recentlyAdded: number;
@@ -188,7 +188,7 @@ export interface Stats {
   /** @nullable */
   oldestCredentialDays: number | null;
   averageAgeDays: number;
-  categoryBreakdown: CategoryStat[];
+  tagBreakdown: TagStat[];
   typeBreakdown: TypeStat[];
 }
 
@@ -233,7 +233,7 @@ export interface RegistrationStatus {
 }
 
 export type ListCredentialsParams = {
-  category?: string;
+  tag?: string;
   search?: string;
   spaceId?: number;
   vaultId?: number;

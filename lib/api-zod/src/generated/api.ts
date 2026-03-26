@@ -60,7 +60,7 @@ export const LogoutResponse = zod.object({
  * @summary List all credentials
  */
 export const ListCredentialsQueryParams = zod.object({
-  category: zod.coerce.string().optional(),
+  tag: zod.coerce.string().optional(),
   search: zod.coerce.string().optional(),
   spaceId: zod.coerce.number().optional(),
   vaultId: zod.coerce.number().optional(),
@@ -71,9 +71,9 @@ export const ListCredentialsResponseItem = zod.object({
   title: zod.string(),
   email: zod.string(),
   password: zod.string(),
-  categoryId: zod.number().nullable(),
-  categoryName: zod.string().nullable(),
-  categoryColor: zod.string().nullable(),
+  tagId: zod.number().nullable(),
+  tagName: zod.string().nullable(),
+  tagColor: zod.string().nullable(),
   vaultId: zod.number().nullable(),
   spaceId: zod.number().nullable(),
   spaceName: zod.string().nullable(),
@@ -89,7 +89,7 @@ export const CreateCredentialBody = zod.object({
   title: zod.string(),
   email: zod.string(),
   password: zod.string(),
-  categoryId: zod.number().nullish(),
+  tagId: zod.number().nullish(),
   vaultId: zod.number().nullish(),
   spaceId: zod.number().nullish(),
 });
@@ -105,7 +105,7 @@ export const UpdateCredentialBody = zod.object({
   title: zod.string().optional(),
   email: zod.string().optional(),
   password: zod.string().optional(),
-  categoryId: zod.number().nullish(),
+  tagId: zod.number().nullish(),
   vaultId: zod.number().nullish(),
   spaceId: zod.number().nullish(),
 });
@@ -115,9 +115,9 @@ export const UpdateCredentialResponse = zod.object({
   title: zod.string(),
   email: zod.string(),
   password: zod.string(),
-  categoryId: zod.number().nullable(),
-  categoryName: zod.string().nullable(),
-  categoryColor: zod.string().nullable(),
+  tagId: zod.number().nullable(),
+  tagName: zod.string().nullable(),
+  tagColor: zod.string().nullable(),
   vaultId: zod.number().nullable(),
   spaceId: zod.number().nullable(),
   spaceName: zod.string().nullable(),
@@ -133,37 +133,37 @@ export const DeleteCredentialParams = zod.object({
 });
 
 /**
- * @summary List all categories
+ * @summary List all tags
  */
-export const ListCategoriesResponseItem = zod.object({
+export const ListTagsResponseItem = zod.object({
   id: zod.number(),
   name: zod.string(),
   color: zod.string(),
   credentialCount: zod.number(),
 });
-export const ListCategoriesResponse = zod.array(ListCategoriesResponseItem);
+export const ListTagsResponse = zod.array(ListTagsResponseItem);
 
 /**
- * @summary Create a category
+ * @summary Create a tag
  */
-export const CreateCategoryBody = zod.object({
+export const CreateTagBody = zod.object({
   name: zod.string(),
   color: zod.string(),
 });
 
 /**
- * @summary Update a category
+ * @summary Update a tag
  */
-export const UpdateCategoryParams = zod.object({
+export const UpdateTagParams = zod.object({
   id: zod.coerce.number(),
 });
 
-export const UpdateCategoryBody = zod.object({
+export const UpdateTagBody = zod.object({
   name: zod.string().optional(),
   color: zod.string().optional(),
 });
 
-export const UpdateCategoryResponse = zod.object({
+export const UpdateTagResponse = zod.object({
   id: zod.number(),
   name: zod.string(),
   color: zod.string(),
@@ -171,9 +171,9 @@ export const UpdateCategoryResponse = zod.object({
 });
 
 /**
- * @summary Delete a category
+ * @summary Delete a tag
  */
-export const DeleteCategoryParams = zod.object({
+export const DeleteTagParams = zod.object({
   id: zod.coerce.number(),
 });
 
@@ -235,7 +235,7 @@ export const DeleteSpaceParams = zod.object({
  */
 export const GetStatsResponse = zod.object({
   totalCredentials: zod.number(),
-  totalCategories: zod.number(),
+  totalTags: zod.number(),
   totalSpaces: zod.number(),
   totalVaults: zod.number(),
   recentlyAdded: zod.number(),
@@ -244,7 +244,7 @@ export const GetStatsResponse = zod.object({
   uniqueTypes: zod.number(),
   oldestCredentialDays: zod.number().nullable(),
   averageAgeDays: zod.number(),
-  categoryBreakdown: zod.array(
+  tagBreakdown: zod.array(
     zod.object({
       name: zod.string(),
       count: zod.number(),

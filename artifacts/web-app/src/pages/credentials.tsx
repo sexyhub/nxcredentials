@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Layout } from "@/components/layout";
 import {
   useListCredentials,
-  useListCategories,
+  useListTags,
   useDeleteCredential,
   getListCredentialsQueryKey,
   getGetStatsQueryKey,
@@ -21,7 +21,7 @@ import { getServiceType, getIconComponent, SERVICE_TYPES } from "@/lib/service-t
 
 export default function Credentials() {
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [tagFilter, setTagFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,10 +32,10 @@ export default function Credentials() {
 
   const { data: allCredentials, isLoading } = useListCredentials({
     search: search || undefined,
-    category: categoryFilter || undefined,
+    tag: tagFilter || undefined,
   });
 
-  const { data: categories } = useListCategories();
+  const { data: tags } = useListTags();
 
   const credentials = typeFilter
     ? allCredentials?.filter((cred) => getServiceType(cred.title).key === typeFilter)
@@ -64,10 +64,10 @@ export default function Credentials() {
 
   const tagOptions = [
     { value: "", label: "All tags" },
-    ...(categories?.map((cat) => ({
-      value: cat.name,
-      label: cat.name,
-      icon: <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />,
+    ...(tags?.map((t) => ({
+      value: t.name,
+      label: t.name,
+      icon: <div className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }} />,
     })) || []),
   ];
 
@@ -94,10 +94,10 @@ export default function Credentials() {
             </div>
             <div className="min-w-0 flex-1">
               <span className="text-[13px] font-bold block truncate">{stype.label}</span>
-              {cred.categoryName && (
+              {cred.tagName && (
                 <div className="flex items-center gap-1 mt-0.5">
-                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cred.categoryColor || '#999' }} />
-                  <span className="text-[10px] text-muted-foreground truncate">{cred.categoryName}</span>
+                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cred.tagColor || '#999' }} />
+                  <span className="text-[10px] text-muted-foreground truncate">{cred.tagName}</span>
                 </div>
               )}
             </div>
@@ -143,7 +143,7 @@ export default function Credentials() {
               <Combobox options={typeOptions} value={typeFilter} onValueChange={setTypeFilter} placeholder="All types" searchPlaceholder="Filter type..." emptyText="None found." />
             </div>
             <div className="sm:w-[180px]">
-              <Combobox options={tagOptions} value={categoryFilter} onValueChange={setCategoryFilter} placeholder="All tags" searchPlaceholder="Filter tag..." emptyText="None found." />
+              <Combobox options={tagOptions} value={tagFilter} onValueChange={setTagFilter} placeholder="All tags" searchPlaceholder="Filter tag..." emptyText="None found." />
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">

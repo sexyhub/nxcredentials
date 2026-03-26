@@ -1,5 +1,5 @@
 export * from "./users";
-export * from "./categories";
+export * from "./tags";
 export * from "./credentials";
 export * from "./settings";
 export * from "./vaults";

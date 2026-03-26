@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   useCreateCredential,
   useUpdateCredential,
-  useListCategories,
+  useListTags,
   useListSpaces,
   getListCredentialsQueryKey,
   getGetStatsQueryKey,
@@ -37,12 +37,12 @@ export function CredentialModal({ open, onOpenChange, credential, defaultSpaceId
   const [typeKey, setTypeKey] = useState("other");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [tagId, setTagId] = useState<number | null>(null);
   const [spaceId, setSpaceId] = useState<number | null>(null);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { data: categories } = useListCategories();
+  const { data: tags } = useListTags();
   const { data: spaces } = useListSpaces();
 
   useEffect(() => {
@@ -51,13 +51,13 @@ export function CredentialModal({ open, onOpenChange, credential, defaultSpaceId
         setTypeKey(credential.title || "other");
         setEmail(credential.email);
         setPassword(credential.password);
-        setCategoryId(credential.categoryId);
+        setTagId(credential.tagId);
         setSpaceId(credential.spaceId);
       } else {
         setTypeKey(defaultType || "other");
         setEmail("");
         setPassword("");
-        setCategoryId(null);
+        setTagId(null);
         setSpaceId(defaultSpaceId ?? null);
       }
     }
@@ -89,7 +89,7 @@ export function CredentialModal({ open, onOpenChange, credential, defaultSpaceId
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const data: any = { title: typeKey, email, password, categoryId, spaceId, vaultId: defaultVaultId ?? null };
+    const data: any = { title: typeKey, email, password, tagId, spaceId, vaultId: defaultVaultId ?? null };
     if (isEditing && credential) {
       updateMutation.mutate({ id: credential.id, data });
     } else {
@@ -110,10 +110,10 @@ export function CredentialModal({ open, onOpenChange, credential, defaultSpaceId
 
   const tagOptions = [
     { value: "none", label: "No tag" },
-    ...(categories?.map((cat) => ({
-      value: String(cat.id),
-      label: cat.name,
-      icon: <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />,
+    ...(tags?.map((t) => ({
+      value: String(t.id),
+      label: t.name,
+      icon: <div className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }} />,
     })) || []),
   ];
 
@@ -157,8 +157,8 @@ export function CredentialModal({ open, onOpenChange, credential, defaultSpaceId
               <Label className="text-[13px]">Tag</Label>
               <Combobox
                 options={tagOptions}
-                value={categoryId ? String(categoryId) : "none"}
-                onValueChange={(val) => setCategoryId(val && val !== "none" ? Number(val) : null)}
+                value={tagId ? String(tagId) : "none"}
+                onValueChange={(val) => setTagId(val && val !== "none" ? Number(val) : null)}
                 placeholder="Select tag"
                 searchPlaceholder="Search tags..."
                 emptyText="No tags."
