@@ -240,6 +240,7 @@ export const GetStatsResponse = zod.object({
   totalVaults: zod.number(),
   recentlyAdded: zod.number(),
   vaultCredentials: zod.number(),
+  spaceCredentials: zod.number(),
   uniqueTypes: zod.number(),
   oldestCredentialDays: zod.number().nullable(),
   averageAgeDays: zod.number(),

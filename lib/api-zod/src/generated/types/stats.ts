@@ -15,6 +15,7 @@ export interface Stats {
   totalVaults: number;
   recentlyAdded: number;
   vaultCredentials: number;
+  spaceCredentials: number;
   uniqueTypes: number;
   /** @nullable */
   oldestCredentialDays: number | null;

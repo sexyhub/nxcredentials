@@ -71,10 +71,10 @@ export default function Dashboard() {
           </div>
           <div className="w-px h-8 bg-border hidden sm:block" />
           <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-muted-foreground/60" />
+            <Grid3X3 className="w-5 h-5 text-muted-foreground/60" />
             <div>
-              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.recentlyAdded}</span>
-              <span className="text-muted-foreground text-[13px] ml-1.5">this week</span>
+              <span className="text-4xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.uniqueTypes}</span>
+              <span className="text-muted-foreground text-[13px] ml-1.5">type{stats.uniqueTypes !== 1 ? "s" : ""}</span>
             </div>
           </div>
           <div className="w-px h-8 bg-border hidden sm:block" />
@@ -98,10 +98,17 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="border rounded-xl bg-card p-4">
             <div className="flex items-center gap-1.5 mb-2">
-              <Grid3X3 className="w-3.5 h-3.5 text-muted-foreground/60" />
-              <span className="text-[12px] text-muted-foreground font-medium">Unique types</span>
+              <FolderOpen className="w-3.5 h-3.5 text-muted-foreground/60" />
+              <span className="text-[12px] text-muted-foreground font-medium">In space</span>
             </div>
-            <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.uniqueTypes}</span>
+            <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.spaceCredentials}</span>
+          </div>
+          <div className="border rounded-xl bg-card p-4">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Shield className="w-3.5 h-3.5 text-amber-500/60" />
+              <span className="text-[12px] text-muted-foreground font-medium">In vault</span>
+            </div>
+            <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">{stats.vaultCredentials}</span>
           </div>
           <div className="border rounded-xl bg-card p-4">
             <div className="flex items-center gap-1.5 mb-2">
@@ -119,15 +126,6 @@ export default function Dashboard() {
             </div>
             <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">
               {stats.averageAgeDays}d
-            </span>
-          </div>
-          <div className="border rounded-xl bg-card p-4">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Shield className="w-3.5 h-3.5 text-amber-500/60" />
-              <span className="text-[12px] text-muted-foreground font-medium">In vaults</span>
-            </div>
-            <span className="text-2xl font-extrabold tracking-tighter font-mono tabular-nums">
-              {stats.vaultCredentials}
             </span>
           </div>
         </div>
