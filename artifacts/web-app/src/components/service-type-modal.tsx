@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Combobox } from "@/components/ui/combobox";
 import {
   useCreateServiceType,
   useUpdateServiceType,
@@ -26,10 +27,26 @@ interface ServiceTypeModalProps {
 }
 
 const PRESET_COLORS = [
-  "#EA4335", "#FF9900", "#F7931A", "#1DB954", "#4285F4",
-  "#0078D4", "#5865F2", "#E50914", "#24292F", "#0A66C2",
-  "#E4405F", "#25D366", "#0088CC", "#635BFF", "#78909C",
-  "#2E7D32", "#E91E63", "#00BCD4", "#FF4500", "#4A154B",
+  { value: "#EA4335", label: "Red" },
+  { value: "#FF9900", label: "Orange" },
+  { value: "#F7931A", label: "Amber" },
+  { value: "#1DB954", label: "Green" },
+  { value: "#4285F4", label: "Blue" },
+  { value: "#0078D4", label: "Sky Blue" },
+  { value: "#5865F2", label: "Indigo" },
+  { value: "#E50914", label: "Crimson" },
+  { value: "#24292F", label: "Charcoal" },
+  { value: "#0A66C2", label: "Navy" },
+  { value: "#E4405F", label: "Pink" },
+  { value: "#25D366", label: "Mint" },
+  { value: "#0088CC", label: "Cyan" },
+  { value: "#635BFF", label: "Violet" },
+  { value: "#78909C", label: "Slate" },
+  { value: "#2E7D32", label: "Forest" },
+  { value: "#E91E63", label: "Rose" },
+  { value: "#00BCD4", label: "Teal" },
+  { value: "#FF4500", label: "Coral" },
+  { value: "#4A154B", label: "Plum" },
 ];
 
 export function ServiceTypeModal({ open, onOpenChange, serviceType }: ServiceTypeModalProps) {
@@ -129,54 +146,39 @@ export function ServiceTypeModal({ open, onOpenChange, serviceType }: ServiceTyp
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-[13px] font-semibold">Icon</Label>
-            <div className="grid grid-cols-8 gap-1.5 border rounded-xl p-2.5 bg-muted/30 max-h-40 overflow-y-auto">
-              {AVAILABLE_ICONS.map((iconName) => {
-                const Icon = getIconComponent(iconName);
-                return (
-                  <button
-                    key={iconName}
-                    type="button"
-                    title={iconName}
-                    onClick={() => setIcon(iconName)}
-                    className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
-                      icon === iconName
-                        ? "bg-foreground text-background"
-                        : "hover:bg-accent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                  </button>
-                );
-              })}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-[13px] font-semibold">Icon</Label>
+              <Combobox
+                options={AVAILABLE_ICONS.map((iconName) => {
+                  const Icon = getIconComponent(iconName);
+                  return {
+                    value: iconName,
+                    label: iconName,
+                    icon: <Icon className="w-3.5 h-3.5" />,
+                  };
+                })}
+                value={icon}
+                onValueChange={(val) => setIcon(val || "Globe")}
+                placeholder="Select icon"
+                searchPlaceholder="Search icons..."
+                emptyText="No match."
+              />
             </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-[13px] font-semibold">Color</Label>
-            <div className="flex items-center gap-2.5">
-              <div className="flex flex-wrap gap-1.5">
-                {PRESET_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setColor(c)}
-                    className={`w-6 h-6 rounded-md border-2 transition-all ${
-                      color === c ? "border-foreground scale-110" : "border-transparent hover:border-foreground/30"
-                    }`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
-              <div className="flex items-center gap-1.5 ml-auto">
-                <input
-                  type="color"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  className="w-8 h-8 rounded cursor-pointer border"
-                />
-              </div>
+            <div className="space-y-1.5">
+              <Label className="text-[13px] font-semibold">Color</Label>
+              <Combobox
+                options={PRESET_COLORS.map((c) => ({
+                  value: c.value,
+                  label: c.label,
+                  icon: <div className="w-3.5 h-3.5 rounded-sm shrink-0" style={{ backgroundColor: c.value }} />,
+                }))}
+                value={color}
+                onValueChange={(val) => setColor(val || "#78909C")}
+                placeholder="Select color"
+                searchPlaceholder="Search colors..."
+                emptyText="No match."
+              />
             </div>
           </div>
 

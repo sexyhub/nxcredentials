@@ -7,6 +7,7 @@ import {
   getListCredentialsQueryKey,
   getGetStatsQueryKey,
   getListSpacesQueryKey,
+  getListVaultsQueryKey,
   type Credential
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -69,6 +70,7 @@ export function CredentialModal({ open, onOpenChange, credential, defaultSpaceId
         queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getListSpacesQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
         toast({ title: "Credential added" });
         onOpenChange(false);
       },
@@ -81,6 +83,7 @@ export function CredentialModal({ open, onOpenChange, credential, defaultSpaceId
         queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetStatsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getListSpacesQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getListVaultsQueryKey() });
         toast({ title: "Credential updated" });
         onOpenChange(false);
       },

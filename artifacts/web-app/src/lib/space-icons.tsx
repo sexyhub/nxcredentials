@@ -42,7 +42,7 @@ export const SPACE_ICONS: SpaceIcon[] = [
   { key: "wifi", icon: Wifi },
 ];
 
-const LEGACY_KEY_MAP: Record<string, string> = {
+export const LEGACY_KEY_MAP: Record<string, string> = {
   "Mail": "mail", "Shield": "shield", "Cloud": "cloud", "Code2": "code",
   "Tv": "tv", "Music": "music", "MessageCircle": "message", "Camera": "camera",
   "Briefcase": "briefcase", "Hash": "hash", "ShoppingCart": "cart",

@@ -32,7 +32,7 @@ import {
   Plus, FolderOpen, Loader2, Eye, EyeOff, Pencil, Trash2, Key, ArrowLeft, Tag
 } from "lucide-react";
 import { getServiceType, getIconComponent, SERVICE_TYPES } from "@/lib/service-types";
-import { getSpaceIcon } from "@/lib/space-icons";
+import { getSpaceIcon, LEGACY_KEY_MAP } from "@/lib/space-icons";
 import { AppearancePicker } from "@/components/appearance-picker";
 
 const PAGE_SIZE = 16;
@@ -128,7 +128,8 @@ export default function Spaces() {
     const newType = val || "";
     if (newType) {
       const st = getServiceType(newType);
-      setSpaceForm((prev) => ({ ...prev, defaultType: newType, color: st.color }));
+      const spaceIconKey = LEGACY_KEY_MAP[st.icon] || "folder";
+      setSpaceForm((prev) => ({ ...prev, defaultType: newType, color: st.color, icon: spaceIconKey }));
     } else {
       setSpaceForm((prev) => ({ ...prev, defaultType: newType }));
     }

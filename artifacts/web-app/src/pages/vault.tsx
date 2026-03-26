@@ -234,6 +234,13 @@ export default function Vault() {
   }, []);
 
   useEffect(() => {
+    if (selectedVault && !isUnlocked) {
+      setSelectedVault(null);
+      setRevealedIds(new Set());
+    }
+  }, [isUnlocked]);
+
+  useEffect(() => {
     if (!selectedVault?.id || !isUnlocked) return;
 
     const vaultId = selectedVault.id;
@@ -622,9 +629,27 @@ export default function Vault() {
               <h3 className="text-[16px] font-bold">New vault</h3>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-[13px]">Name</Label>
-              <Input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} required placeholder="e.g. Banking, Top Secret" className="h-10" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-[13px]">Name</Label>
+                <Input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} required placeholder="e.g. Banking, Top Secret" className="h-10" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] flex items-center gap-1.5"><Timer className="w-3.5 h-3.5 text-muted-foreground" />Auto-lock</Label>
+                <Select
+                  value={String(createForm.autoLockSeconds)}
+                  onValueChange={(v) => setCreateForm({ ...createForm, autoLockSeconds: parseInt(v, 10) })}
+                >
+                  <SelectTrigger className="h-10 text-[13px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AUTO_LOCK_OPTIONS.map(o => (
+                      <SelectItem key={o.value} value={String(o.value)} className="text-[13px]">{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <AppearancePicker
@@ -642,24 +667,6 @@ export default function Vault() {
             <div className="space-y-1.5">
               <Label className="text-[13px]">Password</Label>
               <Input type="password" required minLength={6} value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })} placeholder="At least 6 characters" className="h-10" />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-[13px] flex items-center gap-1.5"><Timer className="w-3.5 h-3.5 text-muted-foreground" />Auto-lock</Label>
-              <Select
-                value={String(createForm.autoLockSeconds)}
-                onValueChange={(v) => setCreateForm({ ...createForm, autoLockSeconds: parseInt(v, 10) })}
-              >
-                <SelectTrigger className="h-10 text-[13px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {AUTO_LOCK_OPTIONS.map(o => (
-                    <SelectItem key={o.value} value={String(o.value)} className="text-[13px]">{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-[11px] text-muted-foreground">Automatically lock after this period of inactivity.</p>
             </div>
 
             <DialogFooter className="pt-2 gap-2">
