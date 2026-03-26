@@ -6,6 +6,7 @@ export const settingsTable = pgTable("settings", {
   id: serial("id").primaryKey(),
   registrationEnabled: boolean("registration_enabled").notNull().default(true),
   siteTitle: text("site_title").notNull().default("Credential Vault"),
+  siteDescription: text("site_description").notNull().default(""),
   siteLogo: text("site_logo").notNull().default(""),
   siteFavicon: text("site_favicon").notNull().default(""),
 });

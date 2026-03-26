@@ -1,13 +1,16 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { useGetSettings } from "@workspace/api-client-react";
+import { useGetSettings, useGetBranding, getGetBrandingQueryKey } from "@workspace/api-client-react";
 import { Tag, Settings, LogOut, Loader2, LayoutDashboard, Menu, X, ChevronDown, Shield, FolderOpen } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 interface LayoutProps {
   children: ReactNode;
 }
+
+const DEFAULT_TITLE = "Credential Vault";
+const DEFAULT_LOGO_INITIALS = "CV";
 
 export function Layout({ children }: LayoutProps) {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
@@ -16,6 +19,27 @@ export function Layout({ children }: LayoutProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { data: settings } = useGetSettings({ query: { retry: false, enabled: isAuthenticated } });
+  const { data: branding } = useGetBranding();
+
+  const siteTitle = settings?.siteTitle || branding?.siteTitle || DEFAULT_TITLE;
+  const siteLogo = settings?.siteLogo || branding?.siteLogo || "";
+  const siteFavicon = settings?.siteFavicon || branding?.siteFavicon || "";
+
+  useEffect(() => {
+    document.title = siteTitle;
+  }, [siteTitle]);
+
+  useEffect(() => {
+    if (siteFavicon) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
+      }
+      link.href = siteFavicon;
+    }
+  }, [siteFavicon]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -45,7 +69,12 @@ export function Layout({ children }: LayoutProps) {
     { label: "Settings", href: "/settings", icon: Settings },
   ];
 
-  const siteTitle = settings?.siteTitle || "Credential Vault";
+  const logoInitials = siteTitle
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase() || DEFAULT_LOGO_INITIALS;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -54,11 +83,11 @@ export function Layout({ children }: LayoutProps) {
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-8">
               <Link href="/" className="flex items-center gap-2.5">
-                {settings?.siteLogo ? (
-                  <img src={settings.siteLogo} alt="" className="w-6 h-6 object-contain" />
+                {siteLogo ? (
+                  <img src={siteLogo} alt="" className="w-6 h-6 object-contain" />
                 ) : (
                   <div className="w-8 h-8 bg-foreground text-background rounded-lg flex items-center justify-center text-xs font-extrabold">
-                    CV
+                    {logoInitials}
                   </div>
                 )}
                 <span className="text-[15px] font-bold hidden sm:inline">{siteTitle}</span>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
-import { useRegister, useGetRegistrationStatus, getGetMeQueryKey } from "@workspace/api-client-react";
+import { useRegister, useGetRegistrationStatus, useGetBranding, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { ShieldAlert } from "lucide-react";
@@ -16,6 +16,17 @@ export default function Register() {
   const queryClient = useQueryClient();
 
   const { data: regStatus, isLoading } = useGetRegistrationStatus();
+  const { data: branding } = useGetBranding();
+
+  const siteTitle = branding?.siteTitle || "Credential Vault";
+  const siteLogo = branding?.siteLogo || "";
+
+  const logoInitials = siteTitle
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase() || "CV";
 
   const registerMutation = useRegister({
     mutation: {
@@ -60,9 +71,13 @@ export default function Register() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-background">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-foreground text-background rounded-2xl text-xl font-extrabold mb-5">
-            CV
-          </div>
+          {siteLogo ? (
+            <img src={siteLogo} alt="" className="w-14 h-14 object-contain mx-auto mb-5 rounded-2xl" />
+          ) : (
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-foreground text-background rounded-2xl text-xl font-extrabold mb-5">
+              {logoInitials}
+            </div>
+          )}
           <h1 className="text-3xl font-extrabold tracking-tight">Create account</h1>
           <p className="text-muted-foreground mt-2 text-[15px]">Start managing your credentials securely</p>
         </div>

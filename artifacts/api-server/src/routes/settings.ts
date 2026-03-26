@@ -6,6 +6,7 @@ import {
   UpdateSettingsBody,
   UpdateSettingsResponse,
   GetRegistrationStatusResponse,
+  GetBrandingResponse,
 } from "@workspace/api-zod";
 import { requireAuth } from "../middlewares/auth";
 import { getOrCreateSettings } from "../lib/settings";
@@ -15,6 +16,18 @@ const router: IRouter = Router();
 router.get("/settings/registration-status", async (_req, res): Promise<void> => {
   const settings = await getOrCreateSettings();
   res.json(GetRegistrationStatusResponse.parse({ enabled: settings.registrationEnabled }));
+});
+
+router.get("/settings/branding", async (_req, res): Promise<void> => {
+  const settings = await getOrCreateSettings();
+  res.json(
+    GetBrandingResponse.parse({
+      siteTitle: settings.siteTitle,
+      siteDescription: settings.siteDescription,
+      siteLogo: settings.siteLogo,
+      siteFavicon: settings.siteFavicon,
+    })
+  );
 });
 
 router.get("/settings", requireAuth, async (req, res): Promise<void> => {
@@ -33,6 +46,7 @@ router.get("/settings", requireAuth, async (req, res): Promise<void> => {
     GetSettingsResponse.parse({
       registrationEnabled: settings.registrationEnabled,
       siteTitle: settings.siteTitle,
+      siteDescription: settings.siteDescription,
       siteLogo: settings.siteLogo,
       siteFavicon: settings.siteFavicon,
     })
@@ -63,6 +77,8 @@ router.patch("/settings", requireAuth, async (req, res): Promise<void> => {
     updateData.registrationEnabled = parsed.data.registrationEnabled;
   if (parsed.data.siteTitle !== undefined)
     updateData.siteTitle = parsed.data.siteTitle;
+  if (parsed.data.siteDescription !== undefined)
+    updateData.siteDescription = parsed.data.siteDescription;
   if (parsed.data.siteLogo !== undefined)
     updateData.siteLogo = parsed.data.siteLogo;
   if (parsed.data.siteFavicon !== undefined)
@@ -78,6 +94,7 @@ router.patch("/settings", requireAuth, async (req, res): Promise<void> => {
     UpdateSettingsResponse.parse({
       registrationEnabled: updated.registrationEnabled,
       siteTitle: updated.siteTitle,
+      siteDescription: updated.siteDescription,
       siteLogo: updated.siteLogo,
       siteFavicon: updated.siteFavicon,
     })

@@ -4,6 +4,7 @@ import {
   useGetSettings,
   useUpdateSettings,
   getGetSettingsQueryKey,
+  getGetBrandingQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +28,7 @@ export default function Settings() {
 
   const [formData, setFormData] = useState({
     siteTitle: "",
+    siteDescription: "",
     siteLogo: "",
     siteFavicon: "",
     registrationEnabled: false,
@@ -36,6 +38,7 @@ export default function Settings() {
     if (settings) {
       setFormData({
         siteTitle: settings.siteTitle,
+        siteDescription: settings.siteDescription,
         siteLogo: settings.siteLogo,
         siteFavicon: settings.siteFavicon,
         registrationEnabled: settings.registrationEnabled,
@@ -47,6 +50,7 @@ export default function Settings() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetSettingsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetBrandingQueryKey() });
         toast({ title: "Settings saved" });
       },
       onError: (err: any) => {
@@ -129,7 +133,18 @@ export default function Settings() {
                       className="h-10"
                       placeholder="Credential Vault"
                     />
-                    <p className="text-[11px] text-muted-foreground">Shown in the header and browser tab.</p>
+                    <p className="text-[11px] text-muted-foreground">Shown in the header, browser tab, and login page.</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="siteDescription" className="text-[13px]">Site description</Label>
+                    <Input
+                      id="siteDescription"
+                      value={formData.siteDescription}
+                      onChange={(e) => setFormData({ ...formData, siteDescription: e.target.value })}
+                      className="h-10"
+                      placeholder="Access your credential vault"
+                    />
+                    <p className="text-[11px] text-muted-foreground">Subtitle shown on the login page beneath the heading.</p>
                   </div>
                 </div>
               </div>
@@ -172,7 +187,7 @@ export default function Settings() {
                       placeholder="https://example.com/logo.png"
                       className="h-10"
                     />
-                    <p className="text-[11px] text-muted-foreground">Custom logo shown in the sidebar header.</p>
+                    <p className="text-[11px] text-muted-foreground">Custom logo shown in the header and login page.</p>
                     {formData.siteLogo && (
                       <div className="flex items-center gap-3 px-3 py-2.5 border rounded-lg bg-accent/40">
                         <img

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
-import { useLogin, useGetRegistrationStatus, getGetMeQueryKey } from "@workspace/api-client-react";
+import { useLogin, useGetRegistrationStatus, useGetBranding, getGetMeQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,18 @@ export default function Login() {
   const queryClient = useQueryClient();
 
   const { data: regStatus } = useGetRegistrationStatus();
+  const { data: branding } = useGetBranding();
+
+  const siteTitle = branding?.siteTitle || "Credential Vault";
+  const siteDescription = branding?.siteDescription || "";
+  const siteLogo = branding?.siteLogo || "";
+
+  const logoInitials = siteTitle
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase() || "CV";
 
   const loginMutation = useLogin({
     mutation: {
@@ -43,11 +55,17 @@ export default function Login() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-background">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-foreground text-background rounded-2xl text-xl font-extrabold mb-5">
-            CV
-          </div>
+          {siteLogo ? (
+            <img src={siteLogo} alt="" className="w-14 h-14 object-contain mx-auto mb-5 rounded-2xl" />
+          ) : (
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-foreground text-background rounded-2xl text-xl font-extrabold mb-5">
+              {logoInitials}
+            </div>
+          )}
           <h1 className="text-3xl font-extrabold tracking-tight">Sign in</h1>
-          <p className="text-muted-foreground mt-2 text-[15px]">Access your credential vault</p>
+          <p className="text-muted-foreground mt-2 text-[15px]">
+            {siteDescription || `Access your ${siteTitle.toLowerCase()}`}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -104,7 +122,7 @@ export default function Login() {
       </div>
 
       <div className="absolute bottom-6 text-[11px] text-muted-foreground/50 font-mono">
-        Credential Vault — Self-hosted password manager
+        {siteTitle} — Self-hosted password manager
       </div>
     </div>
   );

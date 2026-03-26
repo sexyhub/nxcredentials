@@ -218,6 +218,7 @@ export interface UpdateServiceTypeBody {
 export interface Settings {
   registrationEnabled: boolean;
   siteTitle: string;
+  siteDescription: string;
   siteLogo: string;
   siteFavicon: string;
 }
@@ -225,8 +226,16 @@ export interface Settings {
 export interface UpdateSettingsBody {
   registrationEnabled?: boolean;
   siteTitle?: string;
+  siteDescription?: string;
   siteLogo?: string;
   siteFavicon?: string;
+}
+
+export interface Branding {
+  siteTitle: string;
+  siteDescription: string;
+  siteLogo: string;
+  siteFavicon: string;
 }
 
 export interface RegistrationStatus {

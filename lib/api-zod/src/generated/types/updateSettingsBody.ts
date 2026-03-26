@@ -9,6 +9,7 @@
 export interface UpdateSettingsBody {
   registrationEnabled?: boolean;
   siteTitle?: string;
+  siteDescription?: string;
   siteLogo?: string;
   siteFavicon?: string;
 }

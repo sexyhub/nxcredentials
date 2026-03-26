@@ -27,6 +27,7 @@ import type {
   CreateVaultBody,
   CreateServiceTypeBody,
   Credential,
+  Branding,
   ErrorResponse,
   HealthStatus,
   ListCredentialsParams,
@@ -1754,6 +1755,77 @@ export function useGetRegistrationStatus<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetRegistrationStatusQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get public branding info (no auth required)
+ */
+export const getGetBrandingUrl = () => {
+  return `/api/settings/branding`;
+};
+
+export const getBranding = async (
+  options?: RequestInit,
+): Promise<Branding> => {
+  return customFetch<Branding>(getGetBrandingUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetBrandingQueryKey = () => {
+  return [`/api/settings/branding`] as const;
+};
+
+export const getGetBrandingQueryOptions = <
+  TData = Awaited<ReturnType<typeof getBranding>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getBranding>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetBrandingQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getBranding>>
+  > = ({ signal }) => getBranding({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getBranding>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetBrandingQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getBranding>>
+>;
+export type GetBrandingQueryError = ErrorType<unknown>;
+
+export function useGetBranding<
+  TData = Awaited<ReturnType<typeof getBranding>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getBranding>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetBrandingQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -46,7 +46,7 @@ artifacts-monorepo/
 - **Credential Spaces**: Folder-like groupings with optional default type. Space tabs at top of credentials page for filtering. Create/delete spaces
 - **Unified Manage page**: Tags + Service Types in one tabbed page — create/edit/delete tags, browse built-in service types
 - **Multi-Vault System**: Multiple independent secure vaults, each with own name/password/PIN/color. Per-vault unlock with 15-min session expiry. Vault detail page shows credentials inside. Create/edit/delete vaults. Change vault password/PIN per-vault
-- **Admin Settings**: Toggle registration on/off, set site title, logo URL, favicon URL
+- **Admin Settings**: Toggle registration on/off, set site title, site description, logo URL, favicon URL. All branding settings apply dynamically across login/register pages, header, browser tab title, and favicon
 - **Design**: Clean neutral light theme (warm stone tones), Bricolage Grotesque font, top header navigation (no sidebar), no shadows/gradients. Uses shadcn/ui components
 
 ## Database Schema
@@ -56,7 +56,7 @@ artifacts-monorepo/
 - **credentials**: id, title, email, password, userId, tagId, vaultId, spaceId, createdAt, updatedAt
 - **vaults**: id, name, passwordHash, pinHash, color, icon, userId, createdAt
 - **spaces**: id, name, defaultType, color, icon, userId, createdAt
-- **settings**: id, registrationEnabled, siteTitle, siteLogo, siteFavicon
+- **settings**: id, registrationEnabled, siteTitle, siteDescription, siteLogo, siteFavicon
 
 ## API Endpoints
 
@@ -76,6 +76,7 @@ All endpoints under `/api`:
 - `GET /stats` — Dashboard statistics (totalCredentials, totalTags, totalSpaces, totalVaults, vaultCredentials, etc.)
 - `GET /settings` — Get app settings (admin only)
 - `PATCH /settings` — Update settings (admin only)
+- `GET /settings/branding` — Public branding info (title, description, logo, favicon)
 - `GET /settings/registration-status` — Public registration check
 - `GET /vaults` — List all vaults for current user
 - `POST /vaults` — Create a new vault (name, password, PIN, color, icon)

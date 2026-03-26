@@ -266,6 +266,7 @@ export const GetStatsResponse = zod.object({
 export const GetSettingsResponse = zod.object({
   registrationEnabled: zod.boolean(),
   siteTitle: zod.string(),
+  siteDescription: zod.string(),
   siteLogo: zod.string(),
   siteFavicon: zod.string(),
 });
@@ -276,6 +277,7 @@ export const GetSettingsResponse = zod.object({
 export const UpdateSettingsBody = zod.object({
   registrationEnabled: zod.boolean().optional(),
   siteTitle: zod.string().optional(),
+  siteDescription: zod.string().optional(),
   siteLogo: zod.string().optional(),
   siteFavicon: zod.string().optional(),
 });
@@ -283,6 +285,17 @@ export const UpdateSettingsBody = zod.object({
 export const UpdateSettingsResponse = zod.object({
   registrationEnabled: zod.boolean(),
   siteTitle: zod.string(),
+  siteDescription: zod.string(),
+  siteLogo: zod.string(),
+  siteFavicon: zod.string(),
+});
+
+/**
+ * @summary Get public branding info (no auth required)
+ */
+export const GetBrandingResponse = zod.object({
+  siteTitle: zod.string(),
+  siteDescription: zod.string(),
   siteLogo: zod.string(),
   siteFavicon: zod.string(),
 });
