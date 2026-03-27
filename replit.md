@@ -10,30 +10,45 @@ A credential/password manager web application built with a pnpm workspace monore
 - **Node.js version**: 24
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
-- **API framework**: Express 5
+- **Framework**: Next.js 15 (App Router + Turbopack) — fullstack (API routes + pages)
 - **Database**: PostgreSQL + Drizzle ORM
-- **Frontend**: React + Vite + Tailwind CSS v4
+- **Frontend**: React + Tailwind CSS v4 + shadcn/ui components
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Auth**: bcrypt + express-session (cookie-based)
-- **Build**: esbuild (CJS bundle)
+- **Auth**: bcrypt + iron-session (cookie-based)
+- **API Client**: Custom React Query hooks (hooks/use-api.ts)
+- **Legacy (deprecated)**: Express API server (artifacts/api-server), React+Vite frontend (artifacts/web-app)
 
 ## Structure
 
 ```text
 artifacts-monorepo/
 ├── artifacts/
-│   ├── api-server/         # Express API server (auth, CRUD, settings, vaults, spaces)
-│   └── web-app/            # React + Vite frontend
+│   ├── next-app/              # Next.js fullstack app (primary)
+│   │   ├── app/               # Next.js App Router pages + API routes
+│   │   │   ├── api/           # API route handlers (auth, credentials, tags, etc.)
+│   │   │   ├── login/         # Login page
+│   │   │   ├── register/      # Register page
+│   │   │   ├── credentials/   # Credentials page
+│   │   │   ├── vault/[id]/    # Vault detail page
+│   │   │   ├── spaces/        # Spaces page
+│   │   │   ├── manage/        # Tags & service types management
+│   │   │   ├── settings/      # Admin settings
+│   │   │   ├── layout.tsx     # Root layout (Inter font, dark class, providers)
+│   │   │   ├── globals.css    # Tailwind v4 theme + CSS variables
+│   │   │   └── page.tsx       # Dashboard page
+│   │   ├── components/        # UI components (shadcn + custom)
+│   │   ├── hooks/             # React Query hooks (use-api.ts)
+│   │   └── lib/               # Session config, utilities
+│   ├── api-server/            # Legacy Express API server
+│   └── web-app/               # Legacy React + Vite frontend
 ├── lib/
-│   ├── api-spec/           # OpenAPI spec + Orval codegen config
-│   ├── api-client-react/   # Generated React Query hooks
-│   ├── api-zod/            # Generated Zod schemas from OpenAPI
-│   └── db/                 # Drizzle ORM schema + DB connection
-├── scripts/                # Utility scripts
+│   ├── db/                    # Drizzle ORM schema + DB connection
+│   ├── api-spec/              # OpenAPI spec (legacy)
+│   ├── api-client-react/      # Generated React Query hooks (legacy)
+│   └── api-zod/               # Generated Zod schemas (legacy)
+├── scripts/
 ├── pnpm-workspace.yaml
 ├── tsconfig.base.json
-├── tsconfig.json
 └── package.json
 ```
 
@@ -47,7 +62,7 @@ artifacts-monorepo/
 - **Unified Manage page**: Tags + Service Types in one tabbed page — create/edit/delete tags, browse built-in service types
 - **Multi-Vault System**: Multiple independent secure vaults, each with own name/password/PIN/color. Per-vault unlock with 15-min session expiry. Vault detail page shows credentials inside. Create/edit/delete vaults. Change vault password/PIN per-vault
 - **Admin Settings**: Toggle registration on/off, set site title, site description, logo URL, favicon URL. All branding settings apply dynamically across login/register pages, header, browser tab title, and favicon
-- **Design**: Clean neutral light theme (warm stone tones), Bricolage Grotesque font, top header navigation (no sidebar), no shadows/gradients. Uses shadcn/ui components
+- **Design**: Clean neutral light theme (warm stone tones), Inter font, top header navigation (no sidebar), no shadows/gradients. Uses shadcn/ui components
 
 ## Database Schema
 
@@ -60,7 +75,7 @@ artifacts-monorepo/
 
 ## API Endpoints
 
-All endpoints under `/api`:
+All endpoints under `/api` (served by Next.js route handlers in `artifacts/next-app/app/api/`):
 - `POST /auth/register` — Register (first user becomes admin)
 - `POST /auth/login` — Login with optional rememberMe
 - `GET /auth/me` — Get current user
@@ -73,29 +88,27 @@ All endpoints under `/api`:
 - `POST /tags` — Create tag
 - `PATCH /tags/:id` — Update tag
 - `DELETE /tags/:id` — Delete tag
-- `GET /stats` — Dashboard statistics (totalCredentials, totalTags, totalSpaces, totalVaults, vaultCredentials, etc.)
+- `GET /stats` — Dashboard statistics
 - `GET /settings` — Get app settings (admin only)
 - `PATCH /settings` — Update settings (admin only)
-- `GET /settings/branding` — Public branding info (title, description, logo, favicon)
+- `GET /settings/branding` — Public branding info
 - `GET /settings/registration-status` — Public registration check
 - `GET /vaults` — List all vaults for current user
-- `POST /vaults` — Create a new vault (name, password, PIN, color, icon)
-- `PATCH /vaults/:id` — Update vault (name, color, icon)
+- `POST /vaults` — Create a new vault
+- `PATCH /vaults/:id` — Update vault
 - `DELETE /vaults/:id` — Delete vault and all its credentials
-- `POST /vaults/:id/verify` — Unlock vault (password or PIN, sets 15-min server session)
-- `POST /vaults/:id/lock` — Lock vault (clears session for that vault)
+- `POST /vaults/:id/verify` — Unlock vault (15-min session)
+- `POST /vaults/:id/lock` — Lock vault
 - `POST /vaults/:id/change-password` — Change vault password
 - `POST /vaults/:id/change-pin` — Change vault PIN
 - `GET /spaces` — List all spaces for current user
-- `POST /spaces` — Create a space (name, optional defaultType/color/icon)
+- `POST /spaces` — Create a space
 - `PATCH /spaces/:id` — Update space
-- `DELETE /spaces/:id` — Delete space (credentials become unassigned)
+- `DELETE /spaces/:id` — Delete space
 
 ## Dev Commands
 
-- `pnpm --filter @workspace/api-server run dev` — Start API server
-- `pnpm --filter @workspace/web-app run dev` — Start frontend
-- `pnpm --filter @workspace/api-spec run codegen` — Regenerate API types
+- `pnpm --filter @workspace/next-app run dev` — Start Next.js fullstack app (primary)
 - `pnpm --filter @workspace/db run push` — Push DB schema changes
 - `pnpm run typecheck` — Full typecheck
 
@@ -103,10 +116,12 @@ All endpoints under `/api`:
 
 - Nav active indicator: short centered 2px×12px left vertical bar, bolder text + thicker icon stroke; text nudged `translate-y-[0.4px]` for optical alignment
 - `overflow-y: scroll` on `html` so scrollbar always reserves space
-- Service types (`SERVICE_TYPES`) hardcoded in `artifacts/web-app/src/lib/service-types.tsx` — the `title` field on credentials stores the type key string
+- Service types (`SERVICE_TYPES`) hardcoded in `artifacts/next-app/components/service-types.tsx` — the `title` field on credentials stores the type key string
 - Credential `title` field stores service type key (e.g. "gmail", "github")
-- Per-vault session tracking: `req.session.unlockedVaults` is `Record<number, number>` (vaultId → timestamp); `isVaultUnlocked(req, vaultId)` checks expiry
+- Per-vault session tracking: iron-session stores `unlockedVaults` as `Record<number, number>` (vaultId → timestamp); vault routes check 15-min expiry
 - Vault protection is enforced server-side: vault credential email/password are masked ("••••••••") in API responses unless vault session is active (15-min expiry after verify)
 - Nav items: Dashboard, Spaces, Vaults, Manage (/manage), Settings
 - Manage page route: `/manage` (was `/categories`)
 - User dislikes: bottom border/underline, dot indicator, dark pill background for nav active state
+- Next.js app uses basePath from BASE_PATH env var for path-based routing
+- API hooks use NEXT_PUBLIC_BASE_PATH env var to prefix fetch URLs
