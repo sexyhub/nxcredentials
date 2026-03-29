@@ -1,6 +1,0 @@
-{
-  "/api/auth/me/route": "app/api/auth/me/route.js",
-  "/api/settings/branding/route": "app/api/settings/branding/route.js",
-  "/api/stats/route": "app/api/stats/route.js",
-  "/page": "app/page.js"
-}
