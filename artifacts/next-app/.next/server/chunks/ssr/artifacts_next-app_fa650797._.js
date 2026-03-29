@@ -94,7 +94,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f40$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f2e$pnpm$2f40$tanstack$2b$react$2d$query$40$5$2e$90$2e$21_react$40$19$2e$1$2e$0$2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useMutation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/.pnpm/@tanstack+react-query@5.90.21_react@19.1.0/node_modules/@tanstack/react-query/build/modern/useMutation.js [app-ssr] (ecmascript)");
 "use client";
 ;
-const BASE_PATH = ("TURBOPACK compile-time value", "/next-app") || "";
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 async function apiFetch(url, options) {
     const res = await fetch(`${BASE_PATH}${url}`, {
         ...options,
