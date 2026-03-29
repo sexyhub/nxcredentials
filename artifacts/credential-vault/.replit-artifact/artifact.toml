@@ -1,0 +1,30 @@
+kind = "web"
+previewPath = "/"
+title = "Credential Vault"
+version = "1.0.0"
+id = "artifacts/credential-vault"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20769
+
+[services.development]
+run = "pnpm run dev"
+
+[services.production]
+build = [ "pnpm", "run", "build" ]
+publicDir = "artifacts/credential-vault/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20769"
