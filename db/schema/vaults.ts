@@ -1,7 +1,7 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
-import { usersTable } from "./users";
+import { user } from "./auth";
 
 export const vaultsTable = pgTable("vaults", {
   id: serial("id").primaryKey(),
@@ -10,7 +10,7 @@ export const vaultsTable = pgTable("vaults", {
   pinHash: text("pin_hash").notNull(),
   color: text("color").notNull().default("#6366f1"),
   icon: text("icon").notNull().default("shield"),
-  userId: integer("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

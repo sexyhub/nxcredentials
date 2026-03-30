@@ -2,7 +2,7 @@
 
 ## Overview
 
-A credential/password manager web application built with Next.js. Features user authentication with "remember me", admin settings, CRUD for credentials and tags, dashboard statistics, multiple independent secure vaults (each with own password/PIN/color), and credential spaces (folder-like groupings with optional default type).
+A credential/password manager web application built with Next.js. Features user authentication with Better Auth, admin settings, CRUD for credentials and tags, dashboard statistics, multiple independent secure vaults (each with own password/PIN/color), and credential spaces (folder-like groupings with optional default type).
 
 ## Stack
 
@@ -10,10 +10,10 @@ A credential/password manager web application built with Next.js. Features user 
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
 - **Framework**: Next.js 15 (App Router + Turbopack) — fullstack (API routes + pages)
-- **Database**: PostgreSQL + Drizzle ORM
+- **Database**: Neon PostgreSQL (serverless) + Drizzle ORM
+- **Auth**: Better Auth (email/password + username plugin, session cookies)
 - **Frontend**: React 19 + Tailwind CSS v4 + shadcn/ui components
 - **Validation**: Zod, `drizzle-zod`
-- **Auth**: bcrypt + iron-session (cookie-based)
 - **API Client**: Custom React Query hooks (hooks/use-api.ts)
 
 ## Structure
@@ -22,24 +22,47 @@ A credential/password manager web application built with Next.js. Features user 
 credential-vault/
 ├── app/                    # Next.js App Router pages + API routes
 │   ├── api/                # API route handlers (auth, credentials, tags, etc.)
-│   ├── (pages)/            # UI pages
-│   │   ├── login/          # Login page
-│   │   ├── register/       # Register page
-│   │   ├── credentials/    # Credentials page
-│   │   ├── vault/[id]/     # Vault detail page
-│   │   ├── spaces/         # Spaces page
-│   │   ├── manage/         # Tags & service types management
-│   │   └── settings/       # Admin settings
+│   │   ├── auth/           # Auth routes (Better Auth catch-all + custom register/login/me/logout)
+│   │   ├── credentials/    # Credentials CRUD
+│   │   ├── tags/           # Tags CRUD
+│   │   ├── vaults/         # Vaults CRUD + verify/lock/change-password/change-pin
+│   │   ├── spaces/         # Spaces CRUD
+│   │   ├── settings/       # Settings + branding + registration-status
+│   │   ├── stats/          # Dashboard statistics
+│   │   └── service-types/  # Service types CRUD
+│   ├── login/              # Login page
+│   ├── register/           # Register page
+│   ├── credentials/        # Credentials page
+│   ├── vault/              # Vault detail page
+│   ├── spaces/             # Spaces page
+│   ├── manage/             # Tags & service types management
+│   ├── settings/           # Admin settings
 │   ├── layout.tsx          # Root layout
 │   ├── globals.css         # Tailwind v4 theme + CSS variables
 │   └── page.tsx            # Dashboard page
 ├── components/             # UI components (shadcn + custom)
-├── hooks/                  # React Query hooks (use-api.ts)
-├── lib/                    # Session config, utilities
+├── hooks/                  # React Query hooks (use-api.ts, use-auth.ts)
+├── lib/                    # Auth config, utilities
+│   ├── auth.ts             # Better Auth server config (drizzle adapter, username plugin)
+│   ├── auth-client.ts      # Better Auth React client
+│   ├── auth-helpers.ts     # Server-side session helper (getAuthSession)
+│   ├── crypto.ts           # Password hashing for vaults (scrypt-based)
+│   ├── vault-state.ts      # Vault unlock state (signed cookie-based)
+│   ├── vault-helpers.ts    # Vault unlock time checks
+│   └── settings.ts         # Settings helper
 ├── db/                     # Drizzle ORM schema + DB connection
-│   ├── index.ts            # DB pool + drizzle instance
-│   ├── drizzle.config.ts   # Drizzle Kit config
+│   ├── index.ts            # Neon HTTP driver + drizzle instance
+│   ├── drizzle.config.ts   # Drizzle Kit config (uses NEON_DATABASE_URL)
 │   └── schema/             # Table definitions
+│       ├── auth.ts          # Better Auth tables (user, session, account, verification)
+│       ├── users.ts         # Re-exports user table as usersTable
+│       ├── credentials.ts   # Credentials table
+│       ├── tags.ts          # Tags table
+│       ├── vaults.ts        # Vaults table
+│       ├── spaces.ts        # Spaces table
+│       ├── settings.ts      # Settings table
+│       ├── service-types.ts # Service types table
+│       └── index.ts         # Schema barrel exports
 ├── public/                 # Static assets
 ├── next.config.ts          # Next.js configuration
 ├── postcss.config.mjs      # PostCSS (Tailwind)
@@ -47,63 +70,46 @@ credential-vault/
 └── package.json            # Dependencies + scripts
 ```
 
+## Auth System (Better Auth)
+
+- **Library**: better-auth with username plugin
+- **Session**: Cookie-based (`better-auth.session_token`), 7-day expiry
+- **User table**: Better Auth managed (id=text UUID, name, email, username, isAdmin, etc.)
+- **Registration**: Custom `/api/auth/register` route checks settings + first-user-is-admin logic, then calls Better Auth signUp internally
+- **Login**: Custom `/api/auth/login` route calls Better Auth signInUsername
+- **Session check**: `getAuthSession()` helper in `lib/auth-helpers.ts` used by all protected API routes
+- **Vault passwords**: Hashed with Node.js crypto.scrypt (no bcrypt dependency)
+- **Vault unlock state**: Stored in signed httpOnly cookie (`vault_unlock_state`)
+
+## Environment Variables
+
+- `NEON_DATABASE_URL` — Neon PostgreSQL connection string
+- `BETTER_AUTH_SECRET` — Secret for Better Auth session signing
+- `BETTER_AUTH_URL` — Base URL for Better Auth (set to Replit dev domain)
+
 ## Features
 
-- **Authentication**: Login/Register with "Remember Me" checkbox (30-day session)
+- **Authentication**: Login/Register with Better Auth (username-based)
 - **First user is admin**: The first registered account automatically gets admin privileges
-- **Dashboard**: Stats overview with total credentials, tags, vaults, spaces. Three health-index ring cards (Vault protection %, Tag coverage %, Space allocation %) with color-coded status labels. Stacked color bar for tag distribution. Icon-grid for top service types
-- **Credentials CRUD**: Add/edit/delete credentials via popup modals. Card grid with copy email/password buttons, password reveal toggle, tag filter, type filter, and search. Vault credentials excluded from main list
-- **Credential Spaces**: Folder-like groupings with optional default type. Space tabs at top of credentials page
+- **Dashboard**: Stats overview with total credentials, tags, vaults, spaces. Three health-index ring cards (Vault protection %, Tag coverage %, Space allocation %) with color-coded status labels
+- **Credentials CRUD**: Add/edit/delete credentials via popup modals. Card grid with copy email/password buttons, password reveal toggle, tag filter, type filter, and search
+- **Credential Spaces**: Folder-like groupings with optional default type
 - **Unified Manage page**: Tags + Service Types in one tabbed page
 - **Multi-Vault System**: Multiple independent secure vaults, each with own name/password/PIN/color. Per-vault unlock with 15-min session expiry
 - **Admin Settings**: Toggle registration on/off, set site title, site description, logo URL, favicon URL
 
 ## Database Schema
 
-- **users**: id, username, passwordHash, isAdmin, createdAt
-- **tags**: id, name, color, userId, createdAt
-- **credentials**: id, title, email, password, userId, tagId, vaultId, spaceId, createdAt, updatedAt
-- **vaults**: id, name, passwordHash, pinHash, color, icon, userId, createdAt
-- **spaces**: id, name, defaultType, color, icon, userId, createdAt
-- **settings**: id, registrationEnabled, siteTitle, siteDescription, siteLogo, siteFavicon
-- **serviceTypes**: id, key, label, icon, color, userId, isCustom, createdAt
-
-## API Endpoints
-
-All endpoints under `/api` (served by Next.js route handlers in `app/api/`):
-- `POST /api/auth/register` — Register (first user becomes admin)
-- `POST /api/auth/login` — Login with optional rememberMe
-- `GET /api/auth/me` — Get current user
-- `POST /api/auth/logout` — Log out
-- `GET /api/credentials` — List credentials (with search/tag/spaceId/vaultId filter)
-- `POST /api/credentials` — Create credential
-- `PATCH /api/credentials/:id` — Update credential
-- `DELETE /api/credentials/:id` — Delete credential
-- `GET /api/tags` — List tags with credential counts
-- `POST /api/tags` — Create tag
-- `PATCH /api/tags/:id` — Update tag
-- `DELETE /api/tags/:id` — Delete tag
-- `GET /api/stats` — Dashboard statistics
-- `GET /api/settings` — Get app settings (admin only)
-- `PATCH /api/settings` — Update settings (admin only)
-- `GET /api/settings/branding` — Public branding info
-- `GET /api/settings/registration-status` — Public registration check
-- `GET /api/vaults` — List all vaults
-- `POST /api/vaults` — Create a new vault
-- `PATCH /api/vaults/:id` — Update vault
-- `DELETE /api/vaults/:id` — Delete vault and all its credentials
-- `POST /api/vaults/:id/verify` — Unlock vault (15-min session)
-- `POST /api/vaults/:id/lock` — Lock vault
-- `POST /api/vaults/:id/change-password` — Change vault password
-- `POST /api/vaults/:id/change-pin` — Change vault PIN
-- `GET /api/spaces` — List all spaces
-- `POST /api/spaces` — Create a space
-- `PATCH /api/spaces/:id` — Update space
-- `DELETE /api/spaces/:id` — Delete space
-- `GET /api/service-types` — List service types
-- `POST /api/service-types` — Create service type
-- `PATCH /api/service-types/:id` — Update service type
-- `DELETE /api/service-types/:id` — Delete service type
+- **user** (Better Auth): id (text PK), name, email, emailVerified, image, username, displayUsername, isAdmin, createdAt, updatedAt
+- **session** (Better Auth): id, expiresAt, token, ipAddress, userAgent, userId
+- **account** (Better Auth): id, accountId, providerId, userId, accessToken, refreshToken, password, etc.
+- **verification** (Better Auth): id, identifier, value, expiresAt
+- **tags**: id (serial), name, color, userId (text FK), createdAt
+- **credentials**: id (serial), title, email, password, userId (text FK), tagId, vaultId, spaceId, createdAt, updatedAt
+- **vaults**: id (serial), name, passwordHash, pinHash, color, icon, userId (text FK), createdAt
+- **spaces**: id (serial), name, defaultType, color, icon, userId (text FK), createdAt
+- **settings**: id (serial), registrationEnabled, siteTitle, siteDescription, siteLogo, siteFavicon
+- **service_types**: id (serial), key, label, icon, color, createdAt
 
 ## Dev Commands
 
@@ -117,5 +123,5 @@ All endpoints under `/api` (served by Next.js route handlers in `app/api/`):
 
 - Clean neutral light theme (warm stone tones), Inter font, top header navigation (no sidebar)
 - Uses shadcn/ui components with Radix UI primitives
-- Per-vault session tracking via iron-session
-- Vault credentials are masked in API responses unless vault session is active
+- Vault unlock state tracked via signed cookie (15-min expiry)
+- Vault credentials are masked in API responses unless vault is actively unlocked

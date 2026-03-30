@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq, sql } from "drizzle-orm";
-import bcrypt from "bcrypt";
 import { db, vaultsTable, credentialsTable } from "@/db";
-import { getSession } from "@/lib/session";
+import { getAuthSession } from "@/lib/auth-helpers";
+import { getVaultUnlockState } from "@/lib/vault-state";
 import { getUnlockedVaultIds } from "@/lib/vault-helpers";
+import { hashPassword } from "@/lib/crypto";
 
 export async function GET() {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const userId = session.userId;
-  const unlockedIds = getUnlockedVaultIds(session);
+  const userId = session.user.id;
+  const vaultState = await getVaultUnlockState(userId);
+  const unlockedIds = getUnlockedVaultIds(vaultState);
 
   const vaults = await db
     .select({
@@ -38,8 +40,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
@@ -53,9 +55,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "PIN must be 4-8 digits." }, { status: 400 });
   }
 
-  const userId = session.userId;
-  const passwordHash = await bcrypt.hash(body.password, 10);
-  const pinHash = await bcrypt.hash(body.pin, 10);
+  const userId = session.user.id;
+  const passwordHash = await hashPassword(body.password);
+  const pinHash = await hashPassword(body.pin);
 
   const [vault] = await db
     .insert(vaultsTable)

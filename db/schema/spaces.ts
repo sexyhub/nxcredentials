@@ -1,7 +1,7 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
-import { usersTable } from "./users";
+import { user } from "./auth";
 
 export const spacesTable = pgTable("spaces", {
   id: serial("id").primaryKey(),
@@ -9,7 +9,7 @@ export const spacesTable = pgTable("spaces", {
   defaultType: text("default_type"),
   color: text("color").notNull().default("#6366f1"),
   icon: text("icon").notNull().default("folder"),
-  userId: integer("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

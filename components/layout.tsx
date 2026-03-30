@@ -55,6 +55,12 @@ export function Layout({ children }: LayoutProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isLoading, isAuthenticated, router]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -64,9 +70,6 @@ export function Layout({ children }: LayoutProps) {
   }
 
   if (!isAuthenticated) {
-    if (typeof window !== "undefined") {
-      router.push("/login");
-    }
     return null;
   }
 

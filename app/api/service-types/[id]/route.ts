@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db, serviceTypesTable } from "@/db";
-import { getSession } from "@/lib/session";
+import { getAuthSession } from "@/lib/auth-helpers";
 
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
@@ -50,8 +50,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 

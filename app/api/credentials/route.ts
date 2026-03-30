@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq, and, ilike, or, sql } from "drizzle-orm";
 import { db, credentialsTable, tagsTable, spacesTable, vaultsTable } from "@/db";
-import { getSession } from "@/lib/session";
+import { getAuthSession } from "@/lib/auth-helpers";
+import { getVaultUnlockState } from "@/lib/vault-state";
 import { isVaultUnlocked } from "@/lib/vault-helpers";
 
 export async function GET(req: NextRequest) {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const userId = session.userId;
+  const userId = session.user.id;
+  const vaultState = await getVaultUnlockState(userId);
   const url = new URL(req.url);
   const tag = url.searchParams.get("tag");
   const search = url.searchParams.get("search");
@@ -60,7 +62,7 @@ export async function GET(req: NextRequest) {
   const results = await query.orderBy(credentialsTable.createdAt);
 
   const masked = results.map((cred) => {
-    if (cred.vaultId && !isVaultUnlocked(session, cred.vaultId)) {
+    if (cred.vaultId && !isVaultUnlocked(vaultState, cred.vaultId)) {
       return { ...cred, email: "••••••••", password: "••••••••" };
     }
     return cred;
@@ -70,13 +72,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   const body = await req.json();
-  const userId = session.userId;
+  const userId = session.user.id;
 
   if (body.tagId) {
     const [tag] = await db.select().from(tagsTable).where(and(eq(tagsTable.id, body.tagId), eq(tagsTable.userId, userId)));

@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { eq, sql, gte, and, isNotNull } from "drizzle-orm";
 import { db, credentialsTable, tagsTable, spacesTable, vaultsTable, serviceTypesTable } from "@/db";
-import { getSession } from "@/lib/session";
+import { getAuthSession } from "@/lib/auth-helpers";
 
 export async function GET() {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const userId = session.userId;
+  const userId = session.user.id;
 
   const totalCreds = await db
     .select({ count: sql<number>`cast(count(*) as integer)` })

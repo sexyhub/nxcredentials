@@ -58,7 +58,7 @@ export type Vault = {
 };
 
 export type User = {
-  id: number;
+  id: string;
   username: string;
   isAdmin: boolean;
 };
@@ -130,7 +130,7 @@ export function useGetMe(opts?: QueryOpts<User>) {
   });
 }
 
-export function useLogin(opts?: MutOpts<{ user: User }, { data: { username: string; password: string; rememberMe?: boolean } }>) {
+export function useLogin(opts?: MutOpts<any, { data: { username: string; password: string; rememberMe?: boolean } }>) {
   return useMutation({
     mutationFn: ({ data }: { data: { username: string; password: string; rememberMe?: boolean } }) =>
       apiFetch("/api/auth/login", { method: "POST", body: JSON.stringify(data) }),
@@ -138,7 +138,7 @@ export function useLogin(opts?: MutOpts<{ user: User }, { data: { username: stri
   });
 }
 
-export function useRegister(opts?: MutOpts<{ user: User }, { data: { username: string; password: string } }>) {
+export function useRegister(opts?: MutOpts<any, { data: { username: string; password: string } }>) {
   return useMutation({
     mutationFn: ({ data }: { data: { username: string; password: string } }) =>
       apiFetch("/api/auth/register", { method: "POST", body: JSON.stringify(data) }),

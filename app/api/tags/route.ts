@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq, and, sql } from "drizzle-orm";
 import { db, tagsTable, credentialsTable } from "@/db";
-import { getSession } from "@/lib/session";
+import { getAuthSession } from "@/lib/auth-helpers";
 
 export async function GET() {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const userId = session.userId;
+  const userId = session.user.id;
 
   const results = await db
     .select({
@@ -28,13 +28,13 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   const body = await req.json();
-  const userId = session.userId;
+  const userId = session.user.id;
 
   const [tag] = await db
     .insert(tagsTable)

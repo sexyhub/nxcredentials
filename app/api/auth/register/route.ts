@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcrypt";
-import { eq } from "drizzle-orm";
-import { db, usersTable } from "@/db";
-import { getSession } from "@/lib/session";
+import { db, user as userTable } from "@/db";
+import { auth } from "@/lib/auth";
 import { getOrCreateSettings } from "@/lib/settings";
 
 export async function POST(req: NextRequest) {
@@ -13,39 +11,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Username and password required" }, { status: 400 });
   }
 
+  if (password.length < 4) {
+    return NextResponse.json({ error: "Password must be at least 4 characters" }, { status: 400 });
+  }
+
   const settings = await getOrCreateSettings();
-  const existingUsers = await db.select().from(usersTable);
+  const existingUsers = await db.select({ id: userTable.id }).from(userTable).limit(1);
 
   if (existingUsers.length > 0 && !settings.registrationEnabled) {
     return NextResponse.json({ error: "Registration is currently disabled" }, { status: 403 });
   }
 
-  const existing = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.username, username));
+  try {
+    const response = await auth.api.signUpEmail({
+      body: {
+        email: `${username.toLowerCase()}@vault.local`,
+        password,
+        name: username,
+        username,
+      },
+      headers: req.headers,
+      asResponse: true,
+    });
 
-  if (existing.length > 0) {
-    return NextResponse.json({ error: "Username already taken" }, { status: 400 });
+    return response;
+  } catch (error: any) {
+    const message = error?.message || "Registration failed";
+    if (message.includes("already") || message.includes("unique")) {
+      return NextResponse.json({ error: "Username already taken" }, { status: 400 });
+    }
+    return NextResponse.json({ error: message }, { status: 400 });
   }
-
-  if (password.length < 4) {
-    return NextResponse.json({ error: "Password must be at least 4 characters" }, { status: 400 });
-  }
-
-  const passwordHash = await bcrypt.hash(password, 10);
-  const isFirstUser = existingUsers.length === 0;
-
-  const [user] = await db
-    .insert(usersTable)
-    .values({ username, passwordHash, isAdmin: isFirstUser })
-    .returning();
-
-  const session = await getSession();
-  session.userId = user.id;
-  await session.save();
-
-  return NextResponse.json({
-    user: { id: user.id, username: user.username, isAdmin: user.isAdmin },
-  }, { status: 201 });
 }

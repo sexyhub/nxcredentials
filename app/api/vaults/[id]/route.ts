@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq, and, sql } from "drizzle-orm";
 import { db, vaultsTable, credentialsTable } from "@/db";
-import { getSession } from "@/lib/session";
+import { getAuthSession } from "@/lib/auth-helpers";
+import { getVaultUnlockState } from "@/lib/vault-state";
 import { isVaultUnlocked } from "@/lib/vault-helpers";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   const { id } = await params;
   const vaultId = Number(id);
   const body = await req.json();
-  const userId = session.userId;
+  const userId = session.user.id;
 
   const [existing] = await db
     .select()
@@ -40,26 +41,28 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .from(credentialsTable)
     .where(eq(credentialsTable.vaultId, vault.id));
 
+  const vaultState = await getVaultUnlockState(userId);
+
   return NextResponse.json({
     id: vault.id,
     name: vault.name,
     color: vault.color,
     icon: vault.icon,
     credentialCount: countResult?.count ?? 0,
-    isUnlocked: isVaultUnlocked(session, vault.id),
+    isUnlocked: isVaultUnlocked(vaultState, vault.id),
     createdAt: vault.createdAt.toISOString(),
   });
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession();
-  if (!session.userId) {
+  const session = await getAuthSession();
+  if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   const { id } = await params;
   const vaultId = Number(id);
-  const userId = session.userId;
+  const userId = session.user.id;
 
   const [existing] = await db
     .select()
