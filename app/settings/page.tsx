@@ -24,6 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Combobox } from "@/components/ui/combobox";
+import { getSpaceIcon } from "@/lib/space-icons";
 
 export default function Settings() {
   const { user } = useAuth();
@@ -167,8 +168,22 @@ export default function Settings() {
     { value: "vault", label: "By vault" },
   ];
 
-  const spaceOptions = spaces.map((s: any) => ({ value: String(s.id), label: s.name }));
-  const vaultOptions = vaults.map((v: any) => ({ value: String(v.id), label: v.name }));
+  const spaceOptions = spaces.map((s: any) => {
+    const SpaceIcon = getSpaceIcon(s.icon ?? "folder");
+    return {
+      value: String(s.id),
+      label: s.name,
+      icon: <SpaceIcon className="w-3.5 h-3.5 shrink-0" style={{ color: s.color ?? "#6366f1" }} />,
+    };
+  });
+  const vaultOptions = vaults.map((v: any) => {
+    const VaultIcon = getSpaceIcon(v.icon ?? "shield");
+    return {
+      value: String(v.id),
+      label: v.name,
+      icon: <VaultIcon className="w-3.5 h-3.5 shrink-0" style={{ color: v.color ?? "#f59e0b" }} />,
+    };
+  });
 
   const exportDisabled =
     isExporting ||

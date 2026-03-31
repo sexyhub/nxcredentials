@@ -71,7 +71,7 @@ export default function Dashboard() {
             <p className="text-muted-foreground text-[15px] mt-1">Here&apos;s what&apos;s in your vault.</p>
           </div>
           <Button asChild size="sm" className="h-9 text-[13px] font-semibold self-start sm:self-auto">
-            <Link href="/credentials">
+            <Link href="/spaces">
               <Plus className="w-3.5 h-3.5 mr-1.5" />
               New credential
             </Link>
@@ -266,7 +266,7 @@ export default function Dashboard() {
               <div className="py-8 text-center">
                 <p className="text-[13px] text-muted-foreground">No credentials yet.</p>
                 <Button asChild variant="outline" size="sm" className="mt-3 h-8 text-[12px]">
-                  <Link href="/credentials">Add one</Link>
+                  <Link href="/spaces">Add one</Link>
                 </Button>
               </div>
             )}
