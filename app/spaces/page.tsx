@@ -35,7 +35,7 @@ import { Combobox } from "@/components/ui/combobox";
 import {
   Plus, FolderOpen, Loader2, Eye, EyeOff, Pencil, Trash2, Key, ArrowLeft, Tag
 } from "lucide-react";
-import { getIconComponent } from "@/lib/service-types";
+import { getIconComponent, getServiceType } from "@/lib/service-types";
 import { getSpaceIcon } from "@/lib/space-icons";
 import { AppearancePicker } from "@/components/appearance-picker";
 
@@ -217,7 +217,7 @@ export default function Spaces() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
                 {pagedCreds.map((cred) => {
-                  const stype = getServiceType(cred.title);
+                  const stype = dbServiceTypes.find((t: ServiceType) => t.key === cred.title) ?? getServiceType(cred.title);
                   const Icon = getIconComponent(stype.icon);
                   return (
                     <div key={cred.id} className="border rounded-xl bg-card px-3.5 py-3 group hover:border-foreground/20 transition-colors">
@@ -380,7 +380,7 @@ export default function Spaces() {
                     <div className="border-t pt-3 space-y-1">
                       <div className="flex items-center justify-between gap-2">
                         <div className="text-[13px] font-bold truncate">{space.name}</div>
-                        <div className="text-[11px] text-muted-foreground shrink-0">{space.defaultType ? getServiceType(space.defaultType).label : "Mixed types"} &middot; open space</div>
+                        <div className="text-[11px] text-muted-foreground shrink-0">{space.defaultType ? (dbServiceTypes.find((t: ServiceType) => t.key === space.defaultType)?.label ?? getServiceType(space.defaultType).label) : "Mixed types"} &middot; open space</div>
                       </div>
                       <div className="text-[11px] text-muted-foreground/60">Tap to view & manage credentials</div>
                     </div>
