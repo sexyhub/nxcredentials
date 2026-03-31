@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq, and } from "drizzle-orm";
 import { db, credentialsTable, tagsTable, spacesTable } from "@/db";
 import { getAuthSession } from "@/lib/auth-helpers";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAuthSession();
@@ -25,8 +26,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const updateData: Record<string, any> = {};
   if (body.title !== undefined) updateData.title = body.title;
-  if (body.email !== undefined) updateData.email = body.email;
-  if (body.password !== undefined) updateData.password = body.password;
+  if (body.email !== undefined) updateData.email = encrypt(body.email);
+  if (body.password !== undefined) updateData.password = encrypt(body.password);
   if (body.tagId !== undefined) updateData.tagId = body.tagId;
   if (body.vaultId !== undefined) updateData.vaultId = body.vaultId;
   if (body.spaceId !== undefined) updateData.spaceId = body.spaceId;
@@ -50,7 +51,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (sp) spaceName = sp.name;
   }
 
-  return NextResponse.json({ ...credential, tagName, tagColor, spaceName });
+  return NextResponse.json({ ...credential, email: decrypt(credential.email), password: decrypt(credential.password), tagName, tagColor, spaceName });
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

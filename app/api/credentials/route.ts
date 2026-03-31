@@ -4,6 +4,7 @@ import { db, credentialsTable, tagsTable, spacesTable, vaultsTable } from "@/db"
 import { getAuthSession } from "@/lib/auth-helpers";
 import { getVaultUnlockState } from "@/lib/vault-state";
 import { isVaultUnlocked } from "@/lib/vault-helpers";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 export async function GET(req: NextRequest) {
   const session = await getAuthSession();
@@ -65,7 +66,7 @@ export async function GET(req: NextRequest) {
     if (cred.vaultId && !isVaultUnlocked(vaultState, cred.vaultId)) {
       return { ...cred, email: "••••••••", password: "••••••••" };
     }
-    return cred;
+    return { ...cred, email: decrypt(cred.email), password: decrypt(cred.password) };
   });
 
   return NextResponse.json(masked);
@@ -97,8 +98,8 @@ export async function POST(req: NextRequest) {
     .insert(credentialsTable)
     .values({
       title: body.title,
-      email: body.email,
-      password: body.password,
+      email: encrypt(body.email),
+      password: encrypt(body.password),
       tagId: body.tagId ?? null,
       vaultId: body.vaultId ?? null,
       spaceId: body.spaceId ?? null,
@@ -119,5 +120,5 @@ export async function POST(req: NextRequest) {
     if (sp) spaceName = sp.name;
   }
 
-  return NextResponse.json({ ...credential, tagName, tagColor, spaceName }, { status: 201 });
+  return NextResponse.json({ ...credential, email: decrypt(credential.email), password: decrypt(credential.password), tagName, tagColor, spaceName }, { status: 201 });
 }

@@ -93,10 +93,12 @@ credential-vault/
 - **First user is admin**: The first registered account automatically gets admin privileges
 - **Dashboard**: Stats overview with total credentials, tags, vaults, spaces. Three health-index ring cards (Vault protection %, Tag coverage %, Space allocation %) with color-coded status labels
 - **Credentials CRUD**: Add/edit/delete credentials via popup modals. Card grid with copy email/password buttons, password reveal toggle, tag filter, type filter, and search
-- **Credential Spaces**: Folder-like groupings with optional default type
+- **Credential Spaces**: Folder-like groupings with optional default type (type dropdown uses live DB service types)
 - **Unified Manage page**: Tags + Service Types in one tabbed page
 - **Multi-Vault System**: Multiple independent secure vaults, each with own name/password/PIN/color. Per-vault unlock with 15-min session expiry
 - **Admin Settings**: Toggle registration on/off, set site title, site description, logo URL, favicon URL
+- **Credential Encryption**: email and password fields encrypted at rest using AES-256-GCM (ENCRYPTION_KEY env var)
+- **Import/Export**: Export credentials as JSON (global, by space, or by vault scope); import from JSON export files with drag-and-drop
 
 ## Database Schema
 

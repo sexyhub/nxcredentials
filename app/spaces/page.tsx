@@ -9,11 +9,13 @@ import {
   useDeleteSpace,
   useListCredentials,
   useDeleteCredential,
+  useListServiceTypes,
   getListSpacesQueryKey,
   getListCredentialsQueryKey,
   getGetStatsQueryKey,
   type Space,
-  type Credential
+  type Credential,
+  type ServiceType,
 } from "@/hooks/use-api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -33,7 +35,7 @@ import { Combobox } from "@/components/ui/combobox";
 import {
   Plus, FolderOpen, Loader2, Eye, EyeOff, Pencil, Trash2, Key, ArrowLeft, Tag
 } from "lucide-react";
-import { getServiceType, getIconComponent, SERVICE_TYPES } from "@/lib/service-types";
+import { getIconComponent } from "@/lib/service-types";
 import { getSpaceIcon } from "@/lib/space-icons";
 import { AppearancePicker } from "@/components/appearance-picker";
 
@@ -56,6 +58,7 @@ export default function Spaces() {
   const { toast } = useToast();
 
   const { data: spaces, isLoading } = useListSpaces();
+  const { data: dbServiceTypes = [] } = useListServiceTypes();
   const { data: spaceCredentials } = useListCredentials(
     selectedSpace ? { spaceId: selectedSpace.id } : undefined,
     { query: { enabled: !!selectedSpace } }
@@ -120,28 +123,31 @@ export default function Spaces() {
 
   const spaceTypeOptions = [
     { value: "", label: "No default type" },
-    ...SERVICE_TYPES.map((t) => {
+    ...dbServiceTypes.map((t: ServiceType) => {
       const Icon = getIconComponent(t.icon);
       return { value: t.key, label: t.label, icon: <Icon className="w-3.5 h-3.5" style={{ color: t.color }} /> };
     }),
   ];
 
+  const iconMap: Record<string, string> = {
+    Mail: "mail", Shield: "shield", Cloud: "cloud", Code2: "code",
+    Tv: "tv", Music: "music", MessageCircle: "message", Camera: "camera",
+    Briefcase: "briefcase", Hash: "hash", ShoppingCart: "cart",
+    CreditCard: "card", Gamepad2: "game", Globe: "globe", Lock: "lock",
+    Server: "server", Database: "database", Phone: "phone", Video: "video",
+    BookOpen: "book", Plane: "plane", Heart: "heart", Cpu: "cpu", Wifi: "wifi",
+    FolderOpen: "folder", Star: "star", Bookmark: "bookmark", Archive: "archive",
+  };
+
   useEffect(() => {
-    if (spaceForm.defaultType) {
-      const st = getServiceType(spaceForm.defaultType);
-      const iconMap: Record<string, string> = {
-        Mail: "mail", Shield: "shield", Cloud: "cloud", Code2: "code",
-        Tv: "tv", Music: "music", MessageCircle: "message", Camera: "camera",
-        Briefcase: "briefcase", Hash: "hash", ShoppingCart: "cart",
-        CreditCard: "card", Gamepad2: "game", Globe: "globe", Lock: "lock",
-        Server: "server", Database: "database", Phone: "phone", Video: "video",
-        BookOpen: "book", Plane: "plane", Heart: "heart", Cpu: "cpu", Wifi: "wifi",
-        FolderOpen: "folder", Star: "star", Bookmark: "bookmark", Archive: "archive",
-      };
-      const iconKey = iconMap[st.icon] || "folder";
-      setSpaceForm((prev) => ({ ...prev, color: st.color, icon: iconKey }));
+    if (spaceForm.defaultType && dbServiceTypes.length > 0) {
+      const st = dbServiceTypes.find((t: ServiceType) => t.key === spaceForm.defaultType);
+      if (st) {
+        const iconKey = iconMap[st.icon] || "folder";
+        setSpaceForm((prev) => ({ ...prev, color: st.color, icon: iconKey }));
+      }
     }
-  }, [spaceForm.defaultType]);
+  }, [spaceForm.defaultType, dbServiceTypes]);
 
   const handleTypeChange = (val: string) => {
     setSpaceForm((prev) => ({ ...prev, defaultType: val || "" }));

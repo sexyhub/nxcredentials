@@ -29,3 +29,4 @@ timeoutMs = 20000
 [userenv.shared]
 NEON_DATABASE_URL = "postgresql://neondb_owner:npg_Jx7d6sbvTSXB@ep-solitary-morning-amoepg1c-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 BETTER_AUTH_URL = "https://81521173-40b5-4e89-8ff2-dade7d55eea1-00-1wtopg4l3md9d.picard.replit.dev"
+ENCRYPTION_KEY = "f26fcd2271e2d33701742c13397eabfbbb9eccb7a47bcda4165d8e7d061ce29f"
